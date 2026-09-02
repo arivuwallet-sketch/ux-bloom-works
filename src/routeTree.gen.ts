@@ -14,6 +14,7 @@ import { Route as ProcessRouteImport } from './routes/process'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as StylesRouteImport } from './routes/styles'
 import { Route as TrendsRouteImport } from './routes/trends'
+import { Route as WorkRouteImport } from './routes/work'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const TrendsRoute = TrendsRouteImport.update({
   path: '/trends',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkRoute = WorkRouteImport.update({
+  id: '/work',
+  path: '/work',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
+  '/work': typeof WorkRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
+  '/work': typeof WorkRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,21 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
+  '/work': typeof WorkRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/process' | '/services' | '/styles' | '/trends'
+  fullPaths: '/' | '/process' | '/services' | '/styles' | '/trends' | '/work'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/process' | '/services' | '/styles' | '/trends'
-  id: '__root__' | '/' | '/process' | '/services' | '/styles' | '/trends'
+  to: '/' | '/process' | '/services' | '/styles' | '/trends' | '/work'
+  id:
+    | '__root__'
+    | '/'
+    | '/process'
+    | '/services'
+    | '/styles'
+    | '/trends'
+    | '/work'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +93,7 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   StylesRoute: typeof StylesRoute
   TrendsRoute: typeof TrendsRoute
+  WorkRoute: typeof WorkRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrendsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/work': {
+      id: '/work'
+      path: '/work'
+      fullPath: '/work'
+      preLoaderRoute: typeof WorkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +149,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   StylesRoute: StylesRoute,
   TrendsRoute: TrendsRoute,
+  WorkRoute: WorkRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
