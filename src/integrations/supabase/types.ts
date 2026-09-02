@@ -50,6 +50,95 @@ export type Database = {
         }
         Relationships: []
       }
+      project_files: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          name: string
+          project_id: string
+          size_bytes: number | null
+          source: string
+          status: string
+          storage_path: string | null
+          target_style: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          project_id: string
+          size_bytes?: number | null
+          source?: string
+          status?: string
+          storage_path?: string | null
+          target_style?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          project_id?: string
+          size_bytes?: number | null
+          source?: string
+          status?: string
+          storage_path?: string | null
+          target_style?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          product_type: string
+          style_mode: string
+          target_style: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          product_type?: string
+          style_mode?: string
+          target_style?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          product_type?: string
+          style_mode?: string
+          target_style?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

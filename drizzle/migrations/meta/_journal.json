@@ -8,6 +8,13 @@
       "when": 1788326206490,
       "tag": "0000_create_audit_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788328223768,
+      "tag": "0001_create_projects_and_files",
+      "breakpoints": true
     }
   ]
 }
