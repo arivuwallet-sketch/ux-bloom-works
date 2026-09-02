@@ -15,6 +15,13 @@
       "when": 1788328223768,
       "tag": "0001_create_projects_and_files",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788328265342,
+      "tag": "0002_project_files_storage_policies",
+      "breakpoints": true
     }
   ]
 }
