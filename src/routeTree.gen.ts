@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProcessRouteImport } from './routes/process'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as StylesRouteImport } from './routes/styles'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StylesRoute = StylesRouteImport.update({
+  id: '/styles',
+  path: '/styles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
+  '/styles': typeof StylesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
+  '/styles': typeof StylesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
+  '/styles': typeof StylesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/process' | '/services'
+  fullPaths: '/' | '/process' | '/services' | '/styles'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/process' | '/services'
-  id: '__root__' | '/' | '/process' | '/services'
+  to: '/' | '/process' | '/services' | '/styles'
+  id: '__root__' | '/' | '/process' | '/services' | '/styles'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProcessRoute: typeof ProcessRoute
   ServicesRoute: typeof ServicesRoute
+  StylesRoute: typeof StylesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/styles': {
+      id: '/styles'
+      path: '/styles'
+      fullPath: '/styles'
+      preLoaderRoute: typeof StylesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProcessRoute: ProcessRoute,
   ServicesRoute: ServicesRoute,
+  StylesRoute: StylesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
