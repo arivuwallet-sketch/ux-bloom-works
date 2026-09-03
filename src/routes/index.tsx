@@ -27,38 +27,44 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <main>
-      <section className="border-b border-border pt-[100px] pb-[90px]">
-        <div className="wrap grid grid-cols-1 items-start gap-12 md:grid-cols-[1.5fr_1fr]">
-          <div>
-            <h1 className="text-[36px] tracking-[-0.01em] sm:text-[52px]">
+      <section className="relative flex min-h-[86vh] items-center pt-[80px] pb-[90px]">
+        <div className="wrap">
+          <div className="rise max-w-[820px]">
+            <div className="mb-6 inline-flex items-center gap-2 border border-border/70 bg-background/40 px-3 py-1.5 text-[12.5px] tracking-[0.2em] text-amber uppercase backdrop-blur-md">
+              interface revision studio
+            </div>
+            <h1 className="text-[40px] tracking-[-0.015em] sm:text-[68px]">
               Your product doesn't need a <span className="strike">rebuild.</span>
+              <br />
+              <span className="mark-hand text-revision">it needs a revision.</span>
             </h1>
-            <p className="mt-7 max-w-[480px] text-[17px] text-ink-soft">
-              Rezyn audits and upgrades the interface you already have — website, web app,
-              mobile app, SaaS product, or store — without asking you to start from zero.
+            <p className="mt-8 max-w-[520px] text-[17.5px] text-ink-soft">
+              Rezyn audits and upgrades the interface you already have — website, web app, mobile
+              app, SaaS product, or store — without asking you to start from zero.
             </p>
-            <div className="mt-9 flex flex-wrap gap-[14px]">
+            <div className="mt-10 flex flex-wrap gap-[14px]">
               <Link
                 to="/projects"
-                className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
+                className="glow-amber bg-amber px-[28px] py-[14px] text-[15px] font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
               >
                 Upload a project
               </Link>
               <Link
                 to="/process"
-                className="border border-primary bg-transparent px-[26px] py-[13px] text-[15px] font-medium text-foreground transition-colors hover:bg-paper-dim"
+                className="glass px-[28px] py-[14px] text-[15px] font-medium text-foreground transition-colors hover:text-amber"
               >
                 See the process
               </Link>
             </div>
-          </div>
-          <div className="pt-2">
-            <span className="mark-hand block -rotate-[1.5deg] text-[26px] text-revision">
-              ↳ it needs a revision.
-            </span>
+            <div className="mt-14 flex flex-wrap gap-10 text-[13px] tracking-[0.16em] text-muted-foreground uppercase">
+              <span>v1 audit</span>
+              <span className="text-amber">v2 redesign</span>
+              <span>v3 handoff</span>
+            </div>
           </div>
         </div>
       </section>
+
 
       <Section>
         <SectionHeading
@@ -73,9 +79,9 @@ function Index() {
           label="How a revision works"
           title="Three passes. Nothing thrown out that doesn't need to be."
         />
-        <div className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {processSteps.map((step) => (
-            <div key={step.version} className="bg-background px-7 py-8">
+            <div key={step.version} className="glass px-7 py-8 transition-colors hover:border-amber/40">
               <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
               <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
               <p className="text-[15px] text-ink-soft">{step.body}</p>

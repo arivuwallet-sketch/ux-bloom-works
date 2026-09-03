@@ -23,7 +23,7 @@ export function PreviewGroups({ groups }: { groups: PreviewGroup[] }) {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {group.items.map((item) => (
-              <div key={item.name} className="border border-border bg-background p-[14px]">
+              <div key={item.name} className="glass p-[14px] transition-transform duration-300 hover:-translate-y-1">
                 <PreviewTile preview={item.preview} />
                 <div className="mb-1 text-[14.5px] font-semibold">{item.name}</div>
                 <p className="min-h-[34px] text-[12.5px] leading-[1.45] text-muted-foreground">

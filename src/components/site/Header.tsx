@@ -9,21 +9,21 @@ const navItems = [
   { to: "/projects", label: "Workspace" },
 ] as const;
 
-
 export function Header() {
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur-[6px]">
-      <div className="mx-auto flex max-w-[1080px] items-center justify-between px-8 py-[22px]">
-        <Link to="/" className="font-serif text-2xl italic tracking-[0.01em]">
+    <header className="sticky top-0 z-20 border-b border-border/50 bg-background/55 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1140px] items-center justify-between px-8 py-[18px]">
+        <Link to="/" className="flex items-center gap-2 font-serif text-2xl italic">
+          <span className="h-2 w-2 rounded-full bg-amber shadow-[0_0_12px_var(--amber)]" />
           Rezyn
         </Link>
-        <nav className="hidden gap-9 text-[15px] text-ink-soft md:flex">
+        <nav className="hidden gap-8 text-[14.5px] text-ink-soft md:flex">
           {navItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="hover:text-foreground"
-              activeProps={{ className: "text-foreground font-medium" }}
+              className="relative transition-colors hover:text-foreground"
+              activeProps={{ className: "text-amber" }}
             >
               {item.label}
             </Link>
@@ -31,7 +31,7 @@ export function Header() {
         </nav>
         <Link
           to="/projects"
-          className="border border-primary bg-primary px-[18px] py-[9px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
+          className="glow-amber bg-amber px-[18px] py-[9px] text-[14.5px] font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
         >
           Upload a project
         </Link>
@@ -42,13 +42,13 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border py-10">
+    <footer className="border-t border-border/50 bg-background/50 py-10 backdrop-blur-xl">
       <div className="wrap flex flex-col items-start gap-[10px] text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <Link to="/" className="font-serif text-[18px] italic">
           Rezyn
         </Link>
         <div>Interface revisions, not rebuilds.</div>
-        <a href="mailto:hello@rezyn.co" className="hover:text-foreground">
+        <a href="mailto:hello@rezyn.co" className="transition-colors hover:text-amber">
           hello@rezyn.co
         </a>
       </div>
