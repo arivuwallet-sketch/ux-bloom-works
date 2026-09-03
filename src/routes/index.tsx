@@ -79,9 +79,9 @@ function Index() {
           label="How a revision works"
           title="Three passes. Nothing thrown out that doesn't need to be."
         />
-        <div className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {processSteps.map((step) => (
-            <div key={step.version} className="bg-background px-7 py-8">
+            <div key={step.version} className="glass px-7 py-8 transition-colors hover:border-amber/40">
               <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
               <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
               <p className="text-[15px] text-ink-soft">{step.body}</p>
