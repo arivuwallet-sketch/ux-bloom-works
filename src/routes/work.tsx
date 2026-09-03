@@ -49,10 +49,10 @@ function WorkPage() {
         </div>
         <div className="mt-10">
           <Link
-            to="/contact"
+            to="/projects"
             className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
           >
-            Request an audit
+            Upload a project
           </Link>
         </div>
       </Section>
