@@ -129,6 +129,11 @@ export const styleGroups: PreviewGroup[] = [
   },
 ];
 
+export const allStyleNames: string[] = styleGroups.flatMap((group) =>
+  group.items.map((item) => item.name),
+);
+
+
 export const trendGroups: PreviewGroup[] = [
   {
     title: "Core architectural & visual styles",
