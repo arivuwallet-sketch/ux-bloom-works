@@ -18,6 +18,7 @@
   --color-foreground: var(--foreground);
   --color-paper-dim: var(--paper-dim);
   --color-ink-soft: var(--ink-soft);
+  --color-amber: var(--amber);
   --color-redline: var(--redline);
   --color-revision: var(--revision);
   --color-revision-bg: var(--revision-bg);
