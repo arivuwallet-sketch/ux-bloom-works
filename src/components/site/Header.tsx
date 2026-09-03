@@ -28,10 +28,10 @@ export function Header() {
           ))}
         </nav>
         <Link
-          to="/contact"
+          to="/projects"
           className="border border-primary bg-primary px-[18px] py-[9px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
         >
-          Request an audit
+          Upload a project
         </Link>
       </div>
     </header>

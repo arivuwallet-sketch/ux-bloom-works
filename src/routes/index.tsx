@@ -39,10 +39,10 @@ function Index() {
             </p>
             <div className="mt-9 flex flex-wrap gap-[14px]">
               <Link
-                to="/contact"
+                to="/projects"
                 className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
               >
-                Request an audit
+                Upload a project
               </Link>
               <Link
                 to="/process"
@@ -102,10 +102,10 @@ function Index() {
         <BeforeAfter />
         <div className="mt-10">
           <Link
-            to="/contact"
+            to="/projects"
             className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
           >
-            Request an audit
+            Upload a project
           </Link>
         </div>
       </Section>
