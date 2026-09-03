@@ -6,7 +6,9 @@ const navItems = [
   { to: "/styles", label: "Styles" },
   { to: "/trends", label: "Trends" },
   { to: "/work", label: "Work" },
+  { to: "/projects", label: "Workspace" },
 ] as const;
+
 
 export function Header() {
   return (
