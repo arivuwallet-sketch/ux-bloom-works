@@ -11,8 +11,9 @@
   --radius-lg: 0px;
   --radius-xl: 2px;
   --radius-2xl: 4px;
-  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Bebas Neue", "Barlow", sans-serif;
+  --color-violet: var(--violet);
   --font-hand: "Caveat", cursive;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,37 +46,38 @@
 :root {
   --radius: 0px;
   /* obsidian ink #0B0D14 */
-  --background: oklch(0.168 0.018 268);
+  --background: oklch(0.19 0.045 285);
   /* light #F5F1E6 */
   --foreground: oklch(0.955 0.012 92);
   /* raised surface */
-  --paper-dim: oklch(0.225 0.02 268);
+  --paper-dim: oklch(0.255 0.055 270);
   /* soft body text */
   --ink-soft: oklch(0.815 0.012 92);
   /* redline / rose #C97A6D */
-  --redline: oklch(0.665 0.093 32);
+  --redline: oklch(0.7 0.18 15);
   /* jade #4FA98A */
-  --revision: oklch(0.705 0.09 163);
-  --revision-bg: oklch(0.255 0.03 168);
+  --revision: oklch(0.84 0.19 152);
+  --revision-bg: oklch(0.28 0.07 165);
   /* amber #E8B45A */
-  --amber: oklch(0.802 0.114 79);
-  --card: oklch(0.208 0.019 268);
+  --amber: oklch(0.75 0.16 295);
+  --violet: oklch(0.75 0.16 295);
+  --card: oklch(0.235 0.05 275);
   --card-foreground: oklch(0.955 0.012 92);
-  --popover: oklch(0.208 0.019 268);
+  --popover: oklch(0.235 0.05 275);
   --popover-foreground: oklch(0.955 0.012 92);
-  --primary: oklch(0.802 0.114 79);
-  --primary-foreground: oklch(0.168 0.018 268);
-  --secondary: oklch(0.245 0.02 268);
+  --primary: oklch(0.75 0.16 295);
+  --primary-foreground: oklch(0.17 0.04 285);
+  --secondary: oklch(0.27 0.05 275);
   --secondary-foreground: oklch(0.955 0.012 92);
-  --muted: oklch(0.245 0.02 268);
+  --muted: oklch(0.27 0.05 275);
   --muted-foreground: oklch(0.685 0.014 92);
-  --accent: oklch(0.255 0.03 168);
-  --accent-foreground: oklch(0.705 0.09 163);
-  --destructive: oklch(0.665 0.093 32);
-  --destructive-foreground: oklch(0.168 0.018 268);
-  --border: oklch(0.32 0.018 268);
-  --input: oklch(0.32 0.018 268);
-  --ring: oklch(0.802 0.114 79);
+  --accent: oklch(0.28 0.07 165);
+  --accent-foreground: oklch(0.84 0.19 152);
+  --destructive: oklch(0.7 0.18 15);
+  --destructive-foreground: oklch(0.17 0.04 285);
+  --border: oklch(0.36 0.05 278);
+  --input: oklch(0.36 0.05 278);
+  --ring: oklch(0.75 0.16 295);
 }
 
 @layer base {
@@ -100,8 +102,10 @@
   h2,
   h3 {
     font-family: var(--font-serif);
-    font-weight: 500;
-    line-height: 1.14;
+    font-weight: 400;
+    line-height: 0.92;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
   }
 
   ::selection {
@@ -131,12 +135,12 @@
 
 @utility veil {
   background:
-    radial-gradient(120% 90% at 50% 0%, transparent 30%, oklch(0.168 0.018 268 / 0.38) 80%),
+    radial-gradient(120% 90% at 50% 0%, transparent 30%, oklch(0.17 0.04 285 / 0.38) 80%),
     linear-gradient(
       180deg,
-      oklch(0.168 0.018 268 / 0.18) 0%,
-      oklch(0.168 0.018 268 / 0.4) 55%,
-      oklch(0.168 0.018 268 / 0.68) 100%
+      oklch(0.17 0.04 285 / 0.18) 0%,
+      oklch(0.17 0.04 285 / 0.4) 55%,
+      oklch(0.17 0.04 285 / 0.68) 100%
     );
 }
 
@@ -163,8 +167,8 @@
 
 @utility glow-amber {
   box-shadow:
-    0 0 0 1px oklch(0.802 0.114 79 / 0.5),
-    0 12px 40px -12px oklch(0.802 0.114 79 / 0.55);
+    0 0 0 1px oklch(0.75 0.16 295 / 0.5),
+    0 12px 40px -12px oklch(0.75 0.16 295 / 0.55);
 }
 
 @utility rise {
@@ -191,3 +195,46 @@
   }
 }
 
+
+@utility aurora-text {
+  background: linear-gradient(
+    100deg,
+    var(--foreground) 0%,
+    var(--revision) 38%,
+    var(--violet) 72%,
+    var(--foreground) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: aurora-sweep 9s ease-in-out infinite;
+}
+
+@keyframes aurora-sweep {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@utility outline-text {
+  color: transparent;
+  -webkit-text-stroke: 1.5px oklch(1 0 0 / 0.42);
+}
+
+@utility glow-aurora {
+  box-shadow:
+    0 0 0 1px oklch(0.84 0.19 152 / 0.45),
+    0 14px 46px -14px oklch(0.84 0.19 152 / 0.5),
+    0 14px 46px -20px oklch(0.75 0.16 295 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-text {
+    animation: none;
+  }
+}
