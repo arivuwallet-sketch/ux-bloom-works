@@ -26,7 +26,7 @@ export const Route = createFileRoute("/projects/")({
 });
 
 const fieldClass =
-  "w-full border border-border bg-paper-dim px-3 py-[11px] text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
+  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
 
 function ProjectsPage() {
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ function ProjectsPage() {
             }
             createProject.mutate();
           }}
-          className="grid max-w-[720px] grid-cols-1 gap-5 border border-border p-7 md:grid-cols-2"
+          className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7 md:grid-cols-2"
         >
           <div className="md:col-span-2">
             <label htmlFor="pname" className="mb-[6px] block text-sm text-muted-foreground">

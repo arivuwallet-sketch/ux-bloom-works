@@ -28,13 +28,13 @@ function Slab({
           color={tint}
           roughness={0.12}
           metalness={0.1}
-          transmission={0.72}
-          thickness={0.55}
+          transmission={0.6}
+          thickness={0.7}
           ior={1.35}
           clearcoat={1}
           clearcoatRoughness={0.15}
           transparent
-          opacity={0.92}
+          opacity={0.98}
         />
       </mesh>
     </Float>
@@ -70,7 +70,7 @@ function Dust({ count = 700 }: { count?: number }) {
         size={0.045}
         color={AMBER}
         transparent
-        opacity={0.55}
+        opacity={0.7}
         sizeAttenuation
         depthWrite={false}
       />
