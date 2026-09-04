@@ -26,7 +26,7 @@ export const Route = createFileRoute("/projects/$projectId")({
 });
 
 const fieldClass =
-  "w-full border border-border bg-paper-dim px-3 py-[11px] text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
+  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
 
 const buttonClass =
   "border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60";
@@ -197,7 +197,7 @@ function ProjectDetailPage() {
 
       <Section>
         <SectionHeading label="Upload" title="Hand over the files we should redesign." />
-        <div className="max-w-[720px] border border-border p-7">
+        <div className="glass max-w-[720px] p-7">
           {perFile ? (
             <div className="mb-5">
               <label htmlFor="upstyle" className="mb-[6px] block text-sm text-muted-foreground">
@@ -242,7 +242,7 @@ function ProjectDetailPage() {
             }
             createFile.mutate();
           }}
-          className="grid max-w-[720px] grid-cols-1 gap-5 border border-border p-7"
+          className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7"
         >
           <div>
             <label htmlFor="fname" className="mb-[6px] block text-sm text-muted-foreground">

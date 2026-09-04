@@ -24,7 +24,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 const fieldClass =
-  "w-full border border-border bg-paper-dim px-3 py-[11px] text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
+  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
 
 function AuthPage() {
   const navigate = useNavigate();
