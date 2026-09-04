@@ -131,12 +131,12 @@
 
 @utility veil {
   background:
-    radial-gradient(120% 90% at 50% 0%, transparent 20%, oklch(0.168 0.018 268 / 0.55) 75%),
+    radial-gradient(120% 90% at 50% 0%, transparent 30%, oklch(0.168 0.018 268 / 0.38) 80%),
     linear-gradient(
       180deg,
-      oklch(0.168 0.018 268 / 0.35) 0%,
-      oklch(0.168 0.018 268 / 0.62) 55%,
-      oklch(0.168 0.018 268 / 0.86) 100%
+      oklch(0.168 0.018 268 / 0.18) 0%,
+      oklch(0.168 0.018 268 / 0.4) 55%,
+      oklch(0.168 0.018 268 / 0.68) 100%
     );
 }
 
