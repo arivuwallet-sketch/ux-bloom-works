@@ -220,7 +220,7 @@ function ProjectsPage() {
                 params={{ projectId: project.id }}
                 className="grid grid-cols-1 gap-2 border-t border-border py-[22px] transition-colors hover:bg-paper-dim md:grid-cols-[1fr_200px_180px]"
               >
-                <div className="font-serif text-[21px] italic">{project.name}</div>
+                <div className="font-serif text-[25px] tracking-[0.05em]">{project.name}</div>
                 <div className="text-[15px] text-ink-soft">{project.product_type}</div>
                 <div className="text-[15px] text-muted-foreground">
                   {project.style_mode === "project"

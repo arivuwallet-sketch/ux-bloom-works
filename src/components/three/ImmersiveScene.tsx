@@ -3,10 +3,10 @@ import { Environment, Lightformer, Float } from "@react-three/drei";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
-const INK = "#0B0D14";
-const AMBER = "#E8B45A";
-const JADE = "#4FA98A";
-const ROSE = "#C97A6D";
+const INK = "#12102A";
+const AMBER = "#A78BFA";
+const JADE = "#4ADE80";
+const ROSE = "#7C6BF5";
 
 /** Floating glass slabs — abstract "screens" being revised. */
 function Slab({
@@ -101,7 +101,7 @@ function Rules() {
       {lines.map((l, i) => (
         <mesh key={i} position={[0, l.y, l.z]}>
           <planeGeometry args={[l.w, 0.012]} />
-          <meshBasicMaterial color="#F5F1E6" transparent opacity={l.o} depthWrite={false} />
+          <meshBasicMaterial color="#E7E4FF" transparent opacity={l.o} depthWrite={false} />
         </mesh>
       ))}
     </group>
@@ -136,13 +136,13 @@ export default function ImmersiveScene(props: GroupProps) {
       <color attach="background" args={[INK]} />
       <fog attach="fog" args={[INK, 12, 26]} />
       <ambientLight intensity={0.35} />
-      <directionalLight position={[6, 8, 6]} intensity={1.1} color="#FFF3DE" />
+      <directionalLight position={[6, 8, 6]} intensity={1.1} color="#EDE9FE" />
       <pointLight position={[-6, -3, 2]} intensity={18} color={JADE} distance={16} />
       <pointLight position={[7, 4, -2]} intensity={16} color={ROSE} distance={18} />
 
       <Suspense fallback={null}>
         <Environment resolution={128}>
-          <Lightformer intensity={2.4} position={[0, 6, 2]} scale={[12, 6, 1]} color="#FFF6E6" />
+          <Lightformer intensity={2.4} position={[0, 6, 2]} scale={[12, 6, 1]} color="#D9FBE7" />
           <Lightformer
             intensity={1.4}
             color={JADE}
@@ -162,10 +162,10 @@ export default function ImmersiveScene(props: GroupProps) {
         <Rig {...props}>
           <Rules />
           <Dust />
-          <Slab position={[-3.4, 1.1, 0]} rotation={[0.18, 0.5, -0.12]} scale={[3.1, 2, 1]} tint="#D9E6F2" />
-          <Slab position={[3.2, -0.7, -1.6]} rotation={[-0.2, -0.55, 0.1]} scale={[2.6, 3.4, 1]} tint="#EFE2CE" />
-          <Slab position={[0.4, 2.6, -3.2]} rotation={[0.1, 0.15, 0.28]} scale={[2.2, 1.4, 1]} tint="#CFE6DC" />
-          <Slab position={[-1.4, -2.7, -2.2]} rotation={[-0.12, 0.35, -0.3]} scale={[1.8, 1.2, 1]} tint="#F2D6CF" />
+          <Slab position={[-3.4, 1.1, 0]} rotation={[0.18, 0.5, -0.12]} scale={[3.1, 2, 1]} tint="#C9F5DD" />
+          <Slab position={[3.2, -0.7, -1.6]} rotation={[-0.2, -0.55, 0.1]} scale={[2.6, 3.4, 1]} tint="#D8CFFB" />
+          <Slab position={[0.4, 2.6, -3.2]} rotation={[0.1, 0.15, 0.28]} scale={[2.2, 1.4, 1]} tint="#BFEFD8" />
+          <Slab position={[-1.4, -2.7, -2.2]} rotation={[-0.12, 0.35, -0.3]} scale={[1.8, 1.2, 1]} tint="#CBD8FB" />
         </Rig>
       </Suspense>
     </Canvas>

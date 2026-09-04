@@ -16,7 +16,7 @@ export function PreviewGroups({ groups }: { groups: PreviewGroup[] }) {
       {groups.map((group) => (
         <div key={group.title}>
           <div className="mb-[22px] flex items-baseline justify-between border-b border-border pb-[10px]">
-            <h3 className="font-serif text-[22px] italic">{group.title}</h3>
+            <h3 className="font-serif text-[26px] tracking-[0.05em]">{group.title}</h3>
             <span className="text-[13px] text-muted-foreground">
               {group.items.length} {group.unit}
             </span>
