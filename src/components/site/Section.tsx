@@ -21,11 +21,11 @@ export function Section({
 export function SectionHeading({ label, title }: { label: string; title: string }) {
   return (
     <>
-      <div className="mb-3 flex items-center gap-3 text-[13px] tracking-[0.22em] text-amber uppercase">
+      <div className="mb-4 flex items-center gap-3 text-[12px] tracking-[0.34em] text-revision uppercase">
         <span className="inline-block h-px w-8 bg-amber/60" />
         {label}
       </div>
-      <h2 className="mb-12 max-w-[620px] text-[32px] sm:text-[40px]">{title}</h2>
+      <h2 className="mb-12 max-w-[18ch] text-[42px] leading-[0.92] sm:text-[64px]">{title}</h2>
     </>
   );
 }
@@ -38,7 +38,7 @@ export function ServiceRows({ items }: { items: { name: string; desc: string }[]
           key={item.name}
           className="group grid grid-cols-1 gap-2 border-t border-border/60 py-[26px] transition-colors md:grid-cols-[300px_1fr] md:gap-8 hover:bg-foreground/[0.03]"
         >
-          <div className="font-serif text-[24px] italic transition-colors group-hover:text-amber">
+          <div className="font-serif text-[30px] tracking-[0.04em] transition-colors group-hover:text-revision">
             {item.name}
           </div>
           <p className="max-w-[560px] text-[15.5px] text-ink-soft">{item.desc}</p>

@@ -107,7 +107,7 @@ function Index() {
       <Section>
         <SectionHeading
           label="What we revise"
-          title="Five kinds of interfaces, one review process."
+          title="Five kinds of interface. One brutal review."
         />
         <ServiceRows items={services} />
       </Section>
@@ -115,7 +115,7 @@ function Index() {
       <Section>
         <SectionHeading
           label="How a revision works"
-          title="Three passes. Nothing thrown out that doesn't need to be."
+          title="Three passes. Nothing wasted."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {processSteps.map((step) => (
@@ -131,7 +131,7 @@ function Index() {
       <Section>
         <SectionHeading
           label="Pick a direction"
-          title="A style directory, grouped by what they have in common."
+          title="Twenty-eight directions. Pick your weapon."
         />
         <PreviewGroups groups={styleGroups.slice(0, 2)} />
         <div className="mt-12">
@@ -142,12 +142,12 @@ function Index() {
       </Section>
 
       <Section last>
-        <SectionHeading label="Show markup" title="The same screen, before and after a revision." />
+        <SectionHeading label="Show markup" title="Same screen. Different century." />
         <BeforeAfter />
         <div className="mt-10">
           <Link
             to="/projects"
-            className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
+            className="glow-aurora bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
           >
             Upload a project
           </Link>
