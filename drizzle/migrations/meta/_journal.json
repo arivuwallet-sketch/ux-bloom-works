@@ -22,6 +22,13 @@
       "when": 1788328265342,
       "tag": "0002_project_files_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788493220193,
+      "tag": "0003_add_redesign_output_columns",
+      "breakpoints": true
     }
   ]
 }

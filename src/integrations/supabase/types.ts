@@ -57,6 +57,8 @@ export type Database = {
           id: string
           name: string
           project_id: string
+          redesign_error: string | null
+          redesigned_content: string | null
           size_bytes: number | null
           source: string
           status: string
@@ -71,6 +73,8 @@ export type Database = {
           id?: string
           name: string
           project_id: string
+          redesign_error?: string | null
+          redesigned_content?: string | null
           size_bytes?: number | null
           source?: string
           status?: string
@@ -85,6 +89,8 @@ export type Database = {
           id?: string
           name?: string
           project_id?: string
+          redesign_error?: string | null
+          redesigned_content?: string | null
           size_bytes?: number | null
           source?: string
           status?: string
@@ -110,6 +116,7 @@ export type Database = {
           name: string
           notes: string | null
           product_type: string
+          status: string
           style_mode: string
           target_style: string | null
           updated_at: string
@@ -121,6 +128,7 @@ export type Database = {
           name: string
           notes?: string | null
           product_type?: string
+          status?: string
           style_mode?: string
           target_style?: string | null
           updated_at?: string
@@ -132,6 +140,7 @@ export type Database = {
           name?: string
           notes?: string | null
           product_type?: string
+          status?: string
           style_mode?: string
           target_style?: string | null
           updated_at?: string
