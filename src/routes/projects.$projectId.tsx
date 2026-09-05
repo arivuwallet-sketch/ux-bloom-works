@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Section, SectionHeading } from "@/components/site/Section";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { allStyleNames } from "@/data/site";
+import { redesignNextFile, resetRedesign } from "@/lib/redesign.functions";
 
 export const Route = createFileRoute("/projects/$projectId")({
   head: () => ({
