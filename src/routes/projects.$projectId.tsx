@@ -408,7 +408,12 @@ function ProjectDetailPage() {
                     {file.size_bytes ? ` · ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
                   </div>
                 </div>
-                <div className="text-[14px] text-ink-soft">{file.status}</div>
+                <div className="text-[14px] text-ink-soft">
+                  {file.status}
+                  {file.redesign_error ? (
+                    <div className="text-[12px] text-destructive">{file.redesign_error}</div>
+                  ) : null}
+                </div>
                 <div>
                   {perFile ? (
                     <select
