@@ -39,8 +39,8 @@ function ProcessPage() {
           ))}
         </div>
         <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
-          Each revision is versioned like a manuscript. You can see what changed, why it changed,
-          and which audit finding it answers.
+          Every file is rewritten in place, so you can diff it against the original and see exactly
+          what changed — and what didn't.
         </p>
         <div className="mt-8">
           <Link
