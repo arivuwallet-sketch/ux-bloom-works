@@ -43,19 +43,19 @@ export type ProcessStep = { version: string; title: string; body: string };
 
 export const processSteps: ProcessStep[] = [
   {
-    version: "v1 — Audit",
-    title: "We mark up what's there",
-    body: "A heuristic review of your current product, screen by screen, flagged issue by issue — not a redesign yet, just the diagnosis.",
+    version: "01 — Upload",
+    title: "Drop the whole project in",
+    body: "Upload every file you want touched, or write new ones straight in the browser. Structure, names and logic stay exactly as they are.",
   },
   {
-    version: "v2 — Redesign",
-    title: "We rebuild against the audit",
-    body: "Screens revised one flow at a time, each change traceable back to a specific finding from v1.",
+    version: "02 — Pick a style",
+    title: "Choose the look",
+    body: "One direction for the whole project, or a different style per file. Twenty-eight to choose from.",
   },
   {
-    version: "v3 — Handoff",
-    title: "You ship it, or we do",
-    body: "Production-ready files and specs, or our team implements the revision directly in your codebase.",
+    version: "03 — Download",
+    title: "Take the finished files",
+    body: "Every file is redesigned in your chosen style, then handed back as one ZIP you can drop into your codebase.",
   },
 ];
 

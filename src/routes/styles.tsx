@@ -15,7 +15,7 @@ export const Route = createFileRoute("/styles")({
       { property: "og:title", content: "Style directory — UI design directions" },
       {
         property: "og:description",
-        content: "Pick a direction for your revision, from minimalism to neo-brutalism.",
+        content: "Pick a direction for your redesign, from minimalism to neo-brutalism.",
       },
     ],
   }),

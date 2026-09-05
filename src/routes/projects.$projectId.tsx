@@ -1,15 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Section, SectionHeading } from "@/components/site/Section";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { allStyleNames } from "@/data/site";
+import { redesignNextFile, resetRedesign } from "@/lib/redesign.functions";
 
 export const Route = createFileRoute("/projects/$projectId")({
   head: () => ({
     meta: [
-      { title: "Project files — Rezyn revision workspace" },
+      { title: "Project files — Rezyn redesign workspace" },
       {
         name: "description",
         content:
@@ -42,6 +44,12 @@ function ProjectDetailPage() {
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newStyle, setNewStyle] = useState<string>(allStyleNames[0] ?? "");
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [zipping, setZipping] = useState(false);
+  const runNext = useServerFn(redesignNextFile);
+  const runReset = useServerFn(resetRedesign);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -67,7 +75,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data, error: err } = await supabase
         .from("project_files")
-        .select("id, name, source, status, size_bytes, target_style, storage_path, content")
+        .select("id, name, source, status, size_bytes, target_style, storage_path, content, redesigned_content, redesign_error")
         .eq("project_id", projectId)
         .order("created_at", { ascending: true });
       if (err) throw err;
@@ -152,6 +160,69 @@ function ProjectDetailPage() {
     },
     onSuccess: invalidate,
   });
+
+  const startRedesign = async () => {
+    setError(null);
+    setRunning(true);
+    try {
+      for (let i = 0; i < 200; i += 1) {
+        const res = await runNext({ data: { projectId } });
+        await invalidate();
+        if (res.done) {
+          setProgress("All files redesigned.");
+          break;
+        }
+        const total = res.total;
+        setProgress(`Redesigned ${total - res.remaining} of ${total} — ${res.current}`);
+        if (res.remaining === 0) {
+          setProgress("All files redesigned.");
+          break;
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Redesign failed");
+    } finally {
+      setRunning(false);
+      await invalidate();
+    }
+  };
+
+  const restart = async () => {
+    setError(null);
+    setProgress(null);
+    try {
+      await runReset({ data: { projectId } });
+      await invalidate();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not reset");
+    }
+  };
+
+  const downloadZip = async () => {
+    setZipping(true);
+    setError(null);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const done = (files.data ?? []).filter((f) => f.redesigned_content);
+      for (const file of done) zip.file(file.name, file.redesigned_content ?? "");
+      if (done.length === 0) throw new Error("Nothing redesigned yet.");
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(project.data?.name ?? "project").replace(/[^a-z0-9-_]+/gi, "-")}-redesigned.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not build the ZIP");
+    } finally {
+      setZipping(false);
+    }
+  };
+
+  const doneCount = (files.data ?? []).filter((f) => f.status === "done").length;
+  const totalCount = files.data?.length ?? 0;
 
   if (loading || !user || project.isLoading) {
     return (
@@ -278,8 +349,47 @@ function ProjectDetailPage() {
         {error ? <p className="mt-4 text-[13px] text-destructive">{error}</p> : null}
       </Section>
 
+      <Section>
+        <SectionHeading label="Redesign" title="Run it. Then take the ZIP." />
+        <div className="glass max-w-[720px] p-7">
+          <p className="text-[15px] text-ink-soft">
+            {totalCount === 0
+              ? "Add some files first."
+              : `${doneCount} of ${totalCount} files redesigned.`}
+          </p>
+          {progress ? <p className="mt-3 text-[14px] text-revision">{progress}</p> : null}
+          <div className="mt-6 flex flex-wrap gap-4">
+            <button
+              type="button"
+              onClick={() => void startRedesign()}
+              disabled={running || totalCount === 0}
+              className={buttonClass}
+            >
+              {running ? "Redesigning…" : "Start redesign"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadZip()}
+              disabled={zipping || doneCount === 0}
+              className="glass px-[22px] py-[11px] text-[14.5px] font-medium text-foreground transition-colors hover:text-revision disabled:opacity-50"
+            >
+              {zipping ? "Packing…" : "Download ZIP"}
+            </button>
+            {doneCount > 0 ? (
+              <button
+                type="button"
+                onClick={() => void restart()}
+                className="text-[13px] text-muted-foreground underline"
+              >
+                Start over
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </Section>
+
       <Section last>
-        <SectionHeading label="Files" title="Everything queued for revision." />
+        <SectionHeading label="Files" title="Everything queued for redesign." />
         {files.isLoading ? (
           <p className="text-ink-soft">Loading…</p>
         ) : (files.data?.length ?? 0) === 0 ? (
@@ -298,7 +408,12 @@ function ProjectDetailPage() {
                     {file.size_bytes ? ` · ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
                   </div>
                 </div>
-                <div className="text-[14px] text-ink-soft">{file.status}</div>
+                <div className="text-[14px] text-ink-soft">
+                  {file.status}
+                  {file.redesign_error ? (
+                    <div className="text-[12px] text-destructive">{file.redesign_error}</div>
+                  ) : null}
+                </div>
                 <div>
                   {perFile ? (
                     <select

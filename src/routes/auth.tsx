@@ -11,12 +11,12 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in to upload your project files, pick a target style, and start a Rezyn interface revision.",
+          "Sign in to upload your project files, pick a design style, and download the redesigned project.",
       },
       { property: "og:title", content: "Sign in — Rezyn" },
       {
         property: "og:description",
-        content: "Access your Rezyn workspace to upload files and choose revision styles.",
+        content: "Access your Rezyn workspace to upload files and choose design styles.",
       },
     ],
   }),

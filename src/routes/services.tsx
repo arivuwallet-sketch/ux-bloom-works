@@ -9,7 +9,7 @@ export const Route = createFileRoute("/services")({
       {
         name: "description",
         content:
-          "Interface revisions for websites, web apps, mobile apps, SaaS products, and e-commerce stores — audit first, redesign second.",
+          "Full-project UI redesigns for websites, web apps, mobile apps, SaaS products, and e-commerce stores — upload first, download second.",
       },
       { property: "og:title", content: "Services — UI/UX upgrades for existing products" },
       {
@@ -27,13 +27,13 @@ function ServicesPage() {
     <main>
       <Section last>
         <SectionHeading
-          label="What we revise"
-          title="Five kinds of interfaces, one review process."
+          label="What we redesign"
+          title="Five kinds of interfaces, one redesign pipeline."
         />
         <ServiceRows items={services} />
         <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
-          Every engagement starts the same way: a marked-up audit of the product as it exists
-          today. Nothing gets thrown out that doesn't need to be.
+          Every project runs the same way: upload the files, pick a style, download the redesigned
+          project. Nothing gets thrown out that doesn't need to be.
         </p>
         <div className="mt-8 flex flex-wrap gap-[14px]">
           <Link

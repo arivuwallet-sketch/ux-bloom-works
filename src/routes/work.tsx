@@ -9,12 +9,12 @@ export const Route = createFileRoute("/work")({
       {
         name: "description",
         content:
-          "See what an interface revision changes: hierarchy, spacing, and how many things compete for attention — with the content left intact.",
+          "See what a redesign changes: hierarchy, spacing, and how many things compete for attention — with your content left intact.",
       },
       { property: "og:title", content: "Work — The same screen, before and after" },
       {
         property: "og:description",
-        content: "A marked-up look at what a Rezyn revision changes, and what it leaves alone.",
+        content: "A marked-up look at what a Rezyn redesign changes, and what it leaves alone.",
       },
     ],
   }),
@@ -25,7 +25,7 @@ function WorkPage() {
   return (
     <main>
       <Section last>
-        <SectionHeading label="Show markup" title="The same screen, before and after a revision." />
+        <SectionHeading label="Show markup" title="The same screen, before and after the redesign." />
         <BeforeAfter />
         <div className="mt-12 grid grid-cols-1 gap-8 border-t border-border pt-10 md:grid-cols-3">
           <div>
@@ -35,7 +35,7 @@ function WorkPage() {
             </p>
           </div>
           <div>
-            <div className="mb-2 text-sm font-semibold text-revision">Revised</div>
+            <div className="mb-2 text-sm font-semibold text-revision">Redesigned</div>
             <p className="text-[15px] text-ink-soft">
               Hierarchy, spacing, density, and the sequence people read the screen in.
             </p>

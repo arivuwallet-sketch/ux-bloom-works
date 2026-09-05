@@ -7,17 +7,17 @@ import { processSteps, services, styleGroups } from "@/data/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Rezyn — UI/UX revisions for products you already shipped" },
+      { title: "Rezyn — Upload your project, pick a style, download the redesign" },
       {
         name: "description",
         content:
-          "We audit and upgrade the interface you already have — website, web app, mobile app, SaaS product, or store — without starting from zero.",
+          "Upload your website, web app, mobile app, SaaS product or store files, choose a design style, and download every file redesigned as a ZIP.",
       },
-      { property: "og:title", content: "Rezyn — UI/UX revisions, not rebuilds" },
+      { property: "og:title", content: "Rezyn — Upload, pick a style, download the redesign" },
       {
         property: "og:description",
         content:
-          "Interface audits and redesigns for existing websites, web apps, mobile apps, SaaS products, and e-commerce stores.",
+          "Full-project UI redesigns for websites, web apps, mobile apps, SaaS products and e-commerce stores — delivered as a downloadable ZIP.",
       },
     ],
   }),
@@ -40,7 +40,7 @@ function Index() {
 
             <div className="glass relative z-10 inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
               <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
-              interface revision studio
+              full-project redesign studio
             </div>
 
             <h1 className="relative z-10 mt-7 max-w-[15ch] text-[16vw] leading-[0.86] sm:text-[11vw] lg:text-[9.2vw]">
@@ -51,20 +51,20 @@ function Index() {
 
             <div className="relative z-10 mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,46ch)_minmax(0,1fr)]">
               <p className="text-[19px] leading-[1.6] text-ink-soft">
-                We don't rebuild your product. We take the interface you already shipped — site,
-                web app, mobile app, SaaS, storefront — and revise it until it looks like it was
-                designed on purpose.
+                Upload your project — site, web app, mobile app, SaaS, storefront. Pick a design
+                style. Every file comes back redesigned in it, zipped and ready to ship. Your
+                structure and logic stay untouched.
               </p>
               <div className="glass ml-auto w-full max-w-[420px] p-7 lg:-mt-16 lg:rotate-[-1.4deg]">
                 <div className="text-[12px] tracking-[0.3em] text-violet uppercase">the deal</div>
                 <p className="mt-3 text-[16.5px] text-ink-soft">
-                  Upload the files. Pick a direction from 28 styles. Get every screen redrawn in
-                  it — structure kept, taste replaced.
+                  Upload the files. Pick a direction from 28 styles. Download the whole project
+                  redesigned — structure kept, taste replaced.
                 </p>
                 <div className="mt-6 grid grid-cols-3 gap-4 border-t border-border/60 pt-5 text-center">
                   {[
                     ["28", "styles"],
-                    ["3", "passes"],
+                    ["1", "zip"],
                     ["0", "rebuilds"],
                   ].map(([n, l]) => (
                     <div key={l}>
@@ -94,9 +94,9 @@ function Index() {
             </div>
 
             <div className="relative z-10 mt-14 flex flex-wrap gap-10 text-[12px] tracking-[0.26em] text-muted-foreground uppercase">
-              <span>v1 audit</span>
-              <span className="text-revision">v2 redesign</span>
-              <span>v3 handoff</span>
+              <span>upload</span>
+              <span className="text-revision">redesign</span>
+              <span>download zip</span>
             </div>
           </div>
         </div>
@@ -106,16 +106,16 @@ function Index() {
 
       <Section>
         <SectionHeading
-          label="What we revise"
-          title="Five kinds of interface. One brutal review."
+          label="What we redesign"
+          title="Five kinds of interface. One ruthless redesign."
         />
         <ServiceRows items={services} />
       </Section>
 
       <Section>
         <SectionHeading
-          label="How a revision works"
-          title="Three passes. Nothing wasted."
+          label="How it works"
+          title="Three steps. Nothing wasted."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {processSteps.map((step) => (

@@ -5,16 +5,16 @@ import { processSteps } from "@/data/site";
 export const Route = createFileRoute("/process")({
   head: () => ({
     meta: [
-      { title: "Process — Audit, redesign, handoff | Rezyn" },
+      { title: "Process — Upload, pick a style, download | Rezyn" },
       {
         name: "description",
         content:
-          "Three passes: a marked-up heuristic audit, a redesign traceable to each finding, then production-ready handoff or implementation.",
+          "Three steps: upload your project files, pick the design style, then download every file redesigned as a ZIP.",
       },
-      { property: "og:title", content: "Process — Audit, redesign, handoff" },
+      { property: "og:title", content: "Process — Upload, pick a style, download" },
       {
         property: "og:description",
-        content: "How a Rezyn interface revision works, one pass at a time.",
+        content: "How a Rezyn full-project redesign works, step by step.",
       },
     ],
   }),
@@ -26,7 +26,7 @@ function ProcessPage() {
     <main>
       <Section last>
         <SectionHeading
-          label="How a revision works"
+          label="How it works"
           title="Three passes. Nothing thrown out that doesn't need to be."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -39,8 +39,8 @@ function ProcessPage() {
           ))}
         </div>
         <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
-          Each revision is versioned like a manuscript. You can see what changed, why it changed,
-          and which audit finding it answers.
+          Every file is rewritten in place, so you can diff it against the original and see exactly
+          what changed — and what didn't.
         </p>
         <div className="mt-8">
           <Link
