@@ -75,7 +75,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data, error: err } = await supabase
         .from("project_files")
-        .select("id, name, source, status, size_bytes, target_style, storage_path, content")
+        .select("id, name, source, status, size_bytes, target_style, storage_path, content, redesigned_content, redesign_error")
         .eq("project_id", projectId)
         .order("created_at", { ascending: true });
       if (err) throw err;
