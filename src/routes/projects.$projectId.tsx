@@ -44,6 +44,12 @@ function ProjectDetailPage() {
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newStyle, setNewStyle] = useState<string>(allStyleNames[0] ?? "");
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [zipping, setZipping] = useState(false);
+  const runNext = useServerFn(redesignNextFile);
+  const runReset = useServerFn(resetRedesign);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
