@@ -161,6 +161,69 @@ function ProjectDetailPage() {
     onSuccess: invalidate,
   });
 
+  const startRedesign = async () => {
+    setError(null);
+    setRunning(true);
+    try {
+      for (let i = 0; i < 200; i += 1) {
+        const res = await runNext({ data: { projectId } });
+        await invalidate();
+        if (res.done) {
+          setProgress("All files redesigned.");
+          break;
+        }
+        const total = res.total;
+        setProgress(`Redesigned ${total - res.remaining} of ${total} — ${res.current}`);
+        if (res.remaining === 0) {
+          setProgress("All files redesigned.");
+          break;
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Redesign failed");
+    } finally {
+      setRunning(false);
+      await invalidate();
+    }
+  };
+
+  const restart = async () => {
+    setError(null);
+    setProgress(null);
+    try {
+      await runReset({ data: { projectId } });
+      await invalidate();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not reset");
+    }
+  };
+
+  const downloadZip = async () => {
+    setZipping(true);
+    setError(null);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const done = (files.data ?? []).filter((f) => f.redesigned_content);
+      for (const file of done) zip.file(file.name, file.redesigned_content ?? "");
+      if (done.length === 0) throw new Error("Nothing redesigned yet.");
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(project.data?.name ?? "project").replace(/[^a-z0-9-_]+/gi, "-")}-redesigned.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not build the ZIP");
+    } finally {
+      setZipping(false);
+    }
+  };
+
+  const doneCount = (files.data ?? []).filter((f) => f.status === "done").length;
+  const totalCount = files.data?.length ?? 0;
+
   if (loading || !user || project.isLoading) {
     return (
       <main>
