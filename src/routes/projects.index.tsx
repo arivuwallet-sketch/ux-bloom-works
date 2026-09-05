@@ -9,11 +9,11 @@ import { productTypes, allStyleNames } from "@/data/site";
 export const Route = createFileRoute("/projects/")({
   head: () => ({
     meta: [
-      { title: "Your projects — Rezyn revision workspace" },
+      { title: "Your projects — Rezyn redesign workspace" },
       {
         name: "description",
         content:
-          "Create a project, upload the files you want redesigned, and choose the target style for the revision.",
+          "Create a project, upload the files you want redesigned, and choose the design style.",
       },
       { property: "og:title", content: "Your projects — Rezyn" },
       {

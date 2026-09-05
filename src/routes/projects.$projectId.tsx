@@ -11,7 +11,7 @@ import { redesignNextFile, resetRedesign } from "@/lib/redesign.functions";
 export const Route = createFileRoute("/projects/$projectId")({
   head: () => ({
     meta: [
-      { title: "Project files — Rezyn revision workspace" },
+      { title: "Project files — Rezyn redesign workspace" },
       {
         name: "description",
         content:

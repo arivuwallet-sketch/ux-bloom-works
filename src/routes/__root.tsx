@@ -79,11 +79,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Rezyn — Interface revisions for products you already shipped" },
+      { title: "Rezyn — Full-project UI redesigns, delivered as a ZIP" },
       {
         name: "description",
         content:
-          "Rezyn audits and upgrades the UI/UX of existing websites, web apps, mobile apps, SaaS products, and stores.",
+          "Rezyn redesigns the UI/UX of existing websites, web apps, mobile apps, SaaS products, and stores — upload, pick a style, download.",
       },
       { name: "author", content: "Rezyn" },
       { property: "og:type", content: "website" },

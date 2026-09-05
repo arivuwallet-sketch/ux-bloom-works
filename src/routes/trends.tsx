@@ -33,7 +33,7 @@ function TrendsPage() {
         <PreviewGroups groups={trendGroups} />
         <div className="mt-12">
           <Link to="/work" className="text-[15px] underline underline-offset-4">
-            See a revision, before and after
+            See a redesign, before and after
           </Link>
         </div>
       </Section>

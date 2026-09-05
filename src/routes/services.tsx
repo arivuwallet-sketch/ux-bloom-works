@@ -9,7 +9,7 @@ export const Route = createFileRoute("/services")({
       {
         name: "description",
         content:
-          "Interface revisions for websites, web apps, mobile apps, SaaS products, and e-commerce stores — audit first, redesign second.",
+          "Full-project UI redesigns for websites, web apps, mobile apps, SaaS products, and e-commerce stores — upload first, download second.",
       },
       { property: "og:title", content: "Services — UI/UX upgrades for existing products" },
       {
