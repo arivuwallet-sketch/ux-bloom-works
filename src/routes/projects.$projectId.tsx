@@ -349,8 +349,47 @@ function ProjectDetailPage() {
         {error ? <p className="mt-4 text-[13px] text-destructive">{error}</p> : null}
       </Section>
 
+      <Section>
+        <SectionHeading label="Redesign" title="Run it. Then take the ZIP." />
+        <div className="glass max-w-[720px] p-7">
+          <p className="text-[15px] text-ink-soft">
+            {totalCount === 0
+              ? "Add some files first."
+              : `${doneCount} of ${totalCount} files redesigned.`}
+          </p>
+          {progress ? <p className="mt-3 text-[14px] text-revision">{progress}</p> : null}
+          <div className="mt-6 flex flex-wrap gap-4">
+            <button
+              type="button"
+              onClick={() => void startRedesign()}
+              disabled={running || totalCount === 0}
+              className={buttonClass}
+            >
+              {running ? "Redesigning…" : "Start redesign"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadZip()}
+              disabled={zipping || doneCount === 0}
+              className="glass px-[22px] py-[11px] text-[14.5px] font-medium text-foreground transition-colors hover:text-revision disabled:opacity-50"
+            >
+              {zipping ? "Packing…" : "Download ZIP"}
+            </button>
+            {doneCount > 0 ? (
+              <button
+                type="button"
+                onClick={() => void restart()}
+                className="text-[13px] text-muted-foreground underline"
+              >
+                Start over
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </Section>
+
       <Section last>
-        <SectionHeading label="Files" title="Everything queued for revision." />
+        <SectionHeading label="Files" title="Everything queued for redesign." />
         {files.isLoading ? (
           <p className="text-ink-soft">Loading…</p>
         ) : (files.data?.length ?? 0) === 0 ? (
