@@ -109,12 +109,28 @@ function Index() {
 
 
 
+      <div className="wrap">
+        <Ticker
+          items={[
+            "websites",
+            "web apps",
+            "mobile apps",
+            "saas products",
+            "storefronts",
+            "28 styles",
+            "one zip",
+          ]}
+        />
+      </div>
+
       <Section>
         <SectionHeading
           label="What we redesign"
           title="Five kinds of interface. One ruthless redesign."
         />
-        <ServiceRows items={services} />
+        <Reveal>
+          <ServiceRows items={services} />
+        </Reveal>
       </Section>
 
       <Section>
@@ -123,12 +139,14 @@ function Index() {
           title="Three steps. Nothing wasted."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {processSteps.map((step) => (
-            <div key={step.version} className="glass px-7 py-8 transition-colors hover:border-amber/40">
-              <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
-              <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
-              <p className="text-[15px] text-ink-soft">{step.body}</p>
-            </div>
+          {processSteps.map((step, i) => (
+            <Reveal key={step.version} delay={i * 0.09}>
+              <div className="glass h-full px-7 py-8 transition-colors hover:border-amber/40">
+                <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
+                <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
+                <p className="text-[15px] text-ink-soft">{step.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </Section>
