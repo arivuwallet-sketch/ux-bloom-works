@@ -6,13 +6,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 2px;
-  --radius-2xl: 4px;
-  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Bebas Neue", "Barlow", sans-serif;
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --font-sans: var(--font-body-active, "Barlow"), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display-active, "Bebas Neue"), "Barlow", sans-serif;
   --color-violet: var(--violet);
   --font-hand: "Caveat", cursive;
   --color-background: var(--background);
@@ -102,10 +102,10 @@
   h2,
   h3 {
     font-family: var(--font-serif);
-    font-weight: 400;
+    font-weight: 600;
     line-height: 0.92;
     letter-spacing: 0.005em;
-    text-transform: uppercase;
+    text-transform: var(--heading-transform, uppercase);
   }
 
   ::selection {
@@ -145,24 +145,149 @@
 }
 
 @utility grain {
-  opacity: 0.05;
+  opacity: var(--grain-opacity, 0.05);
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @utility glass {
+  --g: var(--glass-opacity, 0.07);
   background: linear-gradient(
     145deg,
-    oklch(1 0 0 / 0.07) 0%,
-    oklch(1 0 0 / 0.028) 45%,
-    oklch(1 0 0 / 0.012) 100%
+    oklch(1 0 0 / calc(var(--g))) 0%,
+    oklch(1 0 0 / calc(var(--g) * 0.4)) 45%,
+    oklch(1 0 0 / calc(var(--g) * 0.17)) 100%
   );
-  backdrop-filter: blur(16px) saturate(130%);
-  -webkit-backdrop-filter: blur(16px) saturate(130%);
-  border: 1px solid oklch(1 0 0 / 0.1);
+  backdrop-filter: blur(var(--glass-blur, 16px)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(130%);
+  border: 1px solid oklch(1 0 0 / var(--glass-border-opacity, 0.1));
+  border-radius: var(--radius, 0px);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.09),
     0 22px 48px -24px oklch(0 0 0 / 0.75);
+}
+
+.brutalist .glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--paper-dim);
+  border: 2px solid var(--foreground);
+  box-shadow: 6px 6px 0 0 var(--primary);
+}
+
+.custom-cursor,
+.custom-cursor a,
+.custom-cursor button {
+  cursor: none;
+}
+
+.studio-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  height: 18px;
+  width: 18px;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: oklch(from var(--primary) l c h / 0.22);
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    height 0.2s ease,
+    width 0.2s ease,
+    background 0.2s ease;
+}
+
+.custom-cursor .studio-cursor {
+  opacity: 1;
+}
+
+.studio-cursor.is-active {
+  height: 42px;
+  width: 42px;
+  background: oklch(from var(--primary) l c h / 0.12);
+}
+
+@media (pointer: coarse) {
+  .studio-cursor {
+    display: none;
+  }
+  .custom-cursor,
+  .custom-cursor a,
+  .custom-cursor button {
+    cursor: auto;
+  }
+}
+
+.split-char {
+  display: inline-block;
+  animation: split-rise calc(0.7s / var(--motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes split-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5em) rotate(6deg);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity calc(0.7s / var(--motion-scale, 1)) ease,
+    transform calc(0.7s / var(--motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.ticker {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-track {
+  display: inline-flex;
+  animation: ticker-slide 26s linear infinite;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+@keyframes ticker-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-char,
+  .ticker-track {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @utility glow-amber {

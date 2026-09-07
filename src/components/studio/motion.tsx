@@ -4,11 +4,14 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 export function SplitText({
   text,
   className = "",
+  charClassName = "",
   delay = 0,
   stagger = 0.028,
 }: {
   text: string;
   className?: string;
+  /** Applied to each character — use for gradient/outline text effects. */
+  charClassName?: string;
   delay?: number;
   stagger?: number;
 }) {
@@ -18,7 +21,7 @@ export function SplitText({
         <span
           key={`${char}-${i}`}
           aria-hidden
-          className="split-char"
+          className={`split-char ${charClassName}`}
           style={{ animationDelay: `${delay + i * stagger}s` }}
         >
           {char === " " ? "\u00A0" : char}

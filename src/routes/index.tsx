@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Magnetic, Reveal, SplitText, Ticker } from "@/components/studio/motion";
 import { Section, SectionHeading, ServiceRows } from "@/components/site/Section";
 import { PreviewGroups } from "@/components/site/PreviewTile";
 import { BeforeAfter } from "@/components/site/BeforeAfter";
@@ -44,9 +45,19 @@ function Index() {
             </div>
 
             <h1 className="relative z-10 mt-7 max-w-[15ch] text-[16vw] leading-[0.86] sm:text-[11vw] lg:text-[9.2vw]">
-              <span className="block">Good enough</span>
-              <span className="aurora-text block">is a design</span>
-              <span className="outline-text block">problem.</span>
+              <SplitText text="Good enough" className="block" delay={0.05} />
+              <SplitText
+                text="is a design"
+                className="block"
+                charClassName="aurora-text"
+                delay={0.3}
+              />
+              <SplitText
+                text="problem."
+                className="block"
+                charClassName="outline-text"
+                delay={0.6}
+              />
             </h1>
 
             <div className="relative z-10 mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,46ch)_minmax(0,1fr)]">
@@ -79,18 +90,22 @@ function Index() {
             </div>
 
             <div className="relative z-10 mt-12 flex flex-wrap items-center gap-[14px]">
-              <Link
-                to="/projects"
-                className="glow-aurora bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-              >
-                Upload a project
-              </Link>
-              <Link
-                to="/process"
-                className="glass px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-foreground uppercase transition-colors hover:text-revision"
-              >
-                See the process
-              </Link>
+              <Magnetic>
+                <Link
+                  to="/projects"
+                  className="glow-aurora inline-block bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
+                >
+                  Upload a project
+                </Link>
+              </Magnetic>
+              <Magnetic>
+                <Link
+                  to="/process"
+                  className="glass inline-block px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-foreground uppercase transition-colors hover:text-revision"
+                >
+                  See the process
+                </Link>
+              </Magnetic>
             </div>
 
             <div className="relative z-10 mt-14 flex flex-wrap gap-10 text-[12px] tracking-[0.26em] text-muted-foreground uppercase">
@@ -104,12 +119,28 @@ function Index() {
 
 
 
+      <div className="wrap">
+        <Ticker
+          items={[
+            "websites",
+            "web apps",
+            "mobile apps",
+            "saas products",
+            "storefronts",
+            "28 styles",
+            "one zip",
+          ]}
+        />
+      </div>
+
       <Section>
         <SectionHeading
           label="What we redesign"
           title="Five kinds of interface. One ruthless redesign."
         />
-        <ServiceRows items={services} />
+        <Reveal>
+          <ServiceRows items={services} />
+        </Reveal>
       </Section>
 
       <Section>
@@ -118,12 +149,14 @@ function Index() {
           title="Three steps. Nothing wasted."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {processSteps.map((step) => (
-            <div key={step.version} className="glass px-7 py-8 transition-colors hover:border-amber/40">
-              <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
-              <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
-              <p className="text-[15px] text-ink-soft">{step.body}</p>
-            </div>
+          {processSteps.map((step, i) => (
+            <Reveal key={step.version} delay={i * 0.09}>
+              <div className="glass h-full px-7 py-8 transition-colors hover:border-amber/40">
+                <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
+                <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
+                <p className="text-[15px] text-ink-soft">{step.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </Section>
