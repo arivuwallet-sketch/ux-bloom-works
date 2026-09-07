@@ -6,13 +6,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 2px;
-  --radius-2xl: 4px;
-  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Bebas Neue", "Barlow", sans-serif;
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --font-sans: var(--font-body-active, "Barlow"), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display-active, "Bebas Neue"), "Barlow", sans-serif;
   --color-violet: var(--violet);
   --font-hand: "Caveat", cursive;
   --color-background: var(--background);
