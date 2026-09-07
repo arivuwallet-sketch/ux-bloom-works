@@ -102,10 +102,10 @@
   h2,
   h3 {
     font-family: var(--font-serif);
-    font-weight: 400;
+    font-weight: 600;
     line-height: 0.92;
     letter-spacing: 0.005em;
-    text-transform: uppercase;
+    text-transform: var(--heading-transform, uppercase);
   }
 
   ::selection {
