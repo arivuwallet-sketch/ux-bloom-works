@@ -45,9 +45,9 @@ function Index() {
             </div>
 
             <h1 className="relative z-10 mt-7 max-w-[15ch] text-[16vw] leading-[0.86] sm:text-[11vw] lg:text-[9.2vw]">
-              <span className="block">Good enough</span>
-              <span className="aurora-text block">is a design</span>
-              <span className="outline-text block">problem.</span>
+              <SplitText text="Good enough" className="block" delay={0.05} />
+              <SplitText text="is a design" className="aurora-text block" delay={0.3} />
+              <SplitText text="problem." className="outline-text block" delay={0.6} />
             </h1>
 
             <div className="relative z-10 mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,46ch)_minmax(0,1fr)]">
