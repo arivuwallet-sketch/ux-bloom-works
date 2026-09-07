@@ -13,6 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header, Footer } from "@/components/site/Header";
 import { ImmersiveBackground } from "@/components/site/ImmersiveBackground";
+import { StudioProvider } from "@/components/studio/StudioProvider";
+import { VisualCustomizer } from "@/components/studio/VisualCustomizer";
+import { StudioCursor } from "@/components/studio/motion";
 
 function NotFoundComponent() {
   return (
