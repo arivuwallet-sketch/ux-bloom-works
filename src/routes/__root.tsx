@@ -128,11 +128,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ImmersiveBackground />
-      <Header />
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Footer />
+      <StudioProvider>
+        <ImmersiveBackground />
+        <Header />
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <Footer />
+        <VisualCustomizer />
+        <StudioCursor />
+      </StudioProvider>
     </QueryClientProvider>
   );
 }
