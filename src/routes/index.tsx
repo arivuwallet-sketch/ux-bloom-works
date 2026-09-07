@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Magnetic, Reveal, SplitText, Ticker } from "@/components/studio/motion";
 import { Section, SectionHeading, ServiceRows } from "@/components/site/Section";
 import { PreviewGroups } from "@/components/site/PreviewTile";
 import { BeforeAfter } from "@/components/site/BeforeAfter";
