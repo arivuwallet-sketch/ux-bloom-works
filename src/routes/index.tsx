@@ -80,18 +80,22 @@ function Index() {
             </div>
 
             <div className="relative z-10 mt-12 flex flex-wrap items-center gap-[14px]">
-              <Link
-                to="/projects"
-                className="glow-aurora bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-              >
-                Upload a project
-              </Link>
-              <Link
-                to="/process"
-                className="glass px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-foreground uppercase transition-colors hover:text-revision"
-              >
-                See the process
-              </Link>
+              <Magnetic>
+                <Link
+                  to="/projects"
+                  className="glow-aurora inline-block bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
+                >
+                  Upload a project
+                </Link>
+              </Magnetic>
+              <Magnetic>
+                <Link
+                  to="/process"
+                  className="glass inline-block px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-foreground uppercase transition-colors hover:text-revision"
+                >
+                  See the process
+                </Link>
+              </Magnetic>
             </div>
 
             <div className="relative z-10 mt-14 flex flex-wrap gap-10 text-[12px] tracking-[0.26em] text-muted-foreground uppercase">
