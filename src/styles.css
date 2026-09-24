@@ -363,3 +363,368 @@
     animation: none;
   }
 }
+
+/* =========================================================
+   Immersive UI system — form fields, badges, progress,
+   mobile nav, cursor spotlight, before/after showcase.
+   ========================================================= */
+
+@utility field {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: oklch(1 0 0 / 0.04);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--foreground);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.field::placeholder {
+  color: var(--muted-foreground);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--revision);
+  background: oklch(1 0 0 / 0.06);
+  box-shadow: 0 0 0 3px oklch(from var(--revision) l c h / 0.18);
+}
+
+.field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+select.field {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%),
+    linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+  background-position:
+    calc(100% - 21px) center,
+    calc(100% - 16px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 42px;
+}
+
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 44px 20px;
+  border: 1.5px dashed var(--border);
+  background: oklch(1 0 0 / 0.02);
+  text-align: center;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.dropzone.is-over,
+.dropzone:hover,
+.dropzone:focus-within {
+  border-color: var(--revision);
+  background: oklch(1 0 0 / 0.045);
+}
+
+.dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: "";
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.badge-active {
+  color: var(--amber);
+  border-color: oklch(from var(--amber) l c h / 0.4);
+}
+
+.badge-active::before {
+  box-shadow: 0 0 8px var(--amber);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+.badge-done {
+  color: var(--revision);
+  border-color: oklch(from var(--revision) l c h / 0.4);
+}
+
+.badge-error {
+  color: var(--destructive);
+  border-color: oklch(from var(--destructive) l c h / 0.4);
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.progress-track {
+  position: relative;
+  height: 6px;
+  width: 100%;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--revision), var(--violet));
+  box-shadow: 0 0 12px oklch(from var(--revision) l c h / 0.6);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+}
+
+.menu-panel a {
+  padding: 13px 14px;
+  font-size: 15.5px;
+  color: var(--ink-soft);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.menu-panel a:hover,
+.menu-panel a.is-active {
+  background: oklch(1 0 0 / 0.045);
+  color: var(--revision);
+}
+
+.cursor-spotlight {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    620px circle at var(--mx, 50%) var(--my, 18%),
+    oklch(0.84 0.19 152 / 0.12),
+    transparent 60%
+  );
+}
+
+.cursor-spotlight.is-active {
+  opacity: 1;
+}
+
+@media (pointer: coarse) {
+  .cursor-spotlight {
+    display: none;
+  }
+}
+
+/* ---------- Before / after showcase ---------- */
+
+.mock-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--paper-dim);
+  overflow: hidden;
+  transition:
+    background-color 0.6s ease,
+    border-color 0.6s ease,
+    padding 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mock-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  background:
+    radial-gradient(120% 90% at 12% 0%, oklch(0.84 0.19 152 / 0.16), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, oklch(0.75 0.16 295 / 0.14), transparent 55%);
+}
+
+.mock-block {
+  background: oklch(0.55 0.02 90 / 0.4);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mock-nav {
+  height: 22px;
+  width: 58%;
+}
+
+.mock-hero {
+  height: 64px;
+  width: 100%;
+}
+
+.mock-line {
+  height: 10px;
+}
+
+.mock-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.mock-card {
+  flex: 1;
+  height: 72px;
+}
+
+.mock-before {
+  gap: 9px;
+  padding: 18px;
+  background: #e7e2d2;
+  border-color: #c9c2ac;
+}
+
+.mock-before .mock-block {
+  background: #8b8672;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.22);
+}
+
+.mock-before .mock-hero {
+  height: 56px;
+}
+
+.mock-before .mock-row {
+  gap: 5px;
+}
+
+.mock-after {
+  padding: 30px;
+  gap: 18px;
+  border-color: oklch(0.84 0.19 152 / 0.35);
+}
+
+.mock-after::before {
+  opacity: 1;
+}
+
+.mock-after .mock-block {
+  background: linear-gradient(145deg, oklch(1 0 0 / 0.1), oklch(1 0 0 / 0.02));
+  border: 1px solid oklch(1 0 0 / 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 14px 30px -18px oklch(0 0 0 / 0.6);
+}
+
+.mock-after .mock-nav {
+  width: 30%;
+  height: 30px;
+}
+
+.mock-after .mock-hero {
+  height: 100px;
+}
+
+.mock-after .mock-row {
+  gap: 16px;
+}
+
+.mock-after .mock-card {
+  cursor: default;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+
+.mock-after .mock-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 34px -16px oklch(0 0 0 / 0.7);
+}
+
+.switch {
+  position: relative;
+  flex: none;
+  height: 26px;
+  width: 46px;
+  border: 1px solid var(--border);
+  background: oklch(1 0 0 / 0.05);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  height: 18px;
+  width: 18px;
+  background: var(--ink-soft);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease;
+}
+
+.switch.on {
+  border-color: var(--revision);
+  background: oklch(from var(--revision) l c h / 0.16);
+}
+
+.switch.on::after {
+  transform: translateX(20px);
+  background: var(--revision);
+  box-shadow: 0 0 10px var(--revision);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-active::before {
+    animation: none;
+  }
+  .mock-block,
+  .mock-frame {
+    transition: none;
+  }
+}

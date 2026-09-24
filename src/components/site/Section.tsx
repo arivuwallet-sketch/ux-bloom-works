@@ -33,11 +33,18 @@ export function SectionHeading({ label, title }: { label: string; title: string 
 export function ServiceRows({ items }: { items: { name: string; desc: string }[] }) {
   return (
     <div className="border-b border-border/60">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <div
           key={item.name}
-          className="group grid grid-cols-1 gap-2 border-t border-border/60 py-[26px] transition-colors md:grid-cols-[300px_1fr] md:gap-8 hover:bg-foreground/[0.03]"
+          className="group relative grid grid-cols-1 gap-2 overflow-hidden border-t border-border/60 py-[26px] pl-0 transition-all duration-300 md:grid-cols-[44px_260px_1fr] md:gap-8 md:pl-2 hover:bg-foreground/[0.03] hover:pl-4"
         >
+          <span
+            aria-hidden
+            className="absolute top-0 left-0 h-full w-[2px] scale-y-0 bg-revision opacity-0 shadow-[0_0_14px_var(--revision)] transition-all duration-300 group-hover:scale-y-100 group-hover:opacity-100"
+          />
+          <div className="hidden text-[13px] text-muted-foreground md:block">
+            0{i + 1}
+          </div>
           <div className="font-serif text-[30px] tracking-[0.04em] transition-colors group-hover:text-revision">
             {item.name}
           </div>

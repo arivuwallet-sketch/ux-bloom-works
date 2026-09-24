@@ -4,7 +4,7 @@ import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 const INK = "#12102A";
-const AMBER = "#A78BFA";
+const VIOLET = "#A78BFA";
 const JADE = "#4ADE80";
 const ROSE = "#7C6BF5";
 
@@ -41,7 +41,50 @@ function Slab({
   );
 }
 
-function Dust({ count = 700 }: { count?: number }) {
+/** Central wireframe core — the "product" the redesign orbits around. */
+function Core() {
+  const inner = useRef<THREE.Mesh>(null);
+  const outer = useRef<THREE.Mesh>(null);
+  useFrame((state, delta) => {
+    const dt = Math.min(delta, 0.05);
+    if (inner.current) {
+      inner.current.rotation.y += dt * 0.18;
+      inner.current.rotation.x += dt * 0.07;
+    }
+    if (outer.current) {
+      outer.current.rotation.y -= dt * 0.05;
+      outer.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.2) * 0.12;
+    }
+  });
+  return (
+    <group position={[0.6, -0.1, -4.5]}>
+      <mesh ref={outer}>
+        <icosahedronGeometry args={[2.1, 1]} />
+        <meshBasicMaterial color={JADE} wireframe transparent opacity={0.16} />
+      </mesh>
+      <mesh ref={inner} scale={0.62}>
+        <icosahedronGeometry args={[2.1, 0]} />
+        <meshBasicMaterial color={ROSE} wireframe transparent opacity={0.28} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Slow orbital ring — grounds the composition and reads as motion at rest. */
+function OrbitRing() {
+  const ref = useRef<THREE.Mesh>(null);
+  useFrame((state, delta) => {
+    if (ref.current) ref.current.rotation.z += Math.min(delta, 0.05) * 0.06;
+  });
+  return (
+    <mesh ref={ref} position={[-2.2, -1.4, -6]} rotation={[1.35, 0.2, 0]}>
+      <torusGeometry args={[4.4, 0.006, 8, 120]} />
+      <meshBasicMaterial color={VIOLET} transparent opacity={0.35} />
+    </mesh>
+  );
+}
+
+function Dust({ count = 800 }: { count?: number }) {
   const ref = useRef<THREE.Points>(null);
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
@@ -68,7 +111,7 @@ function Dust({ count = 700 }: { count?: number }) {
       </bufferGeometry>
       <pointsMaterial
         size={0.045}
-        color={AMBER}
+        color={VIOLET}
         transparent
         opacity={0.7}
         sizeAttenuation
@@ -162,6 +205,8 @@ export default function ImmersiveScene(props: GroupProps) {
         <Rig {...props}>
           <Rules />
           <Dust />
+          <Core />
+          <OrbitRing />
           <Slab position={[-3.4, 1.1, 0]} rotation={[0.18, 0.5, -0.12]} scale={[3.1, 2, 1]} tint="#C9F5DD" />
           <Slab position={[3.2, -0.7, -1.6]} rotation={[-0.2, -0.55, 0.1]} scale={[2.6, 3.4, 1]} tint="#D8CFFB" />
           <Slab position={[0.4, 2.6, -3.2]} rotation={[0.1, 0.15, 0.28]} scale={[2.2, 1.4, 1]} tint="#BFEFD8" />

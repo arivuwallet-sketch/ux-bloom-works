@@ -23,9 +23,18 @@ export function PreviewGroups({ groups }: { groups: PreviewGroup[] }) {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {group.items.map((item) => (
-              <div key={item.name} className="glass p-[14px] transition-transform duration-300 hover:-translate-y-1">
-                <PreviewTile preview={item.preview} />
-                <div className="mb-1 text-[14.5px] font-semibold">{item.name}</div>
+              <div
+                key={item.name}
+                className="glass group p-[14px] transition-all duration-300 hover:-translate-y-1.5 hover:border-revision/50 hover:shadow-[0_18px_40px_-18px_var(--revision)]"
+              >
+                <div className="overflow-hidden">
+                  <div className="transition-transform duration-500 group-hover:scale-[1.04]">
+                    <PreviewTile preview={item.preview} />
+                  </div>
+                </div>
+                <div className="mb-1 text-[14.5px] font-semibold transition-colors group-hover:text-revision">
+                  {item.name}
+                </div>
                 <p className="min-h-[34px] text-[12.5px] leading-[1.45] text-muted-foreground">
                   {item.desc}
                 </p>

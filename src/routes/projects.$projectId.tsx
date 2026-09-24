@@ -2,6 +2,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import {
+  CheckCircle2,
+  Clock,
+  Download,
+  Loader2,
+  RotateCcw,
+  Sparkles,
+  Trash2,
+  UploadCloud,
+  XCircle,
+} from "lucide-react";
+import { Reveal } from "@/components/studio/motion";
 import { Section, SectionHeading } from "@/components/site/Section";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,11 +39,16 @@ export const Route = createFileRoute("/projects/$projectId")({
   component: ProjectDetailPage,
 });
 
-const fieldClass =
-  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
-
 const buttonClass =
-  "border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60";
+  "inline-flex items-center gap-2 border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60";
+
+const statusBadge: Record<string, { label: string; cls: string; icon: typeof Clock }> = {
+  queued: { label: "Queued", cls: "", icon: Clock },
+  redesigning: { label: "Redesigning", cls: "badge-active", icon: Loader2 },
+  done: { label: "Done", cls: "badge-done", icon: CheckCircle2 },
+  failed: { label: "Failed", cls: "badge-error", icon: XCircle },
+  skipped: { label: "Skipped", cls: "", icon: XCircle },
+};
 
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
@@ -223,6 +240,7 @@ function ProjectDetailPage() {
 
   const doneCount = (files.data ?? []).filter((f) => f.status === "done").length;
   const totalCount = files.data?.length ?? 0;
+  const progressPct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
 
   if (loading || !user || project.isLoading) {
     return (
@@ -268,124 +286,145 @@ function ProjectDetailPage() {
 
       <Section>
         <SectionHeading label="Upload" title="Hand over the files we should redesign." />
-        <div className="glass max-w-[720px] p-7">
-          {perFile ? (
-            <div className="mb-5">
-              <label htmlFor="upstyle" className="mb-[6px] block text-sm text-muted-foreground">
-                Target style for these uploads
-              </label>
-              <select
-                id="upstyle"
-                value={newStyle}
-                onChange={(e) => setNewStyle(e.target.value)}
-                className={fieldClass}
-              >
-                {allStyleNames.map((style) => (
-                  <option key={style} value={style}>
-                    {style}
-                  </option>
-                ))}
-              </select>
+        <Reveal>
+          <div className="glass max-w-[720px] p-7">
+            {perFile ? (
+              <div className="mb-5">
+                <label htmlFor="upstyle" className="mb-[6px] block text-sm text-muted-foreground">
+                  Target style for these uploads
+                </label>
+                <select
+                  id="upstyle"
+                  value={newStyle}
+                  onChange={(e) => setNewStyle(e.target.value)}
+                  className="field"
+                >
+                  {allStyleNames.map((style) => (
+                    <option key={style} value={style}>
+                      {style}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+            <div className="dropzone">
+              <UploadCloud className="h-6 w-6 text-muted-foreground" aria-hidden />
+              <p className="text-[15px]">
+                {uploading ? "Uploading…" : "Drop files here, or click to browse"}
+              </p>
+              <p className="text-[13px] text-muted-foreground">Up to 20MB per file.</p>
+              <input
+                ref={fileInput}
+                type="file"
+                multiple
+                onChange={(e) => void uploadFiles(e.target.files)}
+                aria-label="Upload files"
+              />
             </div>
-          ) : null}
-          <input
-            ref={fileInput}
-            type="file"
-            multiple
-            onChange={(e) => void uploadFiles(e.target.files)}
-            className="block w-full text-[15px]"
-          />
-          <p className="mt-3 text-[13px] text-muted-foreground">
-            {uploading ? "Uploading…" : "Up to 20MB per file."}
-          </p>
-        </div>
+          </div>
+        </Reveal>
       </Section>
 
       <Section>
         <SectionHeading label="New file" title="Or write one here." />
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setError(null);
-            if (newName.trim().length < 1) {
-              setError("Give the file a name.");
-              return;
-            }
-            createFile.mutate();
-          }}
-          className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7"
-        >
-          <div>
-            <label htmlFor="fname" className="mb-[6px] block text-sm text-muted-foreground">
-              File name
-            </label>
-            <input
-              id="fname"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className={fieldClass}
-              placeholder="landing-page.html"
-            />
-          </div>
-          <div>
-            <label htmlFor="fbody" className="mb-[6px] block text-sm text-muted-foreground">
-              Contents
-            </label>
-            <textarea
-              id="fbody"
-              rows={12}
-              value={newContent}
-              onChange={(e) => setNewContent(e.target.value)}
-              className={`${fieldClass} resize-y font-mono text-[13.5px]`}
-              spellCheck={false}
-            />
-          </div>
-          <div>
-            <button type="submit" disabled={createFile.isPending} className={buttonClass}>
-              {createFile.isPending ? "Saving…" : "Create file"}
-            </button>
-          </div>
-        </form>
+        <Reveal>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setError(null);
+              if (newName.trim().length < 1) {
+                setError("Give the file a name.");
+                return;
+              }
+              createFile.mutate();
+            }}
+            className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7"
+          >
+            <div>
+              <label htmlFor="fname" className="mb-[6px] block text-sm text-muted-foreground">
+                File name
+              </label>
+              <input
+                id="fname"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="field"
+                placeholder="landing-page.html"
+              />
+            </div>
+            <div>
+              <label htmlFor="fbody" className="mb-[6px] block text-sm text-muted-foreground">
+                Contents
+              </label>
+              <textarea
+                id="fbody"
+                rows={12}
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                className="field resize-y font-mono text-[13.5px]"
+                spellCheck={false}
+              />
+            </div>
+            <div>
+              <button type="submit" disabled={createFile.isPending} className={buttonClass}>
+                {createFile.isPending ? "Saving…" : "Create file"}
+              </button>
+            </div>
+          </form>
+        </Reveal>
         {error ? <p className="mt-4 text-[13px] text-destructive">{error}</p> : null}
       </Section>
 
       <Section>
         <SectionHeading label="Redesign" title="Run it. Then take the ZIP." />
-        <div className="glass max-w-[720px] p-7">
-          <p className="text-[15px] text-ink-soft">
-            {totalCount === 0
-              ? "Add some files first."
-              : `${doneCount} of ${totalCount} files redesigned.`}
-          </p>
-          {progress ? <p className="mt-3 text-[14px] text-revision">{progress}</p> : null}
-          <div className="mt-6 flex flex-wrap gap-4">
-            <button
-              type="button"
-              onClick={() => void startRedesign()}
-              disabled={running || totalCount === 0}
-              className={buttonClass}
-            >
-              {running ? "Redesigning…" : "Start redesign"}
-            </button>
-            <button
-              type="button"
-              onClick={() => void downloadZip()}
-              disabled={zipping || doneCount === 0}
-              className="glass px-[22px] py-[11px] text-[14.5px] font-medium text-foreground transition-colors hover:text-revision disabled:opacity-50"
-            >
-              {zipping ? "Packing…" : "Download ZIP"}
-            </button>
-            {doneCount > 0 ? (
+        <Reveal>
+          <div className="glass max-w-[720px] p-7">
+            <p className="text-[15px] text-ink-soft">
+              {totalCount === 0
+                ? "Add some files first."
+                : `${doneCount} of ${totalCount} files redesigned.`}
+            </p>
+            {totalCount > 0 ? (
+              <div className="progress-track mt-4">
+                <div className="progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
+            ) : null}
+            {progress ? <p className="mt-3 text-[14px] text-revision">{progress}</p> : null}
+            <div className="mt-6 flex flex-wrap gap-4">
               <button
                 type="button"
-                onClick={() => void restart()}
-                className="text-[13px] text-muted-foreground underline"
+                onClick={() => void startRedesign()}
+                disabled={running || totalCount === 0}
+                className="glow-aurora inline-flex items-center gap-2 bg-revision px-[22px] py-[11px] text-[14.5px] font-semibold tracking-[0.04em] text-primary-foreground uppercase transition-transform hover:scale-[1.02] disabled:scale-100 disabled:opacity-60"
               >
-                Start over
+                {running ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {running ? "Redesigning…" : "Start redesign"}
               </button>
-            ) : null}
+              <button
+                type="button"
+                onClick={() => void downloadZip()}
+                disabled={zipping || doneCount === 0}
+                className="glass inline-flex items-center gap-2 px-[22px] py-[11px] text-[14.5px] font-medium text-foreground transition-colors hover:text-revision disabled:opacity-50"
+              >
+                <Download className="h-4 w-4" />
+                {zipping ? "Packing…" : "Download ZIP"}
+              </button>
+              {doneCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => void restart()}
+                  className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground underline hover:text-foreground"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> Start over
+                </button>
+              ) : null}
+            </div>
           </div>
-        </div>
+        </Reveal>
       </Section>
 
       <Section last>
@@ -396,60 +435,68 @@ function ProjectDetailPage() {
           <p className="text-ink-soft">No files yet — upload or create one above.</p>
         ) : (
           <div className="border-b border-border">
-            {files.data?.map((file) => (
-              <div
-                key={file.id}
-                className="grid grid-cols-1 items-center gap-3 border-t border-border py-[18px] md:grid-cols-[1fr_140px_220px_90px]"
-              >
-                <div>
-                  <div className="text-[16px]">{file.name}</div>
-                  <div className="text-[13px] text-muted-foreground">
-                    {file.source === "upload" ? "Uploaded" : "Created here"}
-                    {file.size_bytes ? ` · ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
+            {files.data?.map((file) => {
+              const st = statusBadge[file.status] ?? statusBadge["queued"]!;
+              const StatusIcon = st.icon;
+              return (
+                <div
+                  key={file.id}
+                  className="grid grid-cols-1 items-center gap-3 border-t border-border py-[18px] md:grid-cols-[1fr_150px_220px_36px]"
+                >
+                  <div>
+                    <div className="text-[16px]">{file.name}</div>
+                    <div className="text-[13px] text-muted-foreground">
+                      {file.source === "upload" ? "Uploaded" : "Created here"}
+                      {file.size_bytes ? ` · ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
+                    </div>
+                  </div>
+                  <div>
+                    <span className={`badge ${st.cls}`}>
+                      <StatusIcon className={`h-3 w-3 ${file.status === "redesigning" ? "animate-spin" : ""}`} />
+                      {st.label}
+                    </span>
+                    {file.redesign_error ? (
+                      <div className="mt-1 text-[12px] text-destructive">{file.redesign_error}</div>
+                    ) : null}
+                  </div>
+                  <div>
+                    {perFile ? (
+                      <select
+                        value={file.target_style ?? ""}
+                        onChange={(e) =>
+                          setFileStyle.mutate({ id: file.id, style: e.target.value })
+                        }
+                        className="field"
+                        aria-label={`Target style for ${file.name}`}
+                      >
+                        <option value="">Choose a style…</option>
+                        {allStyleNames.map((style) => (
+                          <option key={style} value={style}>
+                            {style}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-[14px] text-muted-foreground">
+                        {project.data?.target_style ?? "Project style unset"}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeFile.mutate({ id: file.id, storagePath: file.storage_path })
+                      }
+                      aria-label={`Remove ${file.name}`}
+                      className="text-destructive/70 transition-colors hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="text-[14px] text-ink-soft">
-                  {file.status}
-                  {file.redesign_error ? (
-                    <div className="text-[12px] text-destructive">{file.redesign_error}</div>
-                  ) : null}
-                </div>
-                <div>
-                  {perFile ? (
-                    <select
-                      value={file.target_style ?? ""}
-                      onChange={(e) =>
-                        setFileStyle.mutate({ id: file.id, style: e.target.value })
-                      }
-                      className={fieldClass}
-                      aria-label={`Target style for ${file.name}`}
-                    >
-                      <option value="">Choose a style…</option>
-                      {allStyleNames.map((style) => (
-                        <option key={style} value={style}>
-                          {style}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className="text-[14px] text-muted-foreground">
-                      {project.data?.target_style ?? "Project style unset"}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeFile.mutate({ id: file.id, storagePath: file.storage_path })
-                    }
-                    className="text-[13px] text-destructive underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Section>

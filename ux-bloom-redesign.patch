@@ -1,0 +1,1986 @@
+diff --git a/src/components/site/BeforeAfter.tsx b/src/components/site/BeforeAfter.tsx
+index 872daf3..e22b36c 100644
+--- a/src/components/site/BeforeAfter.tsx
++++ b/src/components/site/BeforeAfter.tsx
+@@ -5,7 +5,8 @@ export function BeforeAfter() {
+ 
+   return (
+     <div>
+-      <div className="mb-8 flex items-center gap-3 text-[14.5px] text-ink-soft">
++      <div className="mb-8 flex items-center gap-3 text-[14.5px]">
++        <span className={after ? "text-muted-foreground" : "text-foreground"}>Before</span>
+         <button
+           type="button"
+           aria-pressed={after}
+@@ -13,7 +14,7 @@ export function BeforeAfter() {
+           onClick={() => setAfter((v) => !v)}
+           className={`switch ${after ? "on" : ""}`}
+         />
+-        <span>Showing: {after ? "after" : "before"}</span>
++        <span className={after ? "text-revision" : "text-muted-foreground"}>After</span>
+       </div>
+ 
+       <div className={`mock-frame ${after ? "mock-after" : "mock-before"}`}>
+diff --git a/src/components/site/Header.tsx b/src/components/site/Header.tsx
+index 0a913fa..04155d5 100644
+--- a/src/components/site/Header.tsx
++++ b/src/components/site/Header.tsx
+@@ -1,4 +1,6 @@
+ import { Link } from "@tanstack/react-router";
++import { Menu, X } from "lucide-react";
++import { useEffect, useState } from "react";
+ 
+ const navItems = [
+   { to: "/services", label: "Services" },
+@@ -10,13 +12,28 @@ const navItems = [
+ ] as const;
+ 
+ export function Header() {
++  const [open, setOpen] = useState(false);
++
++  useEffect(() => {
++    if (!open) return;
++    document.body.style.overflow = "hidden";
++    return () => {
++      document.body.style.overflow = "";
++    };
++  }, [open]);
++
+   return (
+-    <header className="sticky top-0 z-20 border-b border-border/50 bg-background/55 backdrop-blur-xl">
+-      <div className="mx-auto flex max-w-[1140px] items-center justify-between px-8 py-[18px]">
+-        <Link to="/" className="flex items-center gap-2 font-serif text-[30px] tracking-[0.14em]">
++    <header className="sticky top-0 z-30 border-b border-border/50 bg-background/55 backdrop-blur-xl">
++      <div className="mx-auto flex max-w-[1140px] items-center justify-between px-6 py-[18px] sm:px-8">
++        <Link
++          to="/"
++          onClick={() => setOpen(false)}
++          className="flex items-center gap-2 font-serif text-[26px] tracking-[0.14em] sm:text-[30px]"
++        >
+           <span className="h-2 w-2 rounded-full bg-amber shadow-[0_0_12px_var(--amber)]" />
+           Rezyn
+         </Link>
++
+         <nav className="hidden gap-8 text-[14.5px] text-ink-soft md:flex">
+           {navItems.map((item) => (
+             <Link
+@@ -29,13 +46,54 @@ export function Header() {
+             </Link>
+           ))}
+         </nav>
+-        <Link
+-          to="/projects"
+-          className="glow-aurora bg-revision px-[18px] py-[9px] text-[14.5px] font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
+-        >
+-          Upload a project
+-        </Link>
++
++        <div className="flex items-center gap-3">
++          <Link
++            to="/projects"
++            className="glow-aurora hidden bg-revision px-[18px] py-[9px] text-[14.5px] font-medium text-primary-foreground transition-transform hover:scale-[1.03] sm:inline-block"
++          >
++            Upload a project
++          </Link>
++          <button
++            type="button"
++            onClick={() => setOpen((v) => !v)}
++            aria-expanded={open}
++            aria-label={open ? "Close menu" : "Open menu"}
++            className="glass flex h-11 w-11 items-center justify-center text-foreground md:hidden"
++          >
++            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
++          </button>
++        </div>
+       </div>
++
++      {open ? (
++        <div
++          className="glass border-t border-border/50 md:hidden"
++          style={{ animation: "rise-in .3s cubic-bezier(.22,1,.36,1) both" }}
++        >
++          <div className="menu-panel">
++            {navItems.map((item) => (
++              <Link
++                key={item.to}
++                to={item.to}
++                onClick={() => setOpen(false)}
++                activeProps={{ className: "is-active" }}
++              >
++                {item.label}
++              </Link>
++            ))}
++          </div>
++          <div className="px-[10px] pb-[10px]">
++            <Link
++              to="/projects"
++              onClick={() => setOpen(false)}
++              className="block bg-revision px-4 py-[12px] text-center text-[15px] font-medium text-primary-foreground"
++            >
++              Upload a project
++            </Link>
++          </div>
++        </div>
++      ) : null}
+     </header>
+   );
+ }
+diff --git a/src/components/site/ImmersiveBackground.tsx b/src/components/site/ImmersiveBackground.tsx
+index 23e626b..da11cf1 100644
+--- a/src/components/site/ImmersiveBackground.tsx
++++ b/src/components/site/ImmersiveBackground.tsx
+@@ -1,8 +1,40 @@
+ import { ClientOnly } from "@tanstack/react-router";
+-import { lazy, Suspense } from "react";
++import { lazy, Suspense, useEffect, useRef } from "react";
+ 
+ const ImmersiveScene = lazy(() => import("@/components/three/ImmersiveScene"));
+ 
++/** Cursor-tracked glow layered over the 3D scene — cheap, CSS-only depth cue. */
++function CursorSpotlight() {
++  const ref = useRef<HTMLDivElement>(null);
++
++  useEffect(() => {
++    const node = ref.current;
++    if (!node) return;
++    if (window.matchMedia("(pointer: coarse)").matches) return;
++
++    let raf = 0;
++    const move = (e: PointerEvent) => {
++      cancelAnimationFrame(raf);
++      raf = requestAnimationFrame(() => {
++        node.style.setProperty("--mx", `${e.clientX}px`);
++        node.style.setProperty("--my", `${e.clientY}px`);
++        node.classList.add("is-active");
++      });
++    };
++    const leave = () => node.classList.remove("is-active");
++
++    window.addEventListener("pointermove", move);
++    window.addEventListener("pointerleave", leave);
++    return () => {
++      cancelAnimationFrame(raf);
++      window.removeEventListener("pointermove", move);
++      window.removeEventListener("pointerleave", leave);
++    };
++  }, []);
++
++  return <div ref={ref} className="cursor-spotlight" aria-hidden />;
++}
++
+ export function ImmersiveBackground() {
+   return (
+     <div className="pointer-events-none fixed inset-0 -z-10">
+@@ -14,6 +46,9 @@ export function ImmersiveBackground() {
+           </div>
+         </Suspense>
+       </ClientOnly>
++      <ClientOnly fallback={null}>
++        <CursorSpotlight />
++      </ClientOnly>
+       {/* readability veil + film grain */}
+       <div className="veil absolute inset-0" />
+       <div className="grain absolute inset-0" />
+diff --git a/src/components/site/PreviewTile.tsx b/src/components/site/PreviewTile.tsx
+index 963c4ac..f5a8922 100644
+--- a/src/components/site/PreviewTile.tsx
++++ b/src/components/site/PreviewTile.tsx
+@@ -23,9 +23,18 @@ export function PreviewGroups({ groups }: { groups: PreviewGroup[] }) {
+           </div>
+           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+             {group.items.map((item) => (
+-              <div key={item.name} className="glass p-[14px] transition-transform duration-300 hover:-translate-y-1">
+-                <PreviewTile preview={item.preview} />
+-                <div className="mb-1 text-[14.5px] font-semibold">{item.name}</div>
++              <div
++                key={item.name}
++                className="glass group p-[14px] transition-all duration-300 hover:-translate-y-1.5 hover:border-revision/50 hover:shadow-[0_18px_40px_-18px_var(--revision)]"
++              >
++                <div className="overflow-hidden">
++                  <div className="transition-transform duration-500 group-hover:scale-[1.04]">
++                    <PreviewTile preview={item.preview} />
++                  </div>
++                </div>
++                <div className="mb-1 text-[14.5px] font-semibold transition-colors group-hover:text-revision">
++                  {item.name}
++                </div>
+                 <p className="min-h-[34px] text-[12.5px] leading-[1.45] text-muted-foreground">
+                   {item.desc}
+                 </p>
+diff --git a/src/components/site/Section.tsx b/src/components/site/Section.tsx
+index 889128b..acc6410 100644
+--- a/src/components/site/Section.tsx
++++ b/src/components/site/Section.tsx
+@@ -33,11 +33,18 @@ export function SectionHeading({ label, title }: { label: string; title: string
+ export function ServiceRows({ items }: { items: { name: string; desc: string }[] }) {
+   return (
+     <div className="border-b border-border/60">
+-      {items.map((item) => (
++      {items.map((item, i) => (
+         <div
+           key={item.name}
+-          className="group grid grid-cols-1 gap-2 border-t border-border/60 py-[26px] transition-colors md:grid-cols-[300px_1fr] md:gap-8 hover:bg-foreground/[0.03]"
++          className="group relative grid grid-cols-1 gap-2 overflow-hidden border-t border-border/60 py-[26px] pl-0 transition-all duration-300 md:grid-cols-[44px_260px_1fr] md:gap-8 md:pl-2 hover:bg-foreground/[0.03] hover:pl-4"
+         >
++          <span
++            aria-hidden
++            className="absolute top-0 left-0 h-full w-[2px] scale-y-0 bg-revision opacity-0 shadow-[0_0_14px_var(--revision)] transition-all duration-300 group-hover:scale-y-100 group-hover:opacity-100"
++          />
++          <div className="hidden text-[13px] text-muted-foreground md:block">
++            0{i + 1}
++          </div>
+           <div className="font-serif text-[30px] tracking-[0.04em] transition-colors group-hover:text-revision">
+             {item.name}
+           </div>
+diff --git a/src/components/three/ImmersiveScene.tsx b/src/components/three/ImmersiveScene.tsx
+index 870d4f6..a381e6e 100644
+--- a/src/components/three/ImmersiveScene.tsx
++++ b/src/components/three/ImmersiveScene.tsx
+@@ -4,7 +4,7 @@ import { Suspense, useMemo, useRef } from "react";
+ import * as THREE from "three";
+ 
+ const INK = "#12102A";
+-const AMBER = "#A78BFA";
++const VIOLET = "#A78BFA";
+ const JADE = "#4ADE80";
+ const ROSE = "#7C6BF5";
+ 
+@@ -41,7 +41,50 @@ function Slab({
+   );
+ }
+ 
+-function Dust({ count = 700 }: { count?: number }) {
++/** Central wireframe core — the "product" the redesign orbits around. */
++function Core() {
++  const inner = useRef<THREE.Mesh>(null);
++  const outer = useRef<THREE.Mesh>(null);
++  useFrame((state, delta) => {
++    const dt = Math.min(delta, 0.05);
++    if (inner.current) {
++      inner.current.rotation.y += dt * 0.18;
++      inner.current.rotation.x += dt * 0.07;
++    }
++    if (outer.current) {
++      outer.current.rotation.y -= dt * 0.05;
++      outer.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.2) * 0.12;
++    }
++  });
++  return (
++    <group position={[0.6, -0.1, -4.5]}>
++      <mesh ref={outer}>
++        <icosahedronGeometry args={[2.1, 1]} />
++        <meshBasicMaterial color={JADE} wireframe transparent opacity={0.16} />
++      </mesh>
++      <mesh ref={inner} scale={0.62}>
++        <icosahedronGeometry args={[2.1, 0]} />
++        <meshBasicMaterial color={ROSE} wireframe transparent opacity={0.28} />
++      </mesh>
++    </group>
++  );
++}
++
++/** Slow orbital ring — grounds the composition and reads as motion at rest. */
++function OrbitRing() {
++  const ref = useRef<THREE.Mesh>(null);
++  useFrame((state, delta) => {
++    if (ref.current) ref.current.rotation.z += Math.min(delta, 0.05) * 0.06;
++  });
++  return (
++    <mesh ref={ref} position={[-2.2, -1.4, -6]} rotation={[1.35, 0.2, 0]}>
++      <torusGeometry args={[4.4, 0.006, 8, 120]} />
++      <meshBasicMaterial color={VIOLET} transparent opacity={0.35} />
++    </mesh>
++  );
++}
++
++function Dust({ count = 800 }: { count?: number }) {
+   const ref = useRef<THREE.Points>(null);
+   const positions = useMemo(() => {
+     const arr = new Float32Array(count * 3);
+@@ -68,7 +111,7 @@ function Dust({ count = 700 }: { count?: number }) {
+       </bufferGeometry>
+       <pointsMaterial
+         size={0.045}
+-        color={AMBER}
++        color={VIOLET}
+         transparent
+         opacity={0.7}
+         sizeAttenuation
+@@ -162,6 +205,8 @@ export default function ImmersiveScene(props: GroupProps) {
+         <Rig {...props}>
+           <Rules />
+           <Dust />
++          <Core />
++          <OrbitRing />
+           <Slab position={[-3.4, 1.1, 0]} rotation={[0.18, 0.5, -0.12]} scale={[3.1, 2, 1]} tint="#C9F5DD" />
+           <Slab position={[3.2, -0.7, -1.6]} rotation={[-0.2, -0.55, 0.1]} scale={[2.6, 3.4, 1]} tint="#D8CFFB" />
+           <Slab position={[0.4, 2.6, -3.2]} rotation={[0.1, 0.15, 0.28]} scale={[2.2, 1.4, 1]} tint="#BFEFD8" />
+diff --git a/src/routes/auth.tsx b/src/routes/auth.tsx
+index a61eb2a..704158d 100644
+--- a/src/routes/auth.tsx
++++ b/src/routes/auth.tsx
+@@ -1,5 +1,7 @@
+ import { createFileRoute, useNavigate } from "@tanstack/react-router";
+ import { useEffect, useState } from "react";
++import { Sparkles } from "lucide-react";
++import { Reveal, SplitText } from "@/components/studio/motion";
+ import { Section } from "@/components/site/Section";
+ import { supabase } from "@/integrations/supabase/client";
+ import { useAuth } from "@/hooks/useAuth";
+@@ -23,9 +25,6 @@ export const Route = createFileRoute("/auth")({
+   component: AuthPage,
+ });
+ 
+-const fieldClass =
+-  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
+-
+ function AuthPage() {
+   const navigate = useNavigate();
+   const { user, loading } = useAuth();
+@@ -77,73 +76,93 @@ function AuthPage() {
+   return (
+     <main>
+       <Section last>
+-        <div className="mx-auto max-w-[420px]">
+-          <h1 className="mb-[10px] text-[32px]">
+-            {mode === "signin" ? "Sign in" : "Create an account"}
+-          </h1>
+-          <p className="mb-8 text-[15.5px] text-ink-soft">
+-            Your workspace holds your uploaded project files, the styles you pick, and any new
+-            files you write here.
+-          </p>
+-
+-          <button
+-            type="button"
+-            onClick={onGoogle}
+-            className="mb-6 w-full border border-primary bg-transparent px-4 py-[11px] text-[15px] font-medium text-foreground transition-colors hover:bg-paper-dim"
++        <div className="relative mx-auto max-w-[440px]">
++          <span
++            aria-hidden
++            className="outline-text pointer-events-none absolute -top-[70px] right-[-20px] hidden font-serif text-[110px] leading-none sm:block"
+           >
+-            Continue with Google
+-          </button>
+-
+-          <form onSubmit={onSubmit}>
+-            <div className="mb-5">
+-              <label htmlFor="email" className="mb-[6px] block text-sm text-muted-foreground">
+-                Email
+-              </label>
+-              <input
+-                id="email"
+-                type="email"
+-                required
+-                value={email}
+-                onChange={(e) => setEmail(e.target.value)}
+-                className={fieldClass}
+-              />
++            →
++          </span>
++          <Reveal>
++            <div className="glass relative z-10 inline-flex items-center gap-2 px-4 py-2 text-[11px] tracking-[0.3em] text-revision uppercase">
++              <Sparkles className="h-3 w-3" />
++              workspace access
+             </div>
+-            <div className="mb-5">
+-              <label htmlFor="password" className="mb-[6px] block text-sm text-muted-foreground">
+-                Password
+-              </label>
+-              <input
+-                id="password"
+-                type="password"
+-                required
+-                minLength={6}
+-                value={password}
+-                onChange={(e) => setPassword(e.target.value)}
+-                className={fieldClass}
+-              />
+-            </div>
+-
+-            {error ? <p className="mb-4 text-[13px] text-destructive">{error}</p> : null}
+-            {notice ? <p className="mb-4 text-[13px] text-revision">{notice}</p> : null}
++            <h1 className="relative z-10 mt-6 mb-[10px] text-[15vw] leading-[0.9] sm:text-[46px]">
++              <SplitText text={mode === "signin" ? "Sign in" : "Create an account"} delay={0.05} />
++            </h1>
++            <p className="relative z-10 mb-8 text-[15.5px] text-ink-soft">
++              Your workspace holds your uploaded project files, the styles you pick, and any new
++              files you write here.
++            </p>
++          </Reveal>
+ 
++          <Reveal delay={0.1}>
+             <button
+-              type="submit"
+-              disabled={busy}
+-              className="w-full border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60"
++              type="button"
++              onClick={onGoogle}
++              className="glass mb-6 flex w-full items-center justify-center gap-3 px-4 py-[13px] text-[15px] font-medium text-foreground transition-colors hover:border-revision/50 hover:text-revision"
+             >
+-              {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
++              <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
++                <path
++                  fill="currentColor"
++                  d="M12 11v2.9h6.9c-.3 1.8-2.1 5.2-6.9 5.2-4.2 0-7.6-3.4-7.6-7.6S7.8 3.9 12 3.9c2.4 0 4 1 4.9 1.9l3.3-3.2C18.1 1 15.3 0 12 0 5.4 0 0 5.4 0 12s5.4 12 12 12c6.9 0 11.5-4.9 11.5-11.7 0-.8-.1-1.4-.2-2z"
++                />
++              </svg>
++              Continue with Google
+             </button>
+-          </form>
+ 
+-          <button
+-            type="button"
+-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+-            className="mt-6 text-[14.5px] underline underline-offset-4 text-ink-soft hover:text-foreground"
+-          >
+-            {mode === "signin"
+-              ? "No account yet? Create one"
+-              : "Already have an account? Sign in"}
+-          </button>
++            <form onSubmit={onSubmit}>
++              <div className="mb-5">
++                <label htmlFor="email" className="mb-[6px] block text-sm text-muted-foreground">
++                  Email
++                </label>
++                <input
++                  id="email"
++                  type="email"
++                  required
++                  value={email}
++                  onChange={(e) => setEmail(e.target.value)}
++                  className="field"
++                />
++              </div>
++              <div className="mb-5">
++                <label htmlFor="password" className="mb-[6px] block text-sm text-muted-foreground">
++                  Password
++                </label>
++                <input
++                  id="password"
++                  type="password"
++                  required
++                  minLength={6}
++                  value={password}
++                  onChange={(e) => setPassword(e.target.value)}
++                  className="field"
++                />
++              </div>
++
++              {error ? <p className="mb-4 text-[13px] text-destructive">{error}</p> : null}
++              {notice ? <p className="mb-4 text-[13px] text-revision">{notice}</p> : null}
++
++              <button
++                type="submit"
++                disabled={busy}
++                className="glow-aurora w-full bg-revision px-[22px] py-[13px] text-[14px] font-semibold tracking-[0.08em] text-primary-foreground uppercase transition-transform hover:scale-[1.01] disabled:scale-100 disabled:opacity-60"
++              >
++                {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
++              </button>
++            </form>
++
++            <button
++              type="button"
++              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
++              className="mt-6 text-[14.5px] text-ink-soft underline underline-offset-4 hover:text-revision"
++            >
++              {mode === "signin"
++                ? "No account yet? Create one"
++                : "Already have an account? Sign in"}
++            </button>
++          </Reveal>
+         </div>
+       </Section>
+     </main>
+diff --git a/src/routes/process.tsx b/src/routes/process.tsx
+index 74c08f5..1ea6944 100644
+--- a/src/routes/process.tsx
++++ b/src/routes/process.tsx
+@@ -1,5 +1,6 @@
+ import { createFileRoute, Link } from "@tanstack/react-router";
+-import { Section, SectionHeading } from "@/components/site/Section";
++import { Reveal, SplitText, Magnetic } from "@/components/studio/motion";
++import { Section } from "@/components/site/Section";
+ import { processSteps } from "@/data/site";
+ 
+ export const Route = createFileRoute("/process")({
+@@ -24,32 +25,67 @@ export const Route = createFileRoute("/process")({
+ function ProcessPage() {
+   return (
+     <main>
++      <section className="relative pt-[64px] pb-[20px]">
++        <div className="wrap">
++          <span
++            aria-hidden
++            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[16vw] leading-none lg:block"
++          >
++            03
++          </span>
++          <div className="rise relative z-10">
++            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
++              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
++              how it works
++            </div>
++            <h1 className="mt-7 max-w-[18ch] text-[12vw] leading-[0.9] sm:text-[6.6vw]">
++              <SplitText text="Three passes." className="block" delay={0.05} />
++              <SplitText
++                text="Nothing thrown out"
++                className="block"
++                charClassName="aurora-text"
++                delay={0.3}
++              />
++              <SplitText text="that doesn't need to be." className="block" delay={0.55} />
++            </h1>
++          </div>
++        </div>
++      </section>
++
+       <Section last>
+-        <SectionHeading
+-          label="How it works"
+-          title="Three passes. Nothing thrown out that doesn't need to be."
+-        />
+         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+-          {processSteps.map((step) => (
+-            <div key={step.version} className="glass px-7 py-8 transition-colors hover:border-amber/40">
+-              <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
+-              <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
+-              <p className="text-[15px] text-ink-soft">{step.body}</p>
+-            </div>
++          {processSteps.map((step, i) => (
++            <Reveal key={step.version} delay={i * 0.1}>
++              <div className="glass group h-full px-7 py-8 transition-all duration-300 hover:-translate-y-1 hover:border-amber/40">
++                <div className="mb-[14px] flex items-center justify-between">
++                  <span className="text-sm font-semibold text-revision">{step.version}</span>
++                  <span
++                    aria-hidden
++                    className="h-2 w-2 rounded-full bg-border transition-colors group-hover:bg-revision group-hover:shadow-[0_0_10px_var(--revision)]"
++                  />
++                </div>
++                <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
++                <p className="text-[15px] text-ink-soft">{step.body}</p>
++              </div>
++            </Reveal>
+           ))}
+         </div>
+-        <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
+-          Every file is rewritten in place, so you can diff it against the original and see exactly
+-          what changed — and what didn't.
+-        </p>
+-        <div className="mt-8">
+-          <Link
+-            to="/projects"
+-            className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
+-          >
+-            Upload a project
+-          </Link>
+-        </div>
++        <Reveal delay={0.3}>
++          <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
++            Every file is rewritten in place, so you can diff it against the original and see
++            exactly what changed — and what didn't.
++          </p>
++          <div className="mt-8">
++            <Magnetic>
++              <Link
++                to="/projects"
++                className="glow-aurora inline-block bg-revision px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
++              >
++                Upload a project
++              </Link>
++            </Magnetic>
++          </div>
++        </Reveal>
+       </Section>
+     </main>
+   );
+diff --git a/src/routes/projects.$projectId.tsx b/src/routes/projects.$projectId.tsx
+index 77fb8f0..6dd7a96 100644
+--- a/src/routes/projects.$projectId.tsx
++++ b/src/routes/projects.$projectId.tsx
+@@ -2,6 +2,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
+ import { useEffect, useRef, useState } from "react";
+ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+ import { useServerFn } from "@tanstack/react-start";
++import {
++  CheckCircle2,
++  Clock,
++  Download,
++  Loader2,
++  RotateCcw,
++  Sparkles,
++  Trash2,
++  UploadCloud,
++  XCircle,
++} from "lucide-react";
++import { Reveal } from "@/components/studio/motion";
+ import { Section, SectionHeading } from "@/components/site/Section";
+ import { supabase } from "@/integrations/supabase/client";
+ import { useAuth } from "@/hooks/useAuth";
+@@ -27,11 +39,16 @@ export const Route = createFileRoute("/projects/$projectId")({
+   component: ProjectDetailPage,
+ });
+ 
+-const fieldClass =
+-  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
+-
+ const buttonClass =
+-  "border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60";
++  "inline-flex items-center gap-2 border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60";
++
++const statusBadge: Record<string, { label: string; cls: string; icon: typeof Clock }> = {
++  queued: { label: "Queued", cls: "", icon: Clock },
++  redesigning: { label: "Redesigning", cls: "badge-active", icon: Loader2 },
++  done: { label: "Done", cls: "badge-done", icon: CheckCircle2 },
++  failed: { label: "Failed", cls: "badge-error", icon: XCircle },
++  skipped: { label: "Skipped", cls: "", icon: XCircle },
++};
+ 
+ function ProjectDetailPage() {
+   const { projectId } = Route.useParams();
+@@ -223,6 +240,7 @@ function ProjectDetailPage() {
+ 
+   const doneCount = (files.data ?? []).filter((f) => f.status === "done").length;
+   const totalCount = files.data?.length ?? 0;
++  const progressPct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
+ 
+   if (loading || !user || project.isLoading) {
+     return (
+@@ -268,124 +286,145 @@ function ProjectDetailPage() {
+ 
+       <Section>
+         <SectionHeading label="Upload" title="Hand over the files we should redesign." />
+-        <div className="glass max-w-[720px] p-7">
+-          {perFile ? (
+-            <div className="mb-5">
+-              <label htmlFor="upstyle" className="mb-[6px] block text-sm text-muted-foreground">
+-                Target style for these uploads
+-              </label>
+-              <select
+-                id="upstyle"
+-                value={newStyle}
+-                onChange={(e) => setNewStyle(e.target.value)}
+-                className={fieldClass}
+-              >
+-                {allStyleNames.map((style) => (
+-                  <option key={style} value={style}>
+-                    {style}
+-                  </option>
+-                ))}
+-              </select>
++        <Reveal>
++          <div className="glass max-w-[720px] p-7">
++            {perFile ? (
++              <div className="mb-5">
++                <label htmlFor="upstyle" className="mb-[6px] block text-sm text-muted-foreground">
++                  Target style for these uploads
++                </label>
++                <select
++                  id="upstyle"
++                  value={newStyle}
++                  onChange={(e) => setNewStyle(e.target.value)}
++                  className="field"
++                >
++                  {allStyleNames.map((style) => (
++                    <option key={style} value={style}>
++                      {style}
++                    </option>
++                  ))}
++                </select>
++              </div>
++            ) : null}
++            <div className="dropzone">
++              <UploadCloud className="h-6 w-6 text-muted-foreground" aria-hidden />
++              <p className="text-[15px]">
++                {uploading ? "Uploading…" : "Drop files here, or click to browse"}
++              </p>
++              <p className="text-[13px] text-muted-foreground">Up to 20MB per file.</p>
++              <input
++                ref={fileInput}
++                type="file"
++                multiple
++                onChange={(e) => void uploadFiles(e.target.files)}
++                aria-label="Upload files"
++              />
+             </div>
+-          ) : null}
+-          <input
+-            ref={fileInput}
+-            type="file"
+-            multiple
+-            onChange={(e) => void uploadFiles(e.target.files)}
+-            className="block w-full text-[15px]"
+-          />
+-          <p className="mt-3 text-[13px] text-muted-foreground">
+-            {uploading ? "Uploading…" : "Up to 20MB per file."}
+-          </p>
+-        </div>
++          </div>
++        </Reveal>
+       </Section>
+ 
+       <Section>
+         <SectionHeading label="New file" title="Or write one here." />
+-        <form
+-          onSubmit={(e) => {
+-            e.preventDefault();
+-            setError(null);
+-            if (newName.trim().length < 1) {
+-              setError("Give the file a name.");
+-              return;
+-            }
+-            createFile.mutate();
+-          }}
+-          className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7"
+-        >
+-          <div>
+-            <label htmlFor="fname" className="mb-[6px] block text-sm text-muted-foreground">
+-              File name
+-            </label>
+-            <input
+-              id="fname"
+-              value={newName}
+-              onChange={(e) => setNewName(e.target.value)}
+-              className={fieldClass}
+-              placeholder="landing-page.html"
+-            />
+-          </div>
+-          <div>
+-            <label htmlFor="fbody" className="mb-[6px] block text-sm text-muted-foreground">
+-              Contents
+-            </label>
+-            <textarea
+-              id="fbody"
+-              rows={12}
+-              value={newContent}
+-              onChange={(e) => setNewContent(e.target.value)}
+-              className={`${fieldClass} resize-y font-mono text-[13.5px]`}
+-              spellCheck={false}
+-            />
+-          </div>
+-          <div>
+-            <button type="submit" disabled={createFile.isPending} className={buttonClass}>
+-              {createFile.isPending ? "Saving…" : "Create file"}
+-            </button>
+-          </div>
+-        </form>
++        <Reveal>
++          <form
++            onSubmit={(e) => {
++              e.preventDefault();
++              setError(null);
++              if (newName.trim().length < 1) {
++                setError("Give the file a name.");
++                return;
++              }
++              createFile.mutate();
++            }}
++            className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7"
++          >
++            <div>
++              <label htmlFor="fname" className="mb-[6px] block text-sm text-muted-foreground">
++                File name
++              </label>
++              <input
++                id="fname"
++                value={newName}
++                onChange={(e) => setNewName(e.target.value)}
++                className="field"
++                placeholder="landing-page.html"
++              />
++            </div>
++            <div>
++              <label htmlFor="fbody" className="mb-[6px] block text-sm text-muted-foreground">
++                Contents
++              </label>
++              <textarea
++                id="fbody"
++                rows={12}
++                value={newContent}
++                onChange={(e) => setNewContent(e.target.value)}
++                className="field resize-y font-mono text-[13.5px]"
++                spellCheck={false}
++              />
++            </div>
++            <div>
++              <button type="submit" disabled={createFile.isPending} className={buttonClass}>
++                {createFile.isPending ? "Saving…" : "Create file"}
++              </button>
++            </div>
++          </form>
++        </Reveal>
+         {error ? <p className="mt-4 text-[13px] text-destructive">{error}</p> : null}
+       </Section>
+ 
+       <Section>
+         <SectionHeading label="Redesign" title="Run it. Then take the ZIP." />
+-        <div className="glass max-w-[720px] p-7">
+-          <p className="text-[15px] text-ink-soft">
+-            {totalCount === 0
+-              ? "Add some files first."
+-              : `${doneCount} of ${totalCount} files redesigned.`}
+-          </p>
+-          {progress ? <p className="mt-3 text-[14px] text-revision">{progress}</p> : null}
+-          <div className="mt-6 flex flex-wrap gap-4">
+-            <button
+-              type="button"
+-              onClick={() => void startRedesign()}
+-              disabled={running || totalCount === 0}
+-              className={buttonClass}
+-            >
+-              {running ? "Redesigning…" : "Start redesign"}
+-            </button>
+-            <button
+-              type="button"
+-              onClick={() => void downloadZip()}
+-              disabled={zipping || doneCount === 0}
+-              className="glass px-[22px] py-[11px] text-[14.5px] font-medium text-foreground transition-colors hover:text-revision disabled:opacity-50"
+-            >
+-              {zipping ? "Packing…" : "Download ZIP"}
+-            </button>
+-            {doneCount > 0 ? (
++        <Reveal>
++          <div className="glass max-w-[720px] p-7">
++            <p className="text-[15px] text-ink-soft">
++              {totalCount === 0
++                ? "Add some files first."
++                : `${doneCount} of ${totalCount} files redesigned.`}
++            </p>
++            {totalCount > 0 ? (
++              <div className="progress-track mt-4">
++                <div className="progress-fill" style={{ width: `${progressPct}%` }} />
++              </div>
++            ) : null}
++            {progress ? <p className="mt-3 text-[14px] text-revision">{progress}</p> : null}
++            <div className="mt-6 flex flex-wrap gap-4">
+               <button
+                 type="button"
+-                onClick={() => void restart()}
+-                className="text-[13px] text-muted-foreground underline"
++                onClick={() => void startRedesign()}
++                disabled={running || totalCount === 0}
++                className="glow-aurora inline-flex items-center gap-2 bg-revision px-[22px] py-[11px] text-[14.5px] font-semibold tracking-[0.04em] text-primary-foreground uppercase transition-transform hover:scale-[1.02] disabled:scale-100 disabled:opacity-60"
+               >
+-                Start over
++                {running ? (
++                  <Loader2 className="h-4 w-4 animate-spin" />
++                ) : (
++                  <Sparkles className="h-4 w-4" />
++                )}
++                {running ? "Redesigning…" : "Start redesign"}
+               </button>
+-            ) : null}
++              <button
++                type="button"
++                onClick={() => void downloadZip()}
++                disabled={zipping || doneCount === 0}
++                className="glass inline-flex items-center gap-2 px-[22px] py-[11px] text-[14.5px] font-medium text-foreground transition-colors hover:text-revision disabled:opacity-50"
++              >
++                <Download className="h-4 w-4" />
++                {zipping ? "Packing…" : "Download ZIP"}
++              </button>
++              {doneCount > 0 ? (
++                <button
++                  type="button"
++                  onClick={() => void restart()}
++                  className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground underline hover:text-foreground"
++                >
++                  <RotateCcw className="h-3.5 w-3.5" /> Start over
++                </button>
++              ) : null}
++            </div>
+           </div>
+-        </div>
++        </Reveal>
+       </Section>
+ 
+       <Section last>
+@@ -396,60 +435,68 @@ function ProjectDetailPage() {
+           <p className="text-ink-soft">No files yet — upload or create one above.</p>
+         ) : (
+           <div className="border-b border-border">
+-            {files.data?.map((file) => (
+-              <div
+-                key={file.id}
+-                className="grid grid-cols-1 items-center gap-3 border-t border-border py-[18px] md:grid-cols-[1fr_140px_220px_90px]"
+-              >
+-                <div>
+-                  <div className="text-[16px]">{file.name}</div>
+-                  <div className="text-[13px] text-muted-foreground">
+-                    {file.source === "upload" ? "Uploaded" : "Created here"}
+-                    {file.size_bytes ? ` · ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
++            {files.data?.map((file) => {
++              const st = statusBadge[file.status] ?? statusBadge["queued"]!;
++              const StatusIcon = st.icon;
++              return (
++                <div
++                  key={file.id}
++                  className="grid grid-cols-1 items-center gap-3 border-t border-border py-[18px] md:grid-cols-[1fr_150px_220px_36px]"
++                >
++                  <div>
++                    <div className="text-[16px]">{file.name}</div>
++                    <div className="text-[13px] text-muted-foreground">
++                      {file.source === "upload" ? "Uploaded" : "Created here"}
++                      {file.size_bytes ? ` · ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
++                    </div>
+                   </div>
+-                </div>
+-                <div className="text-[14px] text-ink-soft">
+-                  {file.status}
+-                  {file.redesign_error ? (
+-                    <div className="text-[12px] text-destructive">{file.redesign_error}</div>
+-                  ) : null}
+-                </div>
+-                <div>
+-                  {perFile ? (
+-                    <select
+-                      value={file.target_style ?? ""}
+-                      onChange={(e) =>
+-                        setFileStyle.mutate({ id: file.id, style: e.target.value })
++                  <div>
++                    <span className={`badge ${st.cls}`}>
++                      <StatusIcon className={`h-3 w-3 ${file.status === "redesigning" ? "animate-spin" : ""}`} />
++                      {st.label}
++                    </span>
++                    {file.redesign_error ? (
++                      <div className="mt-1 text-[12px] text-destructive">{file.redesign_error}</div>
++                    ) : null}
++                  </div>
++                  <div>
++                    {perFile ? (
++                      <select
++                        value={file.target_style ?? ""}
++                        onChange={(e) =>
++                          setFileStyle.mutate({ id: file.id, style: e.target.value })
++                        }
++                        className="field"
++                        aria-label={`Target style for ${file.name}`}
++                      >
++                        <option value="">Choose a style…</option>
++                        {allStyleNames.map((style) => (
++                          <option key={style} value={style}>
++                            {style}
++                          </option>
++                        ))}
++                      </select>
++                    ) : (
++                      <span className="text-[14px] text-muted-foreground">
++                        {project.data?.target_style ?? "Project style unset"}
++                      </span>
++                    )}
++                  </div>
++                  <div>
++                    <button
++                      type="button"
++                      onClick={() =>
++                        removeFile.mutate({ id: file.id, storagePath: file.storage_path })
+                       }
+-                      className={fieldClass}
+-                      aria-label={`Target style for ${file.name}`}
++                      aria-label={`Remove ${file.name}`}
++                      className="text-destructive/70 transition-colors hover:text-destructive"
+                     >
+-                      <option value="">Choose a style…</option>
+-                      {allStyleNames.map((style) => (
+-                        <option key={style} value={style}>
+-                          {style}
+-                        </option>
+-                      ))}
+-                    </select>
+-                  ) : (
+-                    <span className="text-[14px] text-muted-foreground">
+-                      {project.data?.target_style ?? "Project style unset"}
+-                    </span>
+-                  )}
+-                </div>
+-                <div>
+-                  <button
+-                    type="button"
+-                    onClick={() =>
+-                      removeFile.mutate({ id: file.id, storagePath: file.storage_path })
+-                    }
+-                    className="text-[13px] text-destructive underline"
+-                  >
+-                    Remove
+-                  </button>
++                      <Trash2 className="h-4 w-4" />
++                    </button>
++                  </div>
+                 </div>
+-              </div>
+-            ))}
++              );
++            })}
+           </div>
+         )}
+       </Section>
+diff --git a/src/routes/projects.index.tsx b/src/routes/projects.index.tsx
+index 266f0d4..a3f2f3f 100644
+--- a/src/routes/projects.index.tsx
++++ b/src/routes/projects.index.tsx
+@@ -1,6 +1,8 @@
+ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+ import { useEffect, useState } from "react";
+ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
++import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
++import { Reveal } from "@/components/studio/motion";
+ import { Section, SectionHeading } from "@/components/site/Section";
+ import { supabase } from "@/integrations/supabase/client";
+ import { useAuth } from "@/hooks/useAuth";
+@@ -25,9 +27,6 @@ export const Route = createFileRoute("/projects/")({
+   component: ProjectsPage,
+ });
+ 
+-const fieldClass =
+-  "w-full border border-border bg-foreground/[0.04] px-3 py-[11px] backdrop-blur-sm text-[15px] text-foreground focus:bg-background focus:outline-2 focus:outline-offset-1 focus:outline-revision";
+-
+ function ProjectsPage() {
+   const navigate = useNavigate();
+   const { user, loading } = useAuth();
+@@ -100,109 +99,112 @@ function ProjectsPage() {
+           label="Workspace"
+           title="Start a project, then upload the files we should redesign."
+         />
+-        <form
+-          onSubmit={(e) => {
+-            e.preventDefault();
+-            setError(null);
+-            if (name.trim().length < 2) {
+-              setError("Give the project a name.");
+-              return;
+-            }
+-            createProject.mutate();
+-          }}
+-          className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7 md:grid-cols-2"
+-        >
+-          <div className="md:col-span-2">
+-            <label htmlFor="pname" className="mb-[6px] block text-sm text-muted-foreground">
+-              Project name
+-            </label>
+-            <input
+-              id="pname"
+-              value={name}
+-              onChange={(e) => setName(e.target.value)}
+-              className={fieldClass}
+-              placeholder="Acme marketing site"
+-            />
+-          </div>
+-
+-          <div>
+-            <label htmlFor="ptype" className="mb-[6px] block text-sm text-muted-foreground">
+-              What are we revising?
+-            </label>
+-            <select
+-              id="ptype"
+-              value={productType}
+-              onChange={(e) => setProductType(e.target.value)}
+-              className={fieldClass}
+-            >
+-              {productTypes.map((type) => (
+-                <option key={type} value={type}>
+-                  {type}
+-                </option>
+-              ))}
+-            </select>
+-          </div>
+-
+-          <div>
+-            <label htmlFor="smode" className="mb-[6px] block text-sm text-muted-foreground">
+-              How should styles be chosen?
+-            </label>
+-            <select
+-              id="smode"
+-              value={styleMode}
+-              onChange={(e) => setStyleMode(e.target.value as "project" | "file")}
+-              className={fieldClass}
+-            >
+-              <option value="project">One style for the whole project</option>
+-              <option value="file">A style per file</option>
+-            </select>
+-          </div>
+-
+-          {styleMode === "project" ? (
++        <Reveal>
++          <form
++            onSubmit={(e) => {
++              e.preventDefault();
++              setError(null);
++              if (name.trim().length < 2) {
++                setError("Give the project a name.");
++                return;
++              }
++              createProject.mutate();
++            }}
++            className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7 md:grid-cols-2"
++          >
+             <div className="md:col-span-2">
+-              <label htmlFor="pstyle" className="mb-[6px] block text-sm text-muted-foreground">
+-                Target style
++              <label htmlFor="pname" className="mb-[6px] block text-sm text-muted-foreground">
++                Project name
++              </label>
++              <input
++                id="pname"
++                value={name}
++                onChange={(e) => setName(e.target.value)}
++                className="field"
++                placeholder="Acme marketing site"
++              />
++            </div>
++
++            <div>
++              <label htmlFor="ptype" className="mb-[6px] block text-sm text-muted-foreground">
++                What are we revising?
+               </label>
+               <select
+-                id="pstyle"
+-                value={targetStyle}
+-                onChange={(e) => setTargetStyle(e.target.value)}
+-                className={fieldClass}
++                id="ptype"
++                value={productType}
++                onChange={(e) => setProductType(e.target.value)}
++                className="field"
+               >
+-                {allStyleNames.map((style) => (
+-                  <option key={style} value={style}>
+-                    {style}
++                {productTypes.map((type) => (
++                  <option key={type} value={type}>
++                    {type}
+                   </option>
+                 ))}
+               </select>
+             </div>
+-          ) : null}
+ 
+-          <div className="md:col-span-2">
+-            <label htmlFor="pnotes" className="mb-[6px] block text-sm text-muted-foreground">
+-              What's going wrong? (optional)
+-            </label>
+-            <textarea
+-              id="pnotes"
+-              rows={3}
+-              value={notes}
+-              onChange={(e) => setNotes(e.target.value)}
+-              className={`${fieldClass} resize-y`}
+-            />
+-          </div>
++            <div>
++              <label htmlFor="smode" className="mb-[6px] block text-sm text-muted-foreground">
++                How should styles be chosen?
++              </label>
++              <select
++                id="smode"
++                value={styleMode}
++                onChange={(e) => setStyleMode(e.target.value as "project" | "file")}
++                className="field"
++              >
++                <option value="project">One style for the whole project</option>
++                <option value="file">A style per file</option>
++              </select>
++            </div>
+ 
+-          {error ? <p className="text-[13px] text-destructive md:col-span-2">{error}</p> : null}
++            {styleMode === "project" ? (
++              <div className="md:col-span-2">
++                <label htmlFor="pstyle" className="mb-[6px] block text-sm text-muted-foreground">
++                  Target style
++                </label>
++                <select
++                  id="pstyle"
++                  value={targetStyle}
++                  onChange={(e) => setTargetStyle(e.target.value)}
++                  className="field"
++                >
++                  {allStyleNames.map((style) => (
++                    <option key={style} value={style}>
++                      {style}
++                    </option>
++                  ))}
++                </select>
++              </div>
++            ) : null}
+ 
+-          <div className="md:col-span-2">
+-            <button
+-              type="submit"
+-              disabled={createProject.isPending}
+-              className="border border-primary bg-primary px-[22px] py-[11px] text-[14.5px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft disabled:opacity-60"
+-            >
+-              {createProject.isPending ? "Creating…" : "Create project"}
+-            </button>
+-          </div>
+-        </form>
++            <div className="md:col-span-2">
++              <label htmlFor="pnotes" className="mb-[6px] block text-sm text-muted-foreground">
++                What's going wrong? (optional)
++              </label>
++              <textarea
++                id="pnotes"
++                rows={3}
++                value={notes}
++                onChange={(e) => setNotes(e.target.value)}
++                className="field resize-y"
++              />
++            </div>
++
++            {error ? <p className="text-[13px] text-destructive md:col-span-2">{error}</p> : null}
++
++            <div className="md:col-span-2">
++              <button
++                type="submit"
++                disabled={createProject.isPending}
++                className="glow-aurora inline-flex items-center gap-2 bg-revision px-[24px] py-[13px] text-[14px] font-semibold tracking-[0.06em] text-primary-foreground uppercase transition-transform hover:scale-[1.02] disabled:scale-100 disabled:opacity-60"
++              >
++                <Sparkles className="h-4 w-4" />
++                {createProject.isPending ? "Creating…" : "Create project"}
++              </button>
++            </div>
++          </form>
++        </Reveal>
+       </Section>
+ 
+       <Section last>
+@@ -210,24 +212,33 @@ function ProjectsPage() {
+         {projects.isLoading ? (
+           <p className="text-ink-soft">Loading…</p>
+         ) : (projects.data?.length ?? 0) === 0 ? (
+-          <p className="text-ink-soft">No projects yet — create one above.</p>
++          <div className="glass flex flex-col items-center gap-3 px-7 py-14 text-center">
++            <FolderOpen className="h-8 w-8 text-muted-foreground" />
++            <p className="text-ink-soft">No projects yet — create one above.</p>
++          </div>
+         ) : (
+           <div className="border-b border-border">
+-            {projects.data?.map((project) => (
+-              <Link
+-                key={project.id}
+-                to="/projects/$projectId"
+-                params={{ projectId: project.id }}
+-                className="grid grid-cols-1 gap-2 border-t border-border py-[22px] transition-colors hover:bg-paper-dim md:grid-cols-[1fr_200px_180px]"
+-              >
+-                <div className="font-serif text-[25px] tracking-[0.05em]">{project.name}</div>
+-                <div className="text-[15px] text-ink-soft">{project.product_type}</div>
+-                <div className="text-[15px] text-muted-foreground">
+-                  {project.style_mode === "project"
+-                    ? (project.target_style ?? "No style yet")
+-                    : "Per-file styles"}
+-                </div>
+-              </Link>
++            {projects.data?.map((project, i) => (
++              <Reveal key={project.id} delay={Math.min(i, 6) * 0.05}>
++                <Link
++                  to="/projects/$projectId"
++                  params={{ projectId: project.id }}
++                  className="group grid grid-cols-1 items-center gap-3 border-t border-border py-[22px] transition-colors hover:bg-foreground/[0.03] md:grid-cols-[1fr_180px_200px_28px]"
++                >
++                  <div className="font-serif text-[25px] tracking-[0.05em] transition-colors group-hover:text-revision">
++                    {project.name}
++                  </div>
++                  <div className="text-[15px] text-ink-soft">{project.product_type}</div>
++                  <div>
++                    <span className="badge">
++                      {project.style_mode === "project"
++                        ? (project.target_style ?? "No style yet")
++                        : "Per-file styles"}
++                    </span>
++                  </div>
++                  <ArrowRight className="hidden h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-revision md:block" />
++                </Link>
++              </Reveal>
+             ))}
+           </div>
+         )}
+diff --git a/src/routes/services.tsx b/src/routes/services.tsx
+index 8cce6d9..9644177 100644
+--- a/src/routes/services.tsx
++++ b/src/routes/services.tsx
+@@ -1,5 +1,6 @@
+ import { createFileRoute, Link } from "@tanstack/react-router";
+-import { Section, SectionHeading, ServiceRows } from "@/components/site/Section";
++import { Reveal, SplitText, Magnetic } from "@/components/studio/motion";
++import { Section, ServiceRows } from "@/components/site/Section";
+ import { services } from "@/data/site";
+ 
+ export const Route = createFileRoute("/services")({
+@@ -25,30 +26,60 @@ export const Route = createFileRoute("/services")({
+ function ServicesPage() {
+   return (
+     <main>
+-      <Section last>
+-        <SectionHeading
+-          label="What we redesign"
+-          title="Five kinds of interfaces, one redesign pipeline."
+-        />
+-        <ServiceRows items={services} />
+-        <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
+-          Every project runs the same way: upload the files, pick a style, download the redesigned
+-          project. Nothing gets thrown out that doesn't need to be.
+-        </p>
+-        <div className="mt-8 flex flex-wrap gap-[14px]">
+-          <Link
+-            to="/projects"
+-            className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
+-          >
+-            Upload a project
+-          </Link>
+-          <Link
+-            to="/process"
+-            className="border border-primary px-[26px] py-[13px] text-[15px] font-medium text-foreground transition-colors hover:bg-paper-dim"
++      <section className="relative pt-[64px] pb-[20px]">
++        <div className="wrap">
++          <span
++            aria-hidden
++            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[16vw] leading-none lg:block"
+           >
+-            See the process
+-          </Link>
++            5
++          </span>
++          <div className="rise relative z-10">
++            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
++              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
++              services
++            </div>
++            <h1 className="mt-7 max-w-[16ch] text-[13vw] leading-[0.9] sm:text-[7.4vw]">
++              <SplitText text="Five kinds of interface." className="block" delay={0.05} />
++              <SplitText
++                text="One redesign pipeline."
++                className="block"
++                charClassName="aurora-text"
++                delay={0.3}
++              />
++            </h1>
++          </div>
+         </div>
++      </section>
++
++      <Section last>
++        <Reveal>
++          <ServiceRows items={services} />
++        </Reveal>
++        <Reveal delay={0.1}>
++          <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
++            Every project runs the same way: upload the files, pick a style, download the
++            redesigned project. Nothing gets thrown out that doesn't need to be.
++          </p>
++          <div className="mt-8 flex flex-wrap gap-[14px]">
++            <Magnetic>
++              <Link
++                to="/projects"
++                className="glow-aurora inline-block bg-revision px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
++              >
++                Upload a project
++              </Link>
++            </Magnetic>
++            <Magnetic>
++              <Link
++                to="/process"
++                className="glass inline-block px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-foreground uppercase transition-colors hover:text-revision"
++              >
++                See the process
++              </Link>
++            </Magnetic>
++          </div>
++        </Reveal>
+       </Section>
+     </main>
+   );
+diff --git a/src/routes/styles.tsx b/src/routes/styles.tsx
+index ebe12af..7ec292f 100644
+--- a/src/routes/styles.tsx
++++ b/src/routes/styles.tsx
+@@ -1,5 +1,6 @@
+ import { createFileRoute, Link } from "@tanstack/react-router";
+-import { Section, SectionHeading } from "@/components/site/Section";
++import { Reveal, SplitText } from "@/components/studio/motion";
++import { Section } from "@/components/site/Section";
+ import { PreviewGroups } from "@/components/site/PreviewTile";
+ import { styleGroups } from "@/data/site";
+ 
+@@ -23,16 +24,41 @@ export const Route = createFileRoute("/styles")({
+ });
+ 
+ function StylesPage() {
++  const total = styleGroups.reduce((n, g) => n + g.items.length, 0);
+   return (
+     <main>
++      <section className="relative pt-[64px] pb-[20px]">
++        <div className="wrap">
++          <span
++            aria-hidden
++            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[16vw] leading-none lg:block"
++          >
++            {total}
++          </span>
++          <div className="rise relative z-10">
++            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
++              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
++              pick a direction
++            </div>
++            <h1 className="mt-7 max-w-[20ch] text-[11vw] leading-[0.92] sm:text-[6vw]">
++              <SplitText text="A style directory," className="block" delay={0.05} />
++              <SplitText
++                text="grouped by what they share."
++                className="block"
++                charClassName="aurora-text"
++                delay={0.3}
++              />
++            </h1>
++          </div>
++        </div>
++      </section>
++
+       <Section last>
+-        <SectionHeading
+-          label="Pick a direction"
+-          title="A style directory, grouped by what they have in common."
+-        />
+-        <PreviewGroups groups={styleGroups} />
++        <Reveal>
++          <PreviewGroups groups={styleGroups} />
++        </Reveal>
+         <div className="mt-12">
+-          <Link to="/trends" className="text-[15px] underline underline-offset-4">
++          <Link to="/trends" className="text-[15px] underline underline-offset-4 hover:text-revision">
+             See the advanced patterns we build with
+           </Link>
+         </div>
+diff --git a/src/routes/trends.tsx b/src/routes/trends.tsx
+index 50d14ae..12bfb42 100644
+--- a/src/routes/trends.tsx
++++ b/src/routes/trends.tsx
+@@ -1,5 +1,6 @@
+ import { createFileRoute, Link } from "@tanstack/react-router";
+-import { Section, SectionHeading } from "@/components/site/Section";
++import { Reveal, SplitText } from "@/components/studio/motion";
++import { Section } from "@/components/site/Section";
+ import { PreviewGroups } from "@/components/site/PreviewTile";
+ import { trendGroups } from "@/data/site";
+ 
+@@ -25,14 +26,38 @@ export const Route = createFileRoute("/trends")({
+ function TrendsPage() {
+   return (
+     <main>
++      <section className="relative pt-[64px] pb-[20px]">
++        <div className="wrap">
++          <span
++            aria-hidden
++            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[15vw] leading-none lg:block"
++          >
++            ∞
++          </span>
++          <div className="rise relative z-10">
++            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
++              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
++              where interfaces are heading
++            </div>
++            <h1 className="mt-7 max-w-[20ch] text-[10.5vw] leading-[0.94] sm:text-[5.6vw]">
++              <SplitText text="Advanced patterns" className="block" delay={0.05} />
++              <SplitText
++                text="we build with."
++                className="block"
++                charClassName="aurora-text"
++                delay={0.3}
++              />
++            </h1>
++          </div>
++        </div>
++      </section>
++
+       <Section last>
+-        <SectionHeading
+-          label="Where interfaces are heading"
+-          title="Advanced patterns we build with, grouped by where they show up."
+-        />
+-        <PreviewGroups groups={trendGroups} />
++        <Reveal>
++          <PreviewGroups groups={trendGroups} />
++        </Reveal>
+         <div className="mt-12">
+-          <Link to="/work" className="text-[15px] underline underline-offset-4">
++          <Link to="/work" className="text-[15px] underline underline-offset-4 hover:text-revision">
+             See a redesign, before and after
+           </Link>
+         </div>
+diff --git a/src/routes/work.tsx b/src/routes/work.tsx
+index 5679e00..8d56077 100644
+--- a/src/routes/work.tsx
++++ b/src/routes/work.tsx
+@@ -1,5 +1,6 @@
+ import { createFileRoute, Link } from "@tanstack/react-router";
+-import { Section, SectionHeading } from "@/components/site/Section";
++import { Reveal, SplitText, Magnetic } from "@/components/studio/motion";
++import { Section } from "@/components/site/Section";
+ import { BeforeAfter } from "@/components/site/BeforeAfter";
+ 
+ export const Route = createFileRoute("/work")({
+@@ -21,40 +22,67 @@ export const Route = createFileRoute("/work")({
+   component: WorkPage,
+ });
+ 
++const marks = [
++  { label: "Kept", tone: "text-revision", body: "Your content, your brand, and the interactions your users already know." },
++  { label: "Redesigned", tone: "text-revision", body: "Hierarchy, spacing, density, and the sequence people read the screen in." },
++  { label: "Removed", tone: "text-redline", body: "Whatever competed for attention without earning it." },
++] as const;
++
+ function WorkPage() {
+   return (
+     <main>
+-      <Section last>
+-        <SectionHeading label="Show markup" title="The same screen, before and after the redesign." />
+-        <BeforeAfter />
+-        <div className="mt-12 grid grid-cols-1 gap-8 border-t border-border pt-10 md:grid-cols-3">
+-          <div>
+-            <div className="mb-2 text-sm font-semibold text-revision">Kept</div>
+-            <p className="text-[15px] text-ink-soft">
+-              Your content, your brand, and the interactions your users already know.
+-            </p>
+-          </div>
+-          <div>
+-            <div className="mb-2 text-sm font-semibold text-revision">Redesigned</div>
+-            <p className="text-[15px] text-ink-soft">
+-              Hierarchy, spacing, density, and the sequence people read the screen in.
+-            </p>
+-          </div>
+-          <div>
+-            <div className="mb-2 text-sm font-semibold text-redline">Removed</div>
+-            <p className="text-[15px] text-ink-soft">
+-              Whatever competed for attention without earning it.
+-            </p>
++      <section className="relative pt-[64px] pb-[20px]">
++        <div className="wrap">
++          <span
++            aria-hidden
++            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[15vw] leading-none lg:block"
++          >
++            V2
++          </span>
++          <div className="rise relative z-10">
++            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
++              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
++              show markup
++            </div>
++            <h1 className="mt-7 max-w-[20ch] text-[10.5vw] leading-[0.94] sm:text-[5.8vw]">
++              <SplitText text="The same screen," className="block" delay={0.05} />
++              <SplitText
++                text="before and after."
++                className="block"
++                charClassName="aurora-text"
++                delay={0.3}
++              />
++            </h1>
+           </div>
+         </div>
+-        <div className="mt-10">
+-          <Link
+-            to="/projects"
+-            className="border border-primary bg-primary px-[26px] py-[13px] text-[15px] font-medium text-primary-foreground transition-colors hover:bg-ink-soft"
+-          >
+-            Upload a project
+-          </Link>
++      </section>
++
++      <Section last>
++        <Reveal>
++          <BeforeAfter />
++        </Reveal>
++        <div className="mt-12 grid grid-cols-1 gap-8 border-t border-border pt-10 md:grid-cols-3">
++          {marks.map((m, i) => (
++            <Reveal key={m.label} delay={i * 0.1}>
++              <div className="mb-2 text-sm font-semibold">
++                <span className={m.tone}>{m.label}</span>
++              </div>
++              <p className="text-[15px] text-ink-soft">{m.body}</p>
++            </Reveal>
++          ))}
+         </div>
++        <Reveal delay={0.35}>
++          <div className="mt-10">
++            <Magnetic>
++              <Link
++                to="/projects"
++                className="glow-aurora inline-block bg-revision px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
++              >
++                Upload a project
++              </Link>
++            </Magnetic>
++          </div>
++        </Reveal>
+       </Section>
+     </main>
+   );
+diff --git a/src/styles.css b/src/styles.css
+index f84645b..cff7092 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -363,3 +363,368 @@
+     animation: none;
+   }
+ }
++
++/* =========================================================
++   Immersive UI system — form fields, badges, progress,
++   mobile nav, cursor spotlight, before/after showcase.
++   ========================================================= */
++
++@utility field {
++  width: 100%;
++  border: 1px solid var(--border);
++  background: oklch(1 0 0 / 0.04);
++  backdrop-filter: blur(6px);
++  -webkit-backdrop-filter: blur(6px);
++  padding: 12px 14px;
++  font-size: 15px;
++  color: var(--foreground);
++  transition:
++    border-color 0.2s ease,
++    background-color 0.2s ease,
++    box-shadow 0.2s ease;
++}
++
++.field::placeholder {
++  color: var(--muted-foreground);
++}
++
++.field:focus {
++  outline: none;
++  border-color: var(--revision);
++  background: oklch(1 0 0 / 0.06);
++  box-shadow: 0 0 0 3px oklch(from var(--revision) l c h / 0.18);
++}
++
++.field:disabled {
++  opacity: 0.55;
++  cursor: not-allowed;
++}
++
++select.field {
++  appearance: none;
++  -webkit-appearance: none;
++  cursor: pointer;
++  background-image:
++    linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%),
++    linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
++  background-position:
++    calc(100% - 21px) center,
++    calc(100% - 16px) center;
++  background-size: 5px 5px, 5px 5px;
++  background-repeat: no-repeat;
++  padding-right: 42px;
++}
++
++.dropzone {
++  position: relative;
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  justify-content: center;
++  gap: 10px;
++  padding: 44px 20px;
++  border: 1.5px dashed var(--border);
++  background: oklch(1 0 0 / 0.02);
++  text-align: center;
++  transition:
++    border-color 0.2s ease,
++    background-color 0.2s ease;
++}
++
++.dropzone.is-over,
++.dropzone:hover,
++.dropzone:focus-within {
++  border-color: var(--revision);
++  background: oklch(1 0 0 / 0.045);
++}
++
++.dropzone input[type="file"] {
++  position: absolute;
++  inset: 0;
++  height: 100%;
++  width: 100%;
++  opacity: 0;
++  cursor: pointer;
++}
++
++.badge {
++  display: inline-flex;
++  align-items: center;
++  gap: 7px;
++  padding: 4px 11px;
++  font-size: 11px;
++  letter-spacing: 0.14em;
++  text-transform: uppercase;
++  border: 1px solid var(--border);
++  color: var(--muted-foreground);
++  white-space: nowrap;
++}
++
++.badge::before {
++  content: "";
++  height: 6px;
++  width: 6px;
++  border-radius: 50%;
++  background: currentColor;
++  flex: none;
++}
++
++.badge-active {
++  color: var(--amber);
++  border-color: oklch(from var(--amber) l c h / 0.4);
++}
++
++.badge-active::before {
++  box-shadow: 0 0 8px var(--amber);
++  animation: pulse-dot 1.4s ease-in-out infinite;
++}
++
++.badge-done {
++  color: var(--revision);
++  border-color: oklch(from var(--revision) l c h / 0.4);
++}
++
++.badge-error {
++  color: var(--destructive);
++  border-color: oklch(from var(--destructive) l c h / 0.4);
++}
++
++@keyframes pulse-dot {
++  0%,
++  100% {
++    opacity: 1;
++  }
++  50% {
++    opacity: 0.35;
++  }
++}
++
++.progress-track {
++  position: relative;
++  height: 6px;
++  width: 100%;
++  background: var(--border);
++  overflow: hidden;
++}
++
++.progress-fill {
++  position: absolute;
++  inset: 0 auto 0 0;
++  width: 0%;
++  background: linear-gradient(90deg, var(--revision), var(--violet));
++  box-shadow: 0 0 12px oklch(from var(--revision) l c h / 0.6);
++  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
++}
++
++.menu-panel {
++  display: flex;
++  flex-direction: column;
++  gap: 2px;
++  padding: 10px;
++}
++
++.menu-panel a {
++  padding: 13px 14px;
++  font-size: 15.5px;
++  color: var(--ink-soft);
++  transition:
++    background-color 0.2s ease,
++    color 0.2s ease;
++}
++
++.menu-panel a:hover,
++.menu-panel a.is-active {
++  background: oklch(1 0 0 / 0.045);
++  color: var(--revision);
++}
++
++.cursor-spotlight {
++  position: absolute;
++  inset: 0;
++  opacity: 0;
++  transition: opacity 0.4s ease;
++  background: radial-gradient(
++    620px circle at var(--mx, 50%) var(--my, 18%),
++    oklch(0.84 0.19 152 / 0.12),
++    transparent 60%
++  );
++}
++
++.cursor-spotlight.is-active {
++  opacity: 1;
++}
++
++@media (pointer: coarse) {
++  .cursor-spotlight {
++    display: none;
++  }
++}
++
++/* ---------- Before / after showcase ---------- */
++
++.mock-frame {
++  position: relative;
++  display: flex;
++  flex-direction: column;
++  gap: 14px;
++  padding: 20px;
++  border: 1px solid var(--border);
++  background: var(--paper-dim);
++  overflow: hidden;
++  transition:
++    background-color 0.6s ease,
++    border-color 0.6s ease,
++    padding 0.6s cubic-bezier(0.22, 1, 0.36, 1);
++}
++
++.mock-frame::before {
++  content: "";
++  position: absolute;
++  inset: 0;
++  pointer-events: none;
++  opacity: 0;
++  transition: opacity 0.6s ease;
++  background:
++    radial-gradient(120% 90% at 12% 0%, oklch(0.84 0.19 152 / 0.16), transparent 60%),
++    radial-gradient(120% 90% at 100% 100%, oklch(0.75 0.16 295 / 0.14), transparent 55%);
++}
++
++.mock-block {
++  background: oklch(0.55 0.02 90 / 0.4);
++  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
++}
++
++.mock-nav {
++  height: 22px;
++  width: 58%;
++}
++
++.mock-hero {
++  height: 64px;
++  width: 100%;
++}
++
++.mock-line {
++  height: 10px;
++}
++
++.mock-row {
++  display: flex;
++  gap: 8px;
++  margin-top: 2px;
++}
++
++.mock-card {
++  flex: 1;
++  height: 72px;
++}
++
++.mock-before {
++  gap: 9px;
++  padding: 18px;
++  background: #e7e2d2;
++  border-color: #c9c2ac;
++}
++
++.mock-before .mock-block {
++  background: #8b8672;
++  border-radius: 0;
++  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.22);
++}
++
++.mock-before .mock-hero {
++  height: 56px;
++}
++
++.mock-before .mock-row {
++  gap: 5px;
++}
++
++.mock-after {
++  padding: 30px;
++  gap: 18px;
++  border-color: oklch(0.84 0.19 152 / 0.35);
++}
++
++.mock-after::before {
++  opacity: 1;
++}
++
++.mock-after .mock-block {
++  background: linear-gradient(145deg, oklch(1 0 0 / 0.1), oklch(1 0 0 / 0.02));
++  border: 1px solid oklch(1 0 0 / 0.1);
++  backdrop-filter: blur(10px);
++  -webkit-backdrop-filter: blur(10px);
++  box-shadow: 0 14px 30px -18px oklch(0 0 0 / 0.6);
++}
++
++.mock-after .mock-nav {
++  width: 30%;
++  height: 30px;
++}
++
++.mock-after .mock-hero {
++  height: 100px;
++}
++
++.mock-after .mock-row {
++  gap: 16px;
++}
++
++.mock-after .mock-card {
++  cursor: default;
++  transition:
++    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
++    box-shadow 0.35s ease;
++}
++
++.mock-after .mock-card:hover {
++  transform: translateY(-4px);
++  box-shadow: 0 20px 34px -16px oklch(0 0 0 / 0.7);
++}
++
++.switch {
++  position: relative;
++  flex: none;
++  height: 26px;
++  width: 46px;
++  border: 1px solid var(--border);
++  background: oklch(1 0 0 / 0.05);
++  transition:
++    background-color 0.25s ease,
++    border-color 0.25s ease;
++}
++
++.switch::after {
++  content: "";
++  position: absolute;
++  top: 3px;
++  left: 3px;
++  height: 18px;
++  width: 18px;
++  background: var(--ink-soft);
++  transition:
++    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
++    background-color 0.25s ease;
++}
++
++.switch.on {
++  border-color: var(--revision);
++  background: oklch(from var(--revision) l c h / 0.16);
++}
++
++.switch.on::after {
++  transform: translateX(20px);
++  background: var(--revision);
++  box-shadow: 0 0 10px var(--revision);
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .badge-active::before {
++    animation: none;
++  }
++  .mock-block,
++  .mock-frame {
++    transition: none;
++  }
++}

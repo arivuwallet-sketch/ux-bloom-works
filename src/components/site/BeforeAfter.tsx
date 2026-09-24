@@ -5,7 +5,8 @@ export function BeforeAfter() {
 
   return (
     <div>
-      <div className="mb-8 flex items-center gap-3 text-[14.5px] text-ink-soft">
+      <div className="mb-8 flex items-center gap-3 text-[14.5px]">
+        <span className={after ? "text-muted-foreground" : "text-foreground"}>Before</span>
         <button
           type="button"
           aria-pressed={after}
@@ -13,7 +14,7 @@ export function BeforeAfter() {
           onClick={() => setAfter((v) => !v)}
           className={`switch ${after ? "on" : ""}`}
         />
-        <span>Showing: {after ? "after" : "before"}</span>
+        <span className={after ? "text-revision" : "text-muted-foreground"}>After</span>
       </div>
 
       <div className={`mock-frame ${after ? "mock-after" : "mock-before"}`}>
