@@ -148,6 +148,44 @@ export type Database = {
         }
         Relationships: []
       }
+      redesign_chats: {
+        Row: {
+          content: string
+          created_at: string
+          file_name: string | null
+          id: string
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          project_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redesign_chats_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
