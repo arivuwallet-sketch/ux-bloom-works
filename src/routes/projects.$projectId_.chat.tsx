@@ -11,7 +11,7 @@ import { uploadFileList } from "@/lib/upload-files";
 import { downloadProjectZip } from "@/lib/download-zip";
 import { sendChatMessage } from "@/lib/chat-redesign.functions";
 
-export const Route = createFileRoute("/projects/$projectId/chat")({
+export const Route = createFileRoute("/projects/$projectId_/chat")({
   head: () => ({
     meta: [
       { title: "Rezyn Chat — conversational redesign" },
