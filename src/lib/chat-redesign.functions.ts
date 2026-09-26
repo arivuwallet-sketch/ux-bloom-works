@@ -151,13 +151,16 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       .reverse()
       .map((row) => ({ role: row.role === "assistant" ? "assistant" : "user", content: row.content }));
 
-    await supabase.from("redesign_chats").insert({
+    const { error: userMsgError } = await supabase.from("redesign_chats").insert({
       project_id: data.projectId,
       user_id: userId,
       role: "user",
       content: data.message,
       file_name: file.name,
     });
+    if (userMsgError) {
+      throw new Error(`Could not save your message (${userMsgError.message}) — has the redesign_chats migration been applied?`);
+    }
 
     try {
       let currentContent = file.redesigned_content ?? file.content ?? "";
@@ -169,10 +172,11 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       }
       if (!currentContent.trim()) throw new Error("File is empty");
 
-      await supabase
+      const { error: startErr } = await supabase
         .from("project_files")
         .update({ status: "redesigning", redesign_error: null })
         .eq("id", file.id);
+      if (startErr) throw new Error(startErr.message);
 
       const { reply, file: updatedFile } = await chatRedesignSource({
         fileName: file.name,
@@ -181,22 +185,26 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         history: chatHistory,
       });
 
-      await supabase
+      const { error: doneErr } = await supabase
         .from("project_files")
         .update({ status: "done", redesigned_content: updatedFile, redesign_error: null })
         .eq("id", file.id);
+      if (doneErr) throw new Error(doneErr.message);
 
-      await supabase.from("redesign_chats").insert({
+      const { error: replyErr } = await supabase.from("redesign_chats").insert({
         project_id: data.projectId,
         user_id: userId,
         role: "assistant",
         content: reply,
         file_name: file.name,
       });
+      if (replyErr) throw new Error(replyErr.message);
 
       return { reply, fileName: file.name };
     } catch (err) {
       const messageText = err instanceof Error ? err.message : "That edit failed";
+      // Best-effort housekeeping — a failure recording the failure shouldn't mask
+      // the original error, so these two calls deliberately don't check .error.
       await supabase
         .from("project_files")
         .update({ status: "failed", redesign_error: messageText })

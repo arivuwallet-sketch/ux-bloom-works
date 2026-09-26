@@ -11,7 +11,7 @@ import { uploadFileList } from "@/lib/upload-files";
 import { downloadProjectZip } from "@/lib/download-zip";
 import { sendChatMessage } from "@/lib/chat-redesign.functions";
 
-export const Route = createFileRoute("/projects/$projectId_/chat")({
+export const Route = createFileRoute("/projects/$projectId/chat")({
   head: () => ({
     meta: [
       { title: "Rezyn Chat — conversational redesign" },
@@ -29,6 +29,13 @@ export const Route = createFileRoute("/projects/$projectId_/chat")({
   }),
   component: ChatRedesignPage,
 });
+
+function errorMessage(err: unknown): string | null {
+  if (err && typeof err === "object" && "message" in err && typeof err.message === "string") {
+    return err.message;
+  }
+  return null;
+}
 
 const ALL_FILES = "all";
 
@@ -143,9 +150,13 @@ function ChatRedesignPage() {
       for (const file of targets) {
         try {
           await sendChat({ data: { projectId, fileId: file.id, message } });
-        } catch {
-          // The server already records the failure as a chat message; move on to
-          // the next file so one bad file doesn't stop a whole-project instruction.
+        } catch (err) {
+          // The server *usually* also records this as a chat message — but if the
+          // failure is that redesign_chats itself is unreachable (e.g. the migration
+          // hasn't been applied), that record never lands, so surface it here too
+          // rather than fail silently. Keep going so one bad file doesn't stop a
+          // whole-project instruction.
+          setChatError(err instanceof Error ? err.message : `${file.name}: that edit failed`);
         }
         await invalidateAll();
       }
@@ -272,7 +283,16 @@ function ChatRedesignPage() {
           <Reveal delay={0.08}>
             <div className="glass flex h-[560px] flex-col p-0">
               <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-6">
-                {(chat.data?.length ?? 0) === 0 ? (
+                {chat.isError ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-destructive">
+                    <p className="max-w-[360px] text-[14.5px]">
+                      Couldn't load the conversation
+                      {errorMessage(chat.error) ? `: ${errorMessage(chat.error)}` : "."} — if you
+                      haven't run the redesign_chats migration (0004) against your Supabase
+                      project yet, that's almost certainly why.
+                    </p>
+                  </div>
+                ) : (chat.data?.length ?? 0) === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
                     <Sparkles className="h-6 w-6" />
                     <p className="max-w-[320px] text-[14.5px]">
