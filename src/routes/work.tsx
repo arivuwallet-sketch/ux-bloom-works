@@ -1,88 +1,79 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Reveal, SplitText, Magnetic } from "@/components/studio/motion";
-import { Section } from "@/components/site/Section";
+import { ArrowUpRight, Check, Minus, RefreshCcw } from "lucide-react";
+import { Reveal } from "@/components/studio/motion";
+import { PageHero } from "@/components/site/PageHero";
+import { Section, SectionHeading } from "@/components/site/Section";
 import { BeforeAfter } from "@/components/site/BeforeAfter";
 
 export const Route = createFileRoute("/work")({
   head: () => ({
     meta: [
-      { title: "Work — The same screen, before and after | Rezyn" },
+      { title: "Proof — before and after interface transformation | Rezyn" },
       {
         name: "description",
-        content:
-          "See what a redesign changes: hierarchy, spacing, and how many things compete for attention — with your content left intact.",
-      },
-      { property: "og:title", content: "Work — The same screen, before and after" },
-      {
-        property: "og:description",
-        content: "A marked-up look at what a Rezyn redesign changes, and what it leaves alone.",
+        content: "See how Rezyn changes visual hierarchy, spacing, density and interface perception while keeping the product content and behavior anchored.",
       },
     ],
   }),
   component: WorkPage,
 });
 
-const marks = [
-  { label: "Kept", tone: "text-revision", body: "Your content, your brand, and the interactions your users already know." },
-  { label: "Redesigned", tone: "text-revision", body: "Hierarchy, spacing, density, and the sequence people read the screen in." },
-  { label: "Removed", tone: "text-redline", body: "Whatever competed for attention without earning it." },
-] as const;
+const changes = [
+  { icon: Check, label: "Preserved", body: "Content, product meaning, routes and familiar interactions stay anchored." },
+  { icon: RefreshCcw, label: "Transformed", body: "Hierarchy, spacing, visual density, typography, surfaces and interaction rhythm are rebuilt." },
+  { icon: Minus, label: "Reduced", body: "Competing visual noise and low-value decoration lose priority so the core product reads faster." },
+];
 
 function WorkPage() {
   return (
     <main>
-      <section className="relative pt-[64px] pb-[20px]">
-        <div className="wrap">
-          <span
-            aria-hidden
-            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[15vw] leading-none lg:block"
-          >
-            V2
-          </span>
-          <div className="rise relative z-10">
-            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
-              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
-              show markup
-            </div>
-            <h1 className="mt-7 max-w-[20ch] text-[10.5vw] leading-[0.94] sm:text-[5.8vw]">
-              <SplitText text="The same screen," className="block" delay={0.05} />
-              <SplitText
-                text="before and after."
-                className="block"
-                charClassName="aurora-text"
-                delay={0.3}
-              />
-            </h1>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        index="05"
+        eyebrow="Transformation proof"
+        title="Same product."
+        accent="Different perception."
+        description="A useful redesign does not need to disguise the product. It changes what people notice first, how information groups together and how confidently the interface responds."
+        stat="V2"
+        statLabel="same source / new system"
+        action={{ to: "/projects", label: "Transform your product" }}
+      />
 
-      <Section last>
+      <Section>
+        <SectionHeading
+          label="Visual delta"
+          title="The difference should be obvious. The product should still be yours."
+          description="Move between the original and transformed states to see where hierarchy, depth and rhythm change."
+        />
         <Reveal>
           <BeforeAfter />
         </Reveal>
-        <div className="mt-12 grid grid-cols-1 gap-8 border-t border-border pt-10 md:grid-cols-3">
-          {marks.map((m, i) => (
-            <Reveal key={m.label} delay={i * 0.1}>
-              <div className="mb-2 text-sm font-semibold">
-                <span className={m.tone}>{m.label}</span>
-              </div>
-              <p className="text-[15px] text-ink-soft">{m.body}</p>
-            </Reveal>
-          ))}
+      </Section>
+
+      <Section last tone="quiet">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {changes.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Reveal key={item.label} delay={index * 0.08}>
+                <article className="glass min-h-[300px] p-7">
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="font-mono text-[9px] tracking-[0.14em] text-muted-foreground">0{index + 1}</span>
+                  </div>
+                  <h3 className="mt-20 text-[34px] leading-[0.95]">{item.label}</h3>
+                  <p className="mb-0 mt-4 max-w-[36ch] text-[14px] leading-7 text-ink-soft">{item.body}</p>
+                </article>
+              </Reveal>
+            );
+          })}
         </div>
-        <Reveal delay={0.35}>
-          <div className="mt-10">
-            <Magnetic>
-              <Link
-                to="/projects"
-                className="glow-aurora inline-block bg-revision px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-              >
-                Upload a project
-              </Link>
-            </Magnetic>
-          </div>
-        </Reveal>
+        <div className="mt-12 flex justify-end">
+          <Link to="/projects" className="button-primary">
+            Build the next version <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
       </Section>
     </main>
   );
