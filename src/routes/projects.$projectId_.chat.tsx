@@ -27,7 +27,7 @@ export const Route = createFileRoute("/projects/$projectId/chat")({
       { title: "Rezyn Chat — conversational interface transformation" },
       {
         name: "description",
-        content: "Describe interface changes in plain language and transform project files conversationally.",
+        content: "Discuss, plan and redesign project interfaces through a conversation-first AI design copilot.",
       },
     ],
   }),
@@ -206,23 +206,46 @@ function ChatRedesignPage() {
     setInput("");
     setChatError(null);
     setSending(true);
+    setCurrentRunFile(null);
     setRunProgress(0);
-    setRunTotal(targets.length);
+    setRunTotal(1);
 
     const failures: string[] = [];
+    let confirmedRedesign = false;
 
     try {
       for (let index = 0; index < targets.length; index += 1) {
         const file = targets[index];
-        setCurrentRunFile(file.name);
+        if (confirmedRedesign) setCurrentRunFile(file.name);
+
         try {
-          await sendChat({ data: { projectId, fileId: file.id, message } });
+          const result = await sendChat({
+            data: {
+              projectId,
+              fileId: file.id,
+              message,
+              skipIntent: confirmedRedesign,
+              recordUserMessage: index === 0,
+            },
+          });
+
+          if (result.mode === "conversation") {
+            setRunProgress(1);
+            setRunTotal(1);
+            await invalidateAll();
+            break;
+          }
+
+          confirmedRedesign = true;
+          setRunTotal(targets.length);
+          setCurrentRunFile(file.name);
+          setRunProgress(index + 1);
         } catch (err) {
           failures.push(
-            `${file.name}: ${err instanceof Error ? err.message : "that edit failed"}`,
+            `${file.name}: ${err instanceof Error ? err.message : "that request failed"}`,
           );
         }
-        setRunProgress(index + 1);
+
         await invalidateAll();
       }
 
@@ -298,9 +321,9 @@ function ChatRedesignPage() {
               >
                 <ArrowLeft className="h-4 w-4" /> {project.data.name}
               </Link>
-              <span className="eyebrow block">Conversational transformation</span>
+              <span className="eyebrow block">Conversational prompt redesign</span>
               <h1 className="mb-0 mt-3 max-w-[13ch] text-[clamp(40px,5.5vw,72px)] leading-[0.88]">
-                Describe the next version.
+                Talk it through. Change it when ready.
               </h1>
             </div>
             <button
@@ -440,9 +463,9 @@ function ChatRedesignPage() {
                     <Bot className="h-4 w-4" />
                   </span>
                   <div>
-                    <div className="text-[13px] font-medium">Rezyn transformation agent</div>
+                    <div className="text-[13px] font-medium">Rezyn design copilot</div>
                     <div className="font-mono text-[8px] tracking-[0.1em] text-muted-foreground uppercase">
-                      Target / {activeFileLabel}
+                      Conversation target / {activeFileLabel}
                     </div>
                   </div>
                 </div>
@@ -452,16 +475,16 @@ function ChatRedesignPage() {
               {sending ? (
                 <div className="agent-livebar" aria-live="polite">
                   <span className="agent-livebar__state">
-                    <span className="agent-livebar__pulse" /> Agent live
+                    <span className="agent-livebar__pulse" /> Rezyn thinking
                   </span>
                   <strong>
                     {latestAgentEvent?.content ??
                       (currentRunFile
-                        ? `Starting ${currentRunFile}…`
-                        : "Preparing transformation…")}
+                        ? `Working on ${currentRunFile}…`
+                        : "Understanding your message before deciding whether anything should change…")}
                   </strong>
                   <span className="agent-livebar__count">
-                    {Math.min(runProgress + (currentRunFile ? 1 : 0), runTotal)} / {runTotal}
+                    {runProgress} / {runTotal}
                   </span>
                 </div>
               ) : null}
@@ -480,13 +503,13 @@ function ChatRedesignPage() {
                   </div>
                 ) : (chat.data?.length ?? 0) === 0 ? (
                   <div className="flex min-h-full items-start justify-center pt-10 text-center sm:pt-14">
-                    <div className="max-w-[460px]">
+                    <div className="max-w-[500px]">
                       <span className="mx-auto mb-5 flex h-12 w-12 items-center justify-center border border-foreground bg-[var(--revision-bg)] text-foreground">
                         <Sparkles className="h-5 w-5" />
                       </span>
-                      <h2 className="text-[30px] leading-none">Tell the interface what to become.</h2>
+                      <h2 className="text-[30px] leading-none">Chat first. Redesign when you say so.</h2>
                       <p className="mt-4 text-[14px] leading-7 text-ink-soft">
-                        Try “make the hero more cinematic”, “reduce dashboard density”, or “rebuild the navigation as a floating command bar”.
+                        Say hello, ask questions, brainstorm, compare design directions, or request feedback. Rezyn only edits files when you clearly ask it to make a change.
                       </p>
                     </div>
                   </div>
@@ -555,7 +578,7 @@ function ChatRedesignPage() {
                       }
                     }}
                     disabled={sending}
-                    placeholder={`Describe what should change in ${activeFileLabel}…`}
+                    placeholder={`Chat, ask a question, or describe a change for ${activeFileLabel}…`}
                     rows={2}
                   />
                   <button
@@ -563,14 +586,20 @@ function ChatRedesignPage() {
                     onClick={() => void handleSend()}
                     disabled={sending || !input.trim() || (files.data?.length ?? 0) === 0}
                     className="button-primary h-[54px] w-[54px] shrink-0 p-0! disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="Send redesign instruction"
+                    aria-label="Send chat message"
                   >
                     <Send className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">
                   <span>Enter to send · Shift + Enter for a new line</span>
-                  <span>{sending ? `Agent working on ${currentRunFile ?? activeFileLabel}` : `Editing ${activeFileLabel}`}</span>
+                  <span>
+                    {sending
+                      ? currentRunFile
+                        ? `Editing ${currentRunFile}`
+                        : "Understanding intent"
+                      : `Chat freely · explicit edit requests modify ${activeFileLabel}`}
+                  </span>
                 </div>
               </div>
             </section>
