@@ -1,0 +1,101 @@
+/* Auth + operational workspace layouts in the Rezyn archive language */
+.archive-auth { padding: clamp(110px,11vw,160px) 0 110px; }
+.archive-auth__rule,
+.archive-workspace-page__topline {
+  display:flex; justify-content:space-between; gap:20px; padding:7px 0;
+  border-top:2px solid #11110f; border-bottom:1px solid #11110f;
+  font:700 8px/1.2 "JetBrains Mono",monospace; letter-spacing:.13em; text-transform:uppercase;
+}
+.archive-auth__grid { display:grid; grid-template-columns:1.1fr .9fr; min-height:650px; border-bottom:2px solid #11110f; }
+.archive-auth__intro { padding:clamp(34px,5vw,74px) clamp(28px,5vw,78px) 52px 0; border-right:1px solid #11110f; display:flex; flex-direction:column; }
+.archive-auth__index { font:700 9px/1 "JetBrains Mono",monospace; letter-spacing:.13em; }
+.archive-auth__intro h1 { margin:clamp(70px,9vw,128px) 0 0; max-width:8ch; font-size:clamp(68px,9vw,138px); line-height:.79; letter-spacing:-.085em; text-transform:none; }
+.archive-auth__intro > p { max-width:600px; margin:36px 0 0; color:#4d483f; font-size:17px; line-height:1.7; }
+.archive-auth__stamp { margin-top:auto; max-width:470px; display:grid; grid-template-columns:44px 1fr; align-items:center; gap:14px; padding:16px; border:1px solid #11110f; background:#c7ff1f; }
+.archive-auth__stamp strong,.archive-auth__stamp span { display:block; }
+.archive-auth__stamp strong { font-size:13px; text-transform:uppercase; }
+.archive-auth__stamp span { margin-top:3px; font:600 8px/1.35 "JetBrains Mono",monospace; letter-spacing:.08em; }
+.archive-auth__panel { padding:clamp(32px,5vw,72px); background:#e7e2d6; display:flex; flex-direction:column; justify-content:center; }
+.archive-auth__panel-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:42px; padding-bottom:12px; border-bottom:2px solid #11110f; font:700 10px/1 "JetBrains Mono",monospace; letter-spacing:.12em; text-transform:uppercase; }
+.archive-auth__google { width:100%; }
+.archive-auth__divider { position:relative; margin:28px 0; text-align:center; font:600 8px/1 "JetBrains Mono",monospace; letter-spacing:.12em; }
+.archive-auth__divider::before { content:""; position:absolute; left:0; right:0; top:50%; border-top:1px solid #11110f; }
+.archive-auth__divider span { position:relative; padding:0 10px; background:#e7e2d6; }
+.archive-auth__form { display:grid; gap:20px; }
+.archive-auth__form label,.archive-form-field label { display:block; margin-bottom:8px; font:700 8px/1 "JetBrains Mono",monospace; letter-spacing:.12em; text-transform:uppercase; }
+.archive-auth__error,.archive-project-form__error { margin:0; color:#b7291f; font-size:12px; }
+.archive-auth__notice { margin:0; color:#a5340d; font-size:12px; }
+.archive-auth__submit { width:100%; }
+.archive-auth__switch { margin-top:20px; padding:0; border:0; border-bottom:1px solid #11110f; background:transparent; font-size:11px; cursor:pointer; }
+.archive-auth__switch:hover { background:#c7ff1f; }
+
+.archive-workspace-page { padding:clamp(110px,11vw,150px) 0 120px; }
+.archive-workspace-page__hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(270px,30%); border-bottom:2px solid #11110f; }
+.archive-workspace-page__hero > div { padding:clamp(42px,6vw,82px) 50px 58px 0; }
+.archive-workspace-page__index { font:700 9px/1 "JetBrains Mono",monospace; letter-spacing:.13em; }
+.archive-workspace-page__hero h1 { margin:clamp(54px,8vw,110px) 0 0; max-width:9ch; font-size:clamp(68px,9vw,136px); line-height:.79; letter-spacing:-.085em; text-transform:none; }
+.archive-workspace-page__hero aside { padding:24px; border-left:1px solid #11110f; background:#c7ff1f; display:flex; flex-direction:column; justify-content:flex-end; }
+.archive-workspace-page__hero aside > span { margin-bottom:auto; font:700 8px/1 "JetBrains Mono",monospace; letter-spacing:.12em; }
+.archive-workspace-page__hero aside strong { font-size:clamp(54px,6vw,88px); line-height:.8; letter-spacing:-.07em; }
+.archive-workspace-page__hero aside p { max-width:28ch; margin:18px 0 0; font-size:12px; line-height:1.55; }
+.archive-workspace-page__grid { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); border-bottom:2px solid #11110f; }
+.archive-project-form { padding:50px 50px 70px 0; border-right:1px solid #11110f; }
+.archive-project-list { padding:50px 0 70px 50px; }
+.archive-project-form__head,.archive-project-list__head { display:flex; justify-content:space-between; gap:16px; padding-bottom:12px; margin-bottom:34px; border-bottom:2px solid #11110f; font:700 8px/1 "JetBrains Mono",monospace; letter-spacing:.12em; }
+.archive-project-form form { display:grid; gap:22px; }
+.archive-project-form__columns { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.archive-project-form__submit { justify-self:start; }
+.archive-project-list__empty { min-height:340px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:12px; border-top:1px solid #11110f; border-bottom:1px solid #11110f; }
+.archive-project-list__empty strong { font-size:26px; letter-spacing:-.04em; }
+.archive-project-list__empty p { max-width:420px; margin:0; color:#5d574d; font-size:13px; line-height:1.6; }
+.archive-project-list__rows { border-top:2px solid #11110f; }
+.archive-project-list__columns,.archive-project-row { display:grid; grid-template-columns:54px minmax(150px,1fr) minmax(130px,.7fr) 44px; align-items:center; }
+.archive-project-list__columns { min-height:30px; border-bottom:1px solid #11110f; font:700 8px/1 "JetBrains Mono",monospace; letter-spacing:.12em; }
+.archive-project-row { min-height:92px; border-bottom:1px solid #11110f; color:#11110f; text-decoration:none; transition:background .15s ease; }
+.archive-project-row:hover { background:#c7ff1f; }
+.archive-project-row > span { font:700 9px/1 "JetBrains Mono",monospace; }
+.archive-project-row strong { display:block; font-size:20px; letter-spacing:-.04em; }
+.archive-project-row small { display:block; margin-top:5px; font:600 8px/1 "JetBrains Mono",monospace; letter-spacing:.09em; text-transform:uppercase; color:#615b50; }
+.archive-project-row em { font-style:normal; font-size:11px; color:#504b43; }
+
+/* Project detail + chat keep their logic-heavy structure, but all panels now behave like archive sheets. */
+.archive-app main[class*="pt-[128px]"] { padding-top:clamp(110px,11vw,148px) !important; }
+.archive-app main[class*="pt-[128px]"] > .wrap > header { border-top:2px solid #11110f !important; border-bottom:2px solid #11110f !important; padding-top:16px !important; }
+.archive-app main[class*="pt-[128px]"] h1 { text-transform:none !important; letter-spacing:-.075em !important; }
+.archive-app main[class*="pt-[128px]"] section.glass,
+.archive-app main[class*="pt-[128px]"] div.glass { background:#f7f4eb !important; }
+.archive-app main[class*="pt-[128px]"] section.glass > div:first-child { border-bottom-color:#11110f; }
+.archive-app main[class*="pt-[128px]"] .rounded-xl,
+.archive-app main[class*="pt-[128px]"] .rounded-2xl,
+.archive-app main[class*="pt-[128px]"] .rounded-full { border-radius:0 !important; }
+.archive-app main[class*="pt-[128px]"] [class*="border-white"] { border-color:#11110f !important; }
+.archive-app main[class*="pt-[128px]"] [class*="bg-white"] { background:#e7e2d6 !important; }
+.archive-app main[class*="pt-[128px]"] [class*="text-violet"] { color:#d44310 !important; }
+.archive-app main[class*="pt-[128px]"] a.group:hover { background:#c7ff1f; }
+
+/* Global square-up for the archive system. */
+.archive-app .rounded-xl,.archive-app .rounded-2xl,.archive-app .rounded-3xl { border-radius:0 !important; }
+
+@media (max-width:960px) {
+  .archive-auth__grid,.archive-workspace-page__hero,.archive-workspace-page__grid { grid-template-columns:1fr; }
+  .archive-auth__intro { border-right:0; border-bottom:1px solid #11110f; padding-right:0; }
+  .archive-auth__intro h1 { margin-top:70px; }
+  .archive-auth__stamp { margin-top:56px; }
+  .archive-workspace-page__hero > div { padding-right:0; }
+  .archive-workspace-page__hero aside { min-height:260px; border-left:0; border-top:1px solid #11110f; }
+  .archive-project-form { padding-right:0; border-right:0; border-bottom:1px solid #11110f; }
+  .archive-project-list { padding-left:0; }
+}
+
+@media (max-width:620px) {
+  .archive-auth,.archive-workspace-page { padding-top:92px; }
+  .archive-auth__grid { min-height:0; }
+  .archive-auth__intro,.archive-auth__panel { padding:30px 0; }
+  .archive-auth__intro h1,.archive-workspace-page__hero h1 { font-size:clamp(58px,17vw,88px); }
+  .archive-workspace-page__hero > div,.archive-project-form,.archive-project-list { padding-top:32px; padding-bottom:46px; }
+  .archive-project-form__columns { grid-template-columns:1fr; }
+  .archive-project-list__columns { display:none; }
+  .archive-project-row { grid-template-columns:40px 1fr 28px; padding:16px 0; }
+  .archive-project-row em { grid-column:2; margin-top:8px; }
+  .archive-project-row svg { grid-column:3; grid-row:1 / span 2; }
+}
