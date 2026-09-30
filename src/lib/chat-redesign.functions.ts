@@ -5,113 +5,222 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
 
+const MAX_SOURCE_CHARS = 300_000;
+const CHAT_MODELS = ["openai/gpt-6-astra", "google/gemini-2.5-flash"] as const;
+const CHAT_REASONING_EFFORT = "high";
+const TRANSIENT_STATUS = new Set([408, 429, 500, 502, 503, 504]);
+
+type ChatTurn = { role: "user" | "assistant"; content: string };
+type GatewayMessage = { role: "system" | "user" | "assistant"; content: string };
+type RedesignResult = { reply: string; file: string; model: string };
+
 function isTextFile(name: string) {
   return TEXT_EXT.test(name);
 }
 
-type ChatTurn = { role: "user" | "assistant"; content: string };
+function extensionOf(name: string) {
+  const match = name.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match?.[1] ?? "";
+}
 
-// Rezyn Chat's model — OpenAI's GPT-6 Astra via Lovable's AI Gateway, at high reasoning
-// effort. This is a frontier-tier model (materially more expensive and slower per turn
-// than the flash model the style-based pipeline uses in redesign.functions.ts) — swap
-// the string below if you'd rather trade some quality back for cost/speed.
-const CHAT_MODEL = "openai/gpt-6-astra";
-const CHAT_REASONING_EFFORT = "high";
+function stripOuterFence(value: string) {
+  return value.replace(/^```[a-zA-Z0-9_-]*\n?/, "").replace(/\n?```$/, "").trim();
+}
+
+function validateGeneratedFile(fileName: string, original: string, candidate: string) {
+  const output = candidate.trim();
+  if (!output) throw new Error("AI returned an empty file");
+
+  if (original.length > 4_000 && output.length < original.length * 0.15) {
+    throw new Error("AI output looks truncated");
+  }
+
+  const ext = extensionOf(fileName);
+  if (ext === "json") {
+    try {
+      JSON.parse(output);
+    } catch {
+      throw new Error("AI returned invalid JSON");
+    }
+  }
+
+  if (!["md", "mdx", "txt"].includes(ext) && /^```/.test(output)) {
+    throw new Error("AI returned markdown instead of source code");
+  }
+
+  if (/^(here(?:'s| is)|sure[,!]|i(?:'ve| have) updated)/i.test(output)) {
+    throw new Error("AI returned commentary instead of a complete source file");
+  }
+
+  return output;
+}
+
+function parseStructuredResult(rawValue: string, fileName: string, original: string) {
+  const raw = stripOuterFence(rawValue);
+
+  const parse = (text: string) => {
+    try {
+      const parsed = JSON.parse(text) as { reply?: unknown; file?: unknown };
+      if (typeof parsed.file !== "string") return null;
+      const file = validateGeneratedFile(fileName, original, parsed.file);
+      const reply =
+        typeof parsed.reply === "string" && parsed.reply.trim()
+          ? parsed.reply.trim().slice(0, 500)
+          : `Updated ${fileName}.`;
+      return { reply, file };
+    } catch {
+      return null;
+    }
+  };
+
+  const direct = parse(raw);
+  if (direct) return direct;
+
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const extracted = parse(raw.slice(firstBrace, lastBrace + 1));
+    if (extracted) return extracted;
+  }
+
+  return null;
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function callGateway(messages: GatewayMessage[]) {
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  if (!apiKey) throw new Error("AI is not configured");
+
+  let lastError = "AI request failed";
+
+  for (const model of CHAT_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 120_000);
+
+      try {
+        const body: Record<string, unknown> = { model, messages };
+        if (model.startsWith("openai/")) body.reasoning_effort = CHAT_REASONING_EFFORT;
+
+        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+
+        if (res.status === 402) throw new Error("AI credits exhausted.");
+
+        if (!res.ok) {
+          lastError =
+            res.status === 429
+              ? "Rate limit reached — retrying."
+              : `AI request failed (${res.status})`;
+
+          if (TRANSIENT_STATUS.has(res.status) && attempt === 0) {
+            await sleep(700);
+            continue;
+          }
+
+          // A model can be unavailable on one gateway account while another is enabled.
+          // Move to the fallback model for unsupported/not-found/transient model failures.
+          if ([400, 404, 422, 429, 500, 502, 503, 504].includes(res.status)) break;
+          throw new Error(lastError);
+        }
+
+        const json = (await res.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        const content = json.choices?.[0]?.message?.content?.trim() ?? "";
+        if (!content) throw new Error("AI returned an empty response");
+        return { content, model };
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          lastError = "AI request timed out";
+          if (attempt === 0) {
+            await sleep(500);
+            continue;
+          }
+          break;
+        }
+        if (error instanceof Error && error.message === "AI credits exhausted.") throw error;
+        lastError = error instanceof Error ? error.message : lastError;
+        if (attempt === 0) {
+          await sleep(500);
+          continue;
+        }
+        break;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+  }
+
+  throw new Error(lastError);
+}
 
 async function chatRedesignSource(opts: {
   fileName: string;
   currentContent: string;
   instruction: string;
   history: ChatTurn[];
-}): Promise<{ reply: string; file: string }> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) throw new Error("AI is not configured");
+}): Promise<RedesignResult> {
+  if (opts.currentContent.length > MAX_SOURCE_CHARS) {
+    throw new Error("This file is too large for conversational redesign. Split it into smaller source files first.");
+  }
 
   const systemPrompt =
-    "You are Rezyn Chat, a senior product designer and front-end engineer pairing with a " +
-    "client to redesign one file from their product through conversation. You will be given " +
-    "the file's current content and a new instruction, plus recent chat turns for context. " +
-    "Apply exactly the requested change on top of the CURRENT content — do not start over from " +
-    "scratch, do not revert earlier changes the client didn't ask you to undo, and keep " +
-    "functionality, routes, data bindings, text meaning, and file format identical; only change " +
-    "presentation (markup structure for layout, classes, CSS, design tokens, typography, " +
-    "spacing, colors, states, responsiveness, accessibility). If the instruction is ambiguous, " +
-    "make the single most reasonable interpretation rather than asking a question back. " +
-    'Respond with ONLY a single JSON object and nothing else — no markdown fences, no ' +
-    'commentary before or after — shaped exactly like {"reply": "...", "file": "..."}. ' +
-    '"reply" is one short, friendly sentence (max ~25 words) telling the client what you ' +
-    'changed, in plain language, for a chat bubble — never mention JSON or code. "file" is the ' +
-    "complete rewritten file contents, correctly JSON-escaped.";
+    "You are Rezyn Chat, a senior product designer and front-end engineer editing an existing product through conversation. " +
+    "Work on the supplied CURRENT file, preserving every existing behavior that the user did not explicitly ask to change. " +
+    "Keep routes, event handlers, state, data bindings, API calls, business logic, accessibility semantics, text meaning, and file format intact. " +
+    "You may change presentation: layout markup, UI composition, classes, CSS, design tokens, typography, spacing, color, visual hierarchy, interaction states, responsive behavior, and accessibility improvements. " +
+    "Honor previous edits already present in CURRENT content. Never silently revert them. Resolve an ambiguous visual request with the safest reasonable interpretation. " +
+    "Before answering, internally verify that the rewritten file is complete and that important functional identifiers from the source were not intentionally removed. " +
+    "Do not reveal private chain-of-thought. " +
+    'Return ONLY one JSON object shaped exactly as {"reply":"...","file":"..."}. ' +
+    '"reply" is a concise user-facing summary of the applied change (maximum 35 words). ' +
+    '"file" is the COMPLETE rewritten source file, correctly JSON escaped. No markdown fences and no text outside the JSON object.';
 
-  const messages = [
+  const baseMessages: GatewayMessage[] = [
     { role: "system", content: systemPrompt },
     ...opts.history.map((turn) => ({ role: turn.role, content: turn.content })),
     {
       role: "user",
       content:
         `File name: ${opts.fileName}\n\n` +
-        `Current file content:\n${opts.currentContent}\n\n` +
-        `Instruction: ${opts.instruction}`,
+        `CURRENT file content:\n${opts.currentContent}\n\n` +
+        `New instruction:\n${opts.instruction}`,
     },
   ];
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: CHAT_MODEL,
-      reasoning_effort: CHAT_REASONING_EFFORT,
-      messages,
-    }),
-  });
+  let lastValidationError = "AI did not return a valid rewritten file";
 
-  if (res.status === 429) throw new Error("Rate limit reached — try again shortly.");
-  if (res.status === 402) throw new Error("AI credits exhausted.");
-  if (!res.ok) throw new Error(`AI request failed (${res.status})`);
+  for (let structuredAttempt = 0; structuredAttempt < 2; structuredAttempt += 1) {
+    const messages =
+      structuredAttempt === 0
+        ? baseMessages
+        : [
+            ...baseMessages,
+            {
+              role: "system" as const,
+              content:
+                "Your previous output could not be validated. Regenerate the complete file and obey the JSON-only response contract exactly. Do not shorten or summarize the file.",
+            },
+          ];
 
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  let raw = json.choices?.[0]?.message?.content?.trim() ?? "";
-  if (!raw) throw new Error("AI returned an empty response");
-  raw = raw.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "");
-
-  const tryParse = (text: string) => {
-    try {
-      const parsed = JSON.parse(text) as { reply?: unknown; file?: unknown };
-      if (typeof parsed.file === "string" && parsed.file.trim()) {
-        const reply =
-          typeof parsed.reply === "string" && parsed.reply.trim()
-            ? parsed.reply.trim()
-            : `Updated ${opts.fileName}.`;
-        return { reply, file: parsed.file };
-      }
-    } catch {
-      // not valid JSON
-    }
-    return null;
-  };
-
-  // First try the whole trimmed response as-is.
-  const direct = tryParse(raw);
-  if (direct) return direct;
-
-  // Reasoning models occasionally prepend a line or two of commentary before the
-  // JSON object despite instructions not to — try pulling out just the outermost
-  // {...} block before giving up on structured output.
-  const firstBrace = raw.indexOf("{");
-  const lastBrace = raw.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    const extracted = tryParse(raw.slice(firstBrace, lastBrace + 1));
-    if (extracted) return extracted;
+    const response = await callGateway(messages);
+    const parsed = parseStructuredResult(response.content, opts.fileName, opts.currentContent);
+    if (parsed) return { ...parsed, model: response.model };
+    lastValidationError = "AI response failed source validation";
   }
 
-  // The model didn't follow the JSON contract at all. Treat the whole response as
-  // the file itself rather than failing the turn outright.
-  return { reply: `Updated ${opts.fileName}.`, file: raw };
+  throw new Error(lastValidationError);
 }
 
 /** One turn of Rezyn Chat: apply a plain-language instruction to a single project file. */
@@ -139,17 +248,34 @@ export const sendChatMessage = createServerFn({ method: "POST" })
     if (fileError) throw new Error(fileError.message);
     if (!file) throw new Error("File not found");
 
+    const emitStatus = async (content: string) => {
+      const { error } = await supabase.from("redesign_chats").insert({
+        project_id: data.projectId,
+        user_id: userId,
+        role: "status",
+        content,
+        file_name: file.name,
+      });
+      if (error) console.warn("Could not persist Rezyn Chat status", error.message);
+    };
+
     const { data: history, error: historyError } = await supabase
       .from("redesign_chats")
-      .select("role, content, created_at")
+      .select("role, content, file_name, created_at")
       .eq("project_id", data.projectId)
+      .eq("file_name", file.name)
+      .in("role", ["user", "assistant"])
       .order("created_at", { ascending: false })
-      .limit(12);
+      .limit(16);
     if (historyError) throw new Error(historyError.message);
+
     const chatHistory: ChatTurn[] = (history ?? [])
       .slice()
       .reverse()
-      .map((row) => ({ role: row.role === "assistant" ? "assistant" : "user", content: row.content }));
+      .map((row) => ({
+        role: row.role === "assistant" ? "assistant" : "user",
+        content: row.content,
+      }));
 
     const { error: userMsgError } = await supabase.from("redesign_chats").insert({
       project_id: data.projectId,
@@ -159,10 +285,14 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       file_name: file.name,
     });
     if (userMsgError) {
-      throw new Error(`Could not save your message (${userMsgError.message}) — has the redesign_chats migration been applied?`);
+      throw new Error(
+        `Could not save your message (${userMsgError.message}) — has the redesign_chats migration been applied?`,
+      );
     }
 
     try {
+      await emitStatus("Reading the latest source and previous edits.");
+
       let currentContent = file.redesigned_content ?? file.content ?? "";
       if (!currentContent && file.storage_path) {
         if (!isTextFile(file.name)) throw new Error("Not a text-based file");
@@ -178,12 +308,17 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         .eq("id", file.id);
       if (startErr) throw new Error(startErr.message);
 
-      const { reply, file: updatedFile } = await chatRedesignSource({
+      await emitStatus("Understanding the instruction and protecting existing behavior.");
+      await emitStatus("Designing and applying the requested interface change.");
+
+      const { reply, file: updatedFile, model } = await chatRedesignSource({
         fileName: file.name,
         currentContent,
         instruction: data.message,
         history: chatHistory,
       });
+
+      await emitStatus("Validating the complete rewritten file before saving.");
 
       const { error: doneErr } = await supabase
         .from("project_files")
@@ -200,15 +335,16 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       });
       if (replyErr) throw new Error(replyErr.message);
 
-      return { reply, fileName: file.name };
+      await emitStatus("Saved the updated file. Ready for the next instruction.");
+
+      return { reply, fileName: file.name, model };
     } catch (err) {
       const messageText = err instanceof Error ? err.message : "That edit failed";
-      // Best-effort housekeeping — a failure recording the failure shouldn't mask
-      // the original error, so these two calls deliberately don't check .error.
       await supabase
         .from("project_files")
         .update({ status: "failed", redesign_error: messageText })
         .eq("id", file.id);
+      await emitStatus(`Stopped: ${messageText}`);
       await supabase.from("redesign_chats").insert({
         project_id: data.projectId,
         user_id: userId,
