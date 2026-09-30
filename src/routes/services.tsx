@@ -1,85 +1,73 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Reveal, SplitText, Magnetic } from "@/components/studio/motion";
-import { Section, ServiceRows } from "@/components/site/Section";
+import { ArrowUpRight, Cpu, Layers3, MonitorSmartphone, Orbit, Store } from "lucide-react";
+import { Reveal } from "@/components/studio/motion";
+import { PageHero } from "@/components/site/PageHero";
+import { Section, SectionHeading, ServiceRows } from "@/components/site/Section";
 import { services } from "@/data/site";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
-      { title: "Services — UI/UX upgrades for existing products | Rezyn" },
+      { title: "Capabilities — interface transformation across product surfaces | Rezyn" },
       {
         name: "description",
-        content:
-          "Full-project UI redesigns for websites, web apps, mobile apps, SaaS products, and e-commerce stores — upload first, download second.",
-      },
-      { property: "og:title", content: "Services — UI/UX upgrades for existing products" },
-      {
-        property: "og:description",
-        content:
-          "Five kinds of interfaces, one review process: website, web app, mobile app, SaaS product, e-commerce store.",
+        content: "Rezyn transforms websites, web apps, mobile products, SaaS systems and e-commerce interfaces while preserving underlying product logic.",
       },
     ],
   }),
   component: ServicesPage,
 });
 
+const surfaces = [MonitorSmartphone, Cpu, Orbit, Layers3, Store];
+
 function ServicesPage() {
   return (
     <main>
-      <section className="relative pt-[64px] pb-[20px]">
-        <div className="wrap">
-          <span
-            aria-hidden
-            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[16vw] leading-none lg:block"
-          >
-            5
-          </span>
-          <div className="rise relative z-10">
-            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
-              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
-              services
-            </div>
-            <h1 className="mt-7 max-w-[16ch] text-[13vw] leading-[0.9] sm:text-[7.4vw]">
-              <SplitText text="Five kinds of interface." className="block" delay={0.05} />
-              <SplitText
-                text="One redesign pipeline."
-                className="block"
-                charClassName="aurora-text"
-                delay={0.3}
-              />
-            </h1>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        index="01"
+        eyebrow="Capabilities"
+        title="Five surfaces."
+        accent="One transformation engine."
+        description="Different products create different interface pressure. Rezyn treats each surface as its own spatial system while keeping one consistent redesign pipeline underneath."
+        stat="05"
+        statLabel="product surfaces"
+        action={{ to: "/projects", label: "Launch a project" }}
+      />
 
-      <Section last>
+      <Section>
+        <SectionHeading
+          label="Surface map"
+          title="Designed around how the product is actually used."
+          description="We are not applying the same landing-page treatment everywhere. Each product category gets a different hierarchy, density and interaction strategy."
+        />
         <Reveal>
           <ServiceRows items={services} />
         </Reveal>
-        <Reveal delay={0.1}>
-          <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
-            Every project runs the same way: upload the files, pick a style, download the
-            redesigned project. Nothing gets thrown out that doesn't need to be.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-[14px]">
-            <Magnetic>
-              <Link
-                to="/projects"
-                className="glow-aurora inline-block bg-revision px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-              >
-                Upload a project
-              </Link>
-            </Magnetic>
-            <Magnetic>
-              <Link
-                to="/process"
-                className="glass inline-block px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-foreground uppercase transition-colors hover:text-revision"
-              >
-                See the process
-              </Link>
-            </Magnetic>
-          </div>
-        </Reveal>
+      </Section>
+
+      <Section last tone="signal">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+          {services.map((service, index) => {
+            const Icon = surfaces[index] ?? Orbit;
+            return (
+              <Reveal key={service.name} delay={index * 0.06}>
+                <article className="glass flex min-h-[230px] flex-col p-5">
+                  <div className="flex items-center justify-between">
+                    <Icon className="h-5 w-5 text-revision" />
+                    <span className="font-mono text-[8px] tracking-[0.14em] text-muted-foreground">0{index + 1}</span>
+                  </div>
+                  <h3 className="mt-auto text-[27px] leading-[0.95]">{service.name}</h3>
+                  <p className="mb-0 mt-3 text-[13px] leading-6 text-ink-soft">{service.desc}</p>
+                </article>
+              </Reveal>
+            );
+          })}
+        </div>
+        <div className="mt-10 flex justify-end">
+          <Link to="/process" className="button-secondary">
+            See the transformation path <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
       </Section>
     </main>
   );
