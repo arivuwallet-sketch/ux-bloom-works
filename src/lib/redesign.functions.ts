@@ -24,6 +24,11 @@ type ProjectVisualContext = {
   manifest: string[];
 };
 
+type DesignAuditResult = {
+  pass: boolean;
+  issues: string[];
+};
+
 function isTextFile(name: string) {
   return TEXT_EXT.test(name);
 }
@@ -109,6 +114,12 @@ function validateFullReconstruction(name: string, source: string, candidate: str
   return output;
 }
 
+function clipForAudit(value: string, limit = 80_000) {
+  if (value.length <= limit) return value;
+  const half = Math.floor(limit / 2);
+  return `${value.slice(0, half)}\n\n/* ... middle clipped for QA context ... */\n\n${value.slice(-half)}`;
+}
+
 async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -182,6 +193,44 @@ async function callGateway(messages: GatewayMessage[]) {
   throw new Error(lastError);
 }
 
+async function auditReconstruction(opts: {
+  name: string;
+  style: string;
+  source: string;
+  candidate: string;
+  designIntelligence: string;
+}) : Promise<DesignAuditResult> {
+  const raw = await callGateway([
+    {
+      role: "system",
+      content:
+        "You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, and the applicable design-intelligence quality gates are satisfied. Treat accessibility, responsive behavior, interaction states, hierarchy, spacing, typography, contrast, forms, ethical UX, motion/reduced-motion, performance and relevant 2D/3D constraints as release blockers when materially wrong. Do not invent requirements that are absent from the file. Return ONLY JSON shaped exactly as {\"pass\":true|false,\"issues\":[\"concise actionable issue\"]}. Use at most 8 issues.",
+    },
+    {
+      role: "user",
+      content:
+        `File: ${opts.name}\nTarget direction: ${opts.style}\n\n` +
+        `${opts.designIntelligence}\n\n` +
+        `ORIGINAL FUNCTIONAL SOURCE (may be clipped):\n${clipForAudit(opts.source)}\n\n` +
+        `RECONSTRUCTED CANDIDATE (may be clipped):\n${clipForAudit(opts.candidate)}`,
+    },
+  ]);
+
+  const cleaned = stripOuterFence(raw);
+  try {
+    const parsed = JSON.parse(cleaned) as { pass?: unknown; issues?: unknown };
+    const issues = Array.isArray(parsed.issues)
+      ? parsed.issues.filter((item): item is string => typeof item === "string").slice(0, 8)
+      : [];
+    if (typeof parsed.pass !== "boolean") {
+      return { pass: false, issues: ["Design QA returned an invalid pass/fail result."] };
+    }
+    return { pass: parsed.pass, issues };
+  } catch {
+    return { pass: false, issues: ["Design QA returned invalid JSON."] };
+  }
+}
+
 async function redesignSource(opts: {
   name: string;
   style: string;
@@ -242,13 +291,24 @@ async function redesignSource(opts: {
             {
               role: "system" as const,
               content:
-                "The previous result was rejected because it was incomplete or preserved too much of the uploaded visual presentation. Reconstruct the presentation more radically from a blank canvas while preserving behavior. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.",
+                `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}. Reconstruct the presentation from a blank canvas while preserving behavior. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
             },
           ];
 
     try {
       const raw = await callGateway(messages);
-      return validateFullReconstruction(opts.name, opts.source, raw);
+      const candidate = validateFullReconstruction(opts.name, opts.source, raw);
+      const audit = await auditReconstruction({
+        name: opts.name,
+        style: opts.style,
+        source: opts.source,
+        candidate,
+        designIntelligence,
+      });
+      if (!audit.pass) {
+        throw new Error(audit.issues.length > 0 ? audit.issues.join(" | ") : "Design QA rejected the reconstruction.");
+      }
+      return candidate;
     } catch (error) {
       lastError = error instanceof Error ? error.message : lastError;
     }
