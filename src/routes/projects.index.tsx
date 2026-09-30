@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
+import { ArrowRight, Boxes, FolderOpen, Plus, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/studio/motion";
-import { Section, SectionHeading } from "@/components/site/Section";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { productTypes, allStyleNames } from "@/data/site";
@@ -11,16 +10,10 @@ import { productTypes, allStyleNames } from "@/data/site";
 export const Route = createFileRoute("/projects/")({
   head: () => ({
     meta: [
-      { title: "Your projects — Rezyn redesign workspace" },
+      { title: "Workspace — Rezyn interface transformation" },
       {
         name: "description",
-        content:
-          "Create a project, upload the files you want redesigned, and choose the design style.",
-      },
-      { property: "og:title", content: "Your projects — Rezyn" },
-      {
-        property: "og:description",
-        content: "Upload project files and pick the styles Rezyn should redesign them into.",
+        content: "Create transformation projects, upload product source files and manage visual directions from the Rezyn workspace.",
       },
     ],
   }),
@@ -84,165 +77,192 @@ function ProjectsPage() {
 
   if (loading || !user) {
     return (
-      <main>
-        <Section last>
-          <p className="text-ink-soft">Loading your workspace…</p>
-        </Section>
+      <main className="system-state">
+        <div className="system-state__card">
+          <span className="eyebrow">Workspace handshake</span>
+          <h1>Loading your transformation space.</h1>
+        </div>
       </main>
     );
   }
 
   return (
-    <main>
-      <Section>
-        <SectionHeading
-          label="Workspace"
-          title="Start a project, then upload the files we should redesign."
-        />
+    <main className="pb-28 pt-[130px] sm:pt-[150px]">
+      <div className="wrap">
         <Reveal>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setError(null);
-              if (name.trim().length < 2) {
-                setError("Give the project a name.");
-                return;
-              }
-              createProject.mutate();
-            }}
-            className="glass grid max-w-[720px] grid-cols-1 gap-5 p-7 md:grid-cols-2"
-          >
-            <div className="md:col-span-2">
-              <label htmlFor="pname" className="mb-[6px] block text-sm text-muted-foreground">
-                Project name
-              </label>
-              <input
-                id="pname"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="field"
-                placeholder="Acme marketing site"
-              />
-            </div>
-
+          <section className="mb-16 grid grid-cols-1 gap-8 border-b border-border pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <label htmlFor="ptype" className="mb-[6px] block text-sm text-muted-foreground">
-                What are we revising?
-              </label>
-              <select
-                id="ptype"
-                value={productType}
-                onChange={(e) => setProductType(e.target.value)}
-                className="field"
-              >
-                {productTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="smode" className="mb-[6px] block text-sm text-muted-foreground">
-                How should styles be chosen?
-              </label>
-              <select
-                id="smode"
-                value={styleMode}
-                onChange={(e) => setStyleMode(e.target.value as "project" | "file")}
-                className="field"
-              >
-                <option value="project">One style for the whole project</option>
-                <option value="file">A style per file</option>
-              </select>
-            </div>
-
-            {styleMode === "project" ? (
-              <div className="md:col-span-2">
-                <label htmlFor="pstyle" className="mb-[6px] block text-sm text-muted-foreground">
-                  Target style
-                </label>
-                <select
-                  id="pstyle"
-                  value={targetStyle}
-                  onChange={(e) => setTargetStyle(e.target.value)}
-                  className="field"
-                >
-                  {allStyleNames.map((style) => (
-                    <option key={style} value={style}>
-                      {style}
-                    </option>
-                  ))}
-                </select>
+              <div className="mb-6 flex items-center gap-3">
+                <span className="eyebrow">Workspace / projects</span>
+                <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">
+                  {projects.data?.length ?? 0} ACTIVE RECORDS
+                </span>
               </div>
-            ) : null}
-
-            <div className="md:col-span-2">
-              <label htmlFor="pnotes" className="mb-[6px] block text-sm text-muted-foreground">
-                What's going wrong? (optional)
-              </label>
-              <textarea
-                id="pnotes"
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="field resize-y"
-              />
+              <h1 className="m-0 max-w-[10ch] text-[clamp(58px,8vw,118px)] leading-[0.84]">Build the next version.</h1>
             </div>
-
-            {error ? <p className="text-[13px] text-destructive md:col-span-2">{error}</p> : null}
-
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                disabled={createProject.isPending}
-                className="glow-aurora inline-flex items-center gap-2 bg-revision px-[24px] py-[13px] text-[14px] font-semibold tracking-[0.06em] text-primary-foreground uppercase transition-transform hover:scale-[1.02] disabled:scale-100 disabled:opacity-60"
-              >
-                <Sparkles className="h-4 w-4" />
-                {createProject.isPending ? "Creating…" : "Create project"}
-              </button>
+            <div className="glass min-w-[240px] p-5">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">ENGINE STATUS</span>
+                <span className="signal-dot" />
+              </div>
+              <div className="mt-10 text-[30px] font-medium tracking-[-0.05em]">Ready</div>
+              <div className="mt-1 text-[12px] text-ink-soft">Create a project to begin.</div>
             </div>
-          </form>
+          </section>
         </Reveal>
-      </Section>
 
-      <Section last>
-        <SectionHeading label="Open projects" title="Everything you've handed us so far." />
-        {projects.isLoading ? (
-          <p className="text-ink-soft">Loading…</p>
-        ) : (projects.data?.length ?? 0) === 0 ? (
-          <div className="glass flex flex-col items-center gap-3 px-7 py-14 text-center">
-            <FolderOpen className="h-8 w-8 text-muted-foreground" />
-            <p className="text-ink-soft">No projects yet — create one above.</p>
-          </div>
-        ) : (
-          <div className="border-b border-border">
-            {projects.data?.map((project, i) => (
-              <Reveal key={project.id} delay={Math.min(i, 6) * 0.05}>
-                <Link
-                  to="/projects/$projectId"
-                  params={{ projectId: project.id }}
-                  className="group grid grid-cols-1 items-center gap-3 border-t border-border py-[22px] transition-colors hover:bg-foreground/[0.03] md:grid-cols-[1fr_180px_200px_28px]"
-                >
-                  <div className="font-serif text-[25px] tracking-[0.05em] transition-colors group-hover:text-revision">
-                    {project.name}
+        <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,680px)_1fr]">
+          <Reveal>
+            <section className="glass p-6 sm:p-8">
+              <div className="mb-8 flex items-center justify-between">
+                <div>
+                  <span className="eyebrow">New transformation</span>
+                  <h2 className="mb-0 mt-4 text-[38px] leading-none">Create project</h2>
+                </div>
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
+                  <Plus className="h-5 w-5" />
+                </span>
+              </div>
+
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setError(null);
+                  if (name.trim().length < 2) {
+                    setError("Give the project a name.");
+                    return;
+                  }
+                  createProject.mutate();
+                }}
+                className="grid grid-cols-1 gap-5 md:grid-cols-2"
+              >
+                <div className="md:col-span-2">
+                  <label htmlFor="pname" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
+                    Project name
+                  </label>
+                  <input
+                    id="pname"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="field"
+                    placeholder="Acme product redesign"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="ptype" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
+                    Product surface
+                  </label>
+                  <select id="ptype" value={productType} onChange={(event) => setProductType(event.target.value)} className="field">
+                    {productTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="smode" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
+                    Direction control
+                  </label>
+                  <select
+                    id="smode"
+                    value={styleMode}
+                    onChange={(event) => setStyleMode(event.target.value as "project" | "file")}
+                    className="field"
+                  >
+                    <option value="project">One direction for the project</option>
+                    <option value="file">Direction per file</option>
+                  </select>
+                </div>
+
+                {styleMode === "project" ? (
+                  <div className="md:col-span-2">
+                    <label htmlFor="pstyle" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
+                      Target direction
+                    </label>
+                    <select id="pstyle" value={targetStyle} onChange={(event) => setTargetStyle(event.target.value)} className="field">
+                      {allStyleNames.map((style) => (
+                        <option key={style} value={style}>{style}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="text-[15px] text-ink-soft">{project.product_type}</div>
+                ) : null}
+
+                <div className="md:col-span-2">
+                  <label htmlFor="pnotes" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
+                    Transformation brief / optional
+                  </label>
+                  <textarea
+                    id="pnotes"
+                    rows={4}
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    className="field resize-y"
+                    placeholder="What currently feels wrong, dated or difficult?"
+                  />
+                </div>
+
+                {error ? <p className="m-0 text-[13px] text-destructive md:col-span-2">{error}</p> : null}
+
+                <div className="md:col-span-2">
+                  <button type="submit" disabled={createProject.isPending} className="button-primary disabled:opacity-50">
+                    <Sparkles className="h-4 w-4" />
+                    {createProject.isPending ? "Creating…" : "Create transformation"}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <section>
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <span className="eyebrow">Project archive</span>
+                  <h2 className="mb-0 mt-4 text-[38px] leading-none">Open projects</h2>
+                </div>
+                <Boxes className="h-5 w-5 text-revision" />
+              </div>
+
+              {projects.isLoading ? (
+                <div className="glass p-8 text-ink-soft">Loading projects…</div>
+              ) : (projects.data?.length ?? 0) === 0 ? (
+                <div className="glass flex min-h-[280px] flex-col items-center justify-center gap-4 p-8 text-center">
+                  <FolderOpen className="h-8 w-8 text-muted-foreground" />
                   <div>
-                    <span className="badge">
-                      {project.style_mode === "project"
-                        ? (project.target_style ?? "No style yet")
-                        : "Per-file styles"}
-                    </span>
+                    <div className="text-[18px] font-medium">No project records yet.</div>
+                    <p className="mb-0 mt-2 text-[13px] text-ink-soft">Create the first transformation from the panel beside this one.</p>
                   </div>
-                  <ArrowRight className="hidden h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-revision md:block" />
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        )}
-      </Section>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {projects.data?.map((project, index) => (
+                    <Link
+                      key={project.id}
+                      to="/projects/$projectId"
+                      params={{ projectId: project.id }}
+                      className="glass group grid grid-cols-[44px_1fr_auto] items-center gap-4 p-4 text-inherit no-underline transition-transform hover:-translate-y-0.5"
+                    >
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.025] font-mono text-[9px] text-muted-foreground">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate text-[16px] font-semibold tracking-[-0.02em] group-hover:text-revision">{project.name}</div>
+                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[9px] tracking-[0.08em] text-muted-foreground uppercase">
+                          <span>{project.product_type}</span>
+                          <span>•</span>
+                          <span>{project.style_mode === "project" ? (project.target_style ?? "No direction") : "Per-file directions"}</span>
+                        </div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-revision" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          </Reveal>
+        </div>
+      </div>
     </main>
   );
 }
