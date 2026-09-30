@@ -1,64 +1,62 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Reveal, SplitText } from "@/components/studio/motion";
-import { Section } from "@/components/site/Section";
+import { ArrowUpRight, Radar } from "lucide-react";
+import { Reveal } from "@/components/studio/motion";
+import { PageHero } from "@/components/site/PageHero";
+import { Section, SectionHeading } from "@/components/site/Section";
 import { PreviewGroups } from "@/components/site/PreviewTile";
 import { trendGroups } from "@/data/site";
 
 export const Route = createFileRoute("/trends")({
   head: () => ({
     meta: [
-      { title: "Trends — Advanced UI patterns we build with | Rezyn" },
+      { title: "Signals — advanced interface patterns | Rezyn" },
       {
         name: "description",
-        content:
-          "Advanced interface patterns grouped by where they show up: heroes, navigation, inputs, data display, feedback, media, and AI.",
-      },
-      { property: "og:title", content: "Trends — Advanced UI patterns we build with" },
-      {
-        property: "og:description",
-        content: "Where interfaces are heading, and which patterns are worth adopting.",
+        content: "Explore advanced interface patterns across navigation, heroes, inputs, data display, feedback, media and AI product experiences.",
       },
     ],
   }),
   component: TrendsPage,
 });
 
+const totalSignals = trendGroups.reduce((sum, group) => sum + group.items.length, 0);
+
 function TrendsPage() {
   return (
     <main>
-      <section className="relative pt-[64px] pb-[20px]">
-        <div className="wrap">
-          <span
-            aria-hidden
-            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[15vw] leading-none lg:block"
-          >
-            ∞
-          </span>
-          <div className="rise relative z-10">
-            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
-              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
-              where interfaces are heading
-            </div>
-            <h1 className="mt-7 max-w-[20ch] text-[10.5vw] leading-[0.94] sm:text-[5.6vw]">
-              <SplitText text="Advanced patterns" className="block" delay={0.05} />
-              <SplitText
-                text="we build with."
-                className="block"
-                charClassName="aurora-text"
-                delay={0.3}
-              />
-            </h1>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        index="04"
+        eyebrow="Interface observatory"
+        title="Track the signals."
+        accent="Ignore the noise."
+        description="The useful future of UI is rarely one trend. It is a set of patterns becoming mature enough to improve a real product without turning it into a demo reel."
+        stat={String(totalSignals).padStart(2, "0")}
+        statLabel="patterns indexed"
+        action={{ to: "/work", label: "See them in context" }}
+      />
 
-      <Section last>
+      <Section>
+        <SectionHeading
+          label="Signal index"
+          title="Patterns grouped by where they earn attention."
+          description="Use these as building blocks inside a broader visual direction—not as novelty for novelty's sake."
+        />
         <Reveal>
           <PreviewGroups groups={trendGroups} />
         </Reveal>
-        <div className="mt-12">
-          <Link to="/work" className="text-[15px] underline underline-offset-4 hover:text-revision">
-            See a redesign, before and after
+      </Section>
+
+      <Section last tone="signal">
+        <div className="glass grid grid-cols-1 gap-8 p-7 sm:p-10 lg:grid-cols-[160px_1fr_auto] lg:items-center">
+          <div className="flex h-[120px] w-[120px] items-center justify-center rounded-full border border-revision/20 bg-revision/5 text-revision">
+            <Radar className="h-10 w-10" />
+          </div>
+          <div>
+            <span className="eyebrow">Proof over novelty</span>
+            <h2 className="mb-0 mt-4 max-w-[14ch] text-[clamp(38px,5vw,68px)] leading-[0.92]">A pattern matters when it improves the product.</h2>
+          </div>
+          <Link to="/work" className="button-secondary">
+            View transformation proof <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       </Section>
