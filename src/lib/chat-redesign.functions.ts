@@ -14,6 +14,8 @@ const TRANSIENT_STATUS = new Set([408, 429, 500, 502, 503, 504]);
 type ChatTurn = { role: "user" | "assistant"; content: string };
 type GatewayMessage = { role: "system" | "user" | "assistant"; content: string };
 type RedesignResult = { reply: string; file: string; model: string };
+type ChatMode = "conversation" | "redesign";
+type IntentResult = { mode: ChatMode; reply: string; model: string | null };
 
 function isTextFile(name: string) {
   return TEXT_EXT.test(name);
@@ -85,6 +87,57 @@ function parseStructuredResult(rawValue: string, fileName: string, original: str
   }
 
   return null;
+}
+
+function parseIntentResult(rawValue: string, model: string): IntentResult | null {
+  const raw = stripOuterFence(rawValue);
+
+  const parse = (text: string): IntentResult | null => {
+    try {
+      const parsed = JSON.parse(text) as { intent?: unknown; reply?: unknown };
+      if (parsed.intent !== "conversation" && parsed.intent !== "redesign") return null;
+      const reply =
+        typeof parsed.reply === "string" && parsed.reply.trim()
+          ? parsed.reply.trim().slice(0, 1600)
+          : parsed.intent === "redesign"
+            ? "I’ll apply that change to the selected target."
+            : "I’m here. Ask me about the design or tell me what you’d like to explore.";
+      return { mode: parsed.intent, reply, model };
+    } catch {
+      return null;
+    }
+  };
+
+  const direct = parse(raw);
+  if (direct) return direct;
+
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    return parse(raw.slice(firstBrace, lastBrace + 1));
+  }
+
+  return null;
+}
+
+function quickConversationReply(message: string): string | null {
+  const normalized = message.trim().toLowerCase().replace(/[!?.,]+$/g, "").trim();
+  if (/^(hi|hello|hey|hiya|yo|hey there|hello there)$/.test(normalized)) {
+    return "Hey! I’m Rezyn Chat. We can talk through the design, explore ideas, compare directions, or you can tell me exactly what you want changed and I’ll redesign it.";
+  }
+  if (/^(thanks|thank you|thankyou|thx|ty)$/.test(normalized)) {
+    return "You’re welcome. We can keep discussing the design, or give me a specific change when you’re ready for me to edit the project.";
+  }
+  if (/^(how are you|how are you doing)$/.test(normalized)) {
+    return "Doing well and ready to work on the project. We can just chat about the design first—nothing gets changed unless you clearly ask me to edit it.";
+  }
+  return null;
+}
+
+function looksLikeExplicitEdit(message: string) {
+  return /\b(make|change|redesign|rebuild|rework|update|modify|replace|remove|delete|add|implement|create|convert|move|resize|reduce|increase|fix|apply|switch|restyle|reimagine|animate|align|center|hide|show|rewrite)\b/i.test(
+    message,
+  );
 }
 
 async function sleep(ms: number) {
@@ -164,6 +217,66 @@ async function callGateway(messages: GatewayMessage[]) {
   throw new Error(lastError);
 }
 
+async function classifyChatTurn(opts: {
+  message: string;
+  history: ChatTurn[];
+  projectName: string;
+  productType: string | null;
+  activeStyle: string | null;
+  fileName: string;
+  manifest: string[];
+}): Promise<IntentResult> {
+  const quickReply = quickConversationReply(opts.message);
+  if (quickReply) return { mode: "conversation", reply: quickReply, model: null };
+
+  const systemPrompt =
+    "You are the conversation router and conversational design copilot for Rezyn, a prompt-based UI/UX redesign studio. " +
+    "Your most important rule: DO NOT edit files unless the user clearly asks for a project change to be implemented now. " +
+    "Classify greetings, casual conversation, questions, explanations, brainstorming, critique, design discussion, asking for opinions or recommendations, comparing options, planning, hypothetical language, and ambiguous requests as conversation. " +
+    "Examples of conversation: 'hello', 'what do you think of this design?', 'how could this be improved?', 'should we use glassmorphism?', 'explain the current layout', 'what would you recommend?', 'can we brainstorm the hero?'. " +
+    "Classify as redesign only when the user clearly instructs Rezyn to change, add, remove, rebuild, restyle, fix, implement, or otherwise modify the selected project/files now. " +
+    "Examples of redesign: 'make the hero cinematic', 'change the cards to glassmorphism', 'remove the sidebar', 'add a pricing section', 'redesign this from scratch'. " +
+    "If intent is ambiguous, choose conversation and ask a concise clarifying question instead of editing. " +
+    "For conversation, answer the user's message naturally and helpfully as a senior UI/UX and front-end design expert. You may discuss the project and selected style, but do not claim you changed anything. " +
+    "For redesign, reply with a very short acknowledgement; the separate editing engine will perform the actual change. " +
+    "Do not reveal chain-of-thought. Return ONLY valid JSON shaped exactly as {\"intent\":\"conversation\"|\"redesign\",\"reply\":\"...\"}.";
+
+  const context =
+    `Project: ${opts.projectName}\n` +
+    `Product type: ${opts.productType ?? "Unknown"}\n` +
+    `Selected direction: ${opts.activeStyle ?? "None"}\n` +
+    `Current target file: ${opts.fileName}\n` +
+    `Project files: ${opts.manifest.slice(0, 80).join(", ") || opts.fileName}`;
+
+  try {
+    const response = await callGateway([
+      { role: "system", content: systemPrompt },
+      { role: "system", content: context },
+      ...opts.history.slice(-16).map((turn) => ({ role: turn.role, content: turn.content })),
+      { role: "user", content: opts.message },
+    ]);
+    const parsed = parseIntentResult(response.content, response.model);
+    if (parsed) return parsed;
+  } catch {
+    // A router failure must never accidentally trigger an edit for an ambiguous message.
+  }
+
+  if (looksLikeExplicitEdit(opts.message)) {
+    return {
+      mode: "redesign",
+      reply: "I’ll apply that requested change to the selected target.",
+      model: null,
+    };
+  }
+
+  return {
+    mode: "conversation",
+    reply:
+      "I’m with you. We can discuss the design, explore options, or brainstorm first. When you want me to actually modify the project, give me a clear edit instruction.",
+    model: null,
+  };
+}
+
 async function chatRedesignSource(opts: {
   fileName: string;
   currentContent: string;
@@ -184,11 +297,12 @@ async function chatRedesignSource(opts: {
 
   const systemPrompt =
     "You are Rezyn Chat, an elite product designer, UX architect, accessibility specialist, motion/visual designer, 2D/3D art director, and senior front-end engineer editing an existing product through conversation. " +
+    "This function is reached only after a separate intent router has confirmed the user explicitly requested an edit. Apply that requested edit; do not reinterpret ordinary conversation here. " +
     "Work on the supplied CURRENT file, preserving every existing behavior that the user did not explicitly ask to change. " +
     "Keep routes, event handlers, state, data bindings, API calls, business logic, accessibility semantics, text meaning, and file format intact. " +
     "You may change presentation: layout markup, UI composition, classes, CSS, design tokens, typography, spacing, color, visual hierarchy, interaction states, responsive behavior, motion, rendering presentation, and accessibility improvements. " +
     "If the user asks for a redesign, new style, new look, rebuild, reimagine, or from-scratch treatment, treat the current presentation only as a functional specification and reconstruct its visual system rather than patching the old UI. " +
-    "Honor previous edits already present in CURRENT content. Never silently revert them. Resolve an ambiguous visual request with the safest reasonable interpretation. " +
+    "Honor previous edits already present in CURRENT content. Never silently revert them. Resolve an ambiguous visual detail with the safest reasonable interpretation. " +
     "Use the supplied Design Intelligence Operating System as mandatory expert guidance. Apply every relevant capability and never fabricate research findings, experiments, analytics, tool executions, eye-tracking, biometric results, A/B outcomes, or performance measurements. " +
     "Before answering, internally verify that the rewritten file is complete, important functional identifiers remain intact, and the result passes the relevant accessibility, responsive, state, hierarchy, motion, performance, visual-system, and 2D/3D quality gates. Fix defects before output. " +
     "Do not reveal private chain-of-thought. " +
@@ -205,7 +319,7 @@ async function chatRedesignSource(opts: {
       content:
         `File name: ${opts.fileName}\n\n` +
         `CURRENT file content:\n${opts.currentContent}\n\n` +
-        `New instruction:\n${opts.instruction}`,
+        `Confirmed edit instruction:\n${opts.instruction}`,
     },
   ];
 
@@ -241,6 +355,8 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         projectId: z.string().uuid(),
         fileId: z.string().uuid(),
         message: z.string().trim().min(1).max(4000),
+        skipIntent: z.boolean().optional().default(false),
+        recordUserMessage: z.boolean().optional().default(true),
       })
       .parse(data),
   )
@@ -250,25 +366,91 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 
     const { data: project, error: projectError } = await supabase
       .from("projects")
-      .select("target_style, style_mode")
+      .select("name, product_type, target_style, style_mode")
       .eq("id", data.projectId)
       .maybeSingle();
     if (projectError) throw new Error(projectError.message);
+    if (!project) throw new Error("Project not found");
 
-    const { data: file, error: fileError } = await supabase
+    const { data: projectFiles, error: filesError } = await supabase
       .from("project_files")
       .select("id, name, content, redesigned_content, storage_path, status, target_style")
-      .eq("id", data.fileId)
       .eq("project_id", data.projectId)
-      .maybeSingle();
-    if (fileError) throw new Error(fileError.message);
+      .order("created_at", { ascending: true });
+    if (filesError) throw new Error(filesError.message);
+
+    const file = (projectFiles ?? []).find((entry) => entry.id === data.fileId);
     if (!file) throw new Error("File not found");
 
     const activeStyle =
-      (project?.style_mode === "file" ? file.target_style : project?.target_style) ??
+      (project.style_mode === "file" ? file.target_style : project.target_style) ??
       file.target_style ??
-      project?.target_style ??
+      project.target_style ??
       null;
+
+    const { data: projectHistoryRows, error: projectHistoryError } = await supabase
+      .from("redesign_chats")
+      .select("role, content, file_name, created_at")
+      .eq("project_id", data.projectId)
+      .in("role", ["user", "assistant"])
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (projectHistoryError) throw new Error(projectHistoryError.message);
+
+    const projectHistory: ChatTurn[] = (projectHistoryRows ?? [])
+      .slice()
+      .reverse()
+      .map((row) => ({
+        role: row.role === "assistant" ? "assistant" : "user",
+        content: row.content,
+      }));
+
+    let intent: IntentResult = {
+      mode: "redesign",
+      reply: "I’ll apply that requested change.",
+      model: null,
+    };
+
+    if (!data.skipIntent) {
+      intent = await classifyChatTurn({
+        message: data.message,
+        history: projectHistory,
+        projectName: project.name,
+        productType: project.product_type,
+        activeStyle,
+        fileName: file.name,
+        manifest: (projectFiles ?? []).map((entry) => entry.name),
+      });
+    }
+
+    if (intent.mode === "conversation") {
+      if (data.recordUserMessage) {
+        const { error: userMsgError } = await supabase.from("redesign_chats").insert({
+          project_id: data.projectId,
+          user_id: userId,
+          role: "user",
+          content: data.message,
+          file_name: null,
+        });
+        if (userMsgError) throw new Error(userMsgError.message);
+      }
+
+      const { error: replyErr } = await supabase.from("redesign_chats").insert({
+        project_id: data.projectId,
+        user_id: userId,
+        role: "assistant",
+        content: intent.reply,
+        file_name: null,
+      });
+      if (replyErr) throw new Error(replyErr.message);
+
+      return {
+        mode: "conversation" as const,
+        reply: intent.reply,
+        fileName: null,
+        model: intent.model,
+      };
+    }
 
     const emitStatus = async (content: string) => {
       const { error } = await supabase.from("redesign_chats").insert({
@@ -299,21 +481,23 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         content: row.content,
       }));
 
-    const { error: userMsgError } = await supabase.from("redesign_chats").insert({
-      project_id: data.projectId,
-      user_id: userId,
-      role: "user",
-      content: data.message,
-      file_name: file.name,
-    });
-    if (userMsgError) {
-      throw new Error(
-        `Could not save your message (${userMsgError.message}) — has the redesign_chats migration been applied?`,
-      );
+    if (data.recordUserMessage) {
+      const { error: userMsgError } = await supabase.from("redesign_chats").insert({
+        project_id: data.projectId,
+        user_id: userId,
+        role: "user",
+        content: data.message,
+        file_name: file.name,
+      });
+      if (userMsgError) {
+        throw new Error(
+          `Could not save your message (${userMsgError.message}) — has the redesign_chats migration been applied?`,
+        );
+      }
     }
 
     try {
-      await emitStatus("Reading the latest source and previous edits.");
+      await emitStatus("Confirmed an edit request. Reading the latest source and previous edits.");
 
       let currentContent = file.redesigned_content ?? file.content ?? "";
       if (!currentContent && file.storage_path) {
@@ -330,7 +514,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         .eq("id", file.id);
       if (startErr) throw new Error(startErr.message);
 
-      await emitStatus("Understanding the instruction and protecting existing behavior.");
+      await emitStatus("Understanding the requested change and protecting existing behavior.");
       await emitStatus("Applying the full UI/UX and 2D/3D design intelligence framework.");
       await emitStatus("Designing and applying the requested interface change.");
 
@@ -360,9 +544,14 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       });
       if (replyErr) throw new Error(replyErr.message);
 
-      await emitStatus("Saved the updated file. Ready for the next instruction.");
+      await emitStatus("Saved the updated file. Ready to chat or make another change.");
 
-      return { reply, fileName: file.name, model };
+      return {
+        mode: "redesign" as const,
+        reply,
+        fileName: file.name,
+        model,
+      };
     } catch (err) {
       const messageText = err instanceof Error ? err.message : "That edit failed";
       await supabase
