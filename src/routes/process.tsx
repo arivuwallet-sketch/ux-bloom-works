@@ -1,91 +1,82 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Reveal, SplitText, Magnetic } from "@/components/studio/motion";
-import { Section } from "@/components/site/Section";
+import { ArrowUpRight, Boxes, ScanLine, WandSparkles } from "lucide-react";
+import { Reveal } from "@/components/studio/motion";
+import { PageHero } from "@/components/site/PageHero";
+import { Section, SectionHeading } from "@/components/site/Section";
 import { processSteps } from "@/data/site";
 
 export const Route = createFileRoute("/process")({
   head: () => ({
     meta: [
-      { title: "Process — Upload, pick a style, download | Rezyn" },
+      { title: "Process — source to transformed interface | Rezyn" },
       {
         name: "description",
-        content:
-          "Three steps: upload your project files, pick the design style, then download every file redesigned as a ZIP.",
-      },
-      { property: "og:title", content: "Process — Upload, pick a style, download" },
-      {
-        property: "og:description",
-        content: "How a Rezyn full-project redesign works, step by step.",
+        content: "Upload a real project, choose a visual direction, and let Rezyn transform its interface while keeping its structure and logic intact.",
       },
     ],
   }),
   component: ProcessPage,
 });
 
+const stepIcons = [Boxes, ScanLine, WandSparkles];
+
 function ProcessPage() {
   return (
     <main>
-      <section className="relative pt-[64px] pb-[20px]">
-        <div className="wrap">
-          <span
-            aria-hidden
-            className="outline-text pointer-events-none absolute -top-[4vw] right-[-1vw] hidden font-serif text-[16vw] leading-none lg:block"
-          >
-            03
-          </span>
-          <div className="rise relative z-10">
-            <div className="glass inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
-              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
-              how it works
-            </div>
-            <h1 className="mt-7 max-w-[18ch] text-[12vw] leading-[0.9] sm:text-[6.6vw]">
-              <SplitText text="Three passes." className="block" delay={0.05} />
-              <SplitText
-                text="Nothing thrown out"
-                className="block"
-                charClassName="aurora-text"
-                delay={0.3}
-              />
-              <SplitText text="that doesn't need to be." className="block" delay={0.55} />
-            </h1>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        index="02"
+        eyebrow="Transformation path"
+        title="Three passes."
+        accent="One continuous system."
+        description="The workflow stays simple on purpose: ingest the real product, define the visual direction, then regenerate the presentation layer as a connected whole."
+        stat="03"
+        statLabel="core passes"
+        action={{ to: "/projects", label: "Start with your source" }}
+      />
 
-      <Section last>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {processSteps.map((step, i) => (
-            <Reveal key={step.version} delay={i * 0.1}>
-              <div className="glass group h-full px-7 py-8 transition-all duration-300 hover:-translate-y-1 hover:border-amber/40">
-                <div className="mb-[14px] flex items-center justify-between">
-                  <span className="text-sm font-semibold text-revision">{step.version}</span>
-                  <span
-                    aria-hidden
-                    className="h-2 w-2 rounded-full bg-border transition-colors group-hover:bg-revision group-hover:shadow-[0_0_10px_var(--revision)]"
-                  />
-                </div>
-                <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
-                <p className="text-[15px] text-ink-soft">{step.body}</p>
-              </div>
-            </Reveal>
-          ))}
+      <Section>
+        <SectionHeading
+          label="Sequence"
+          title="Complexity stays inside the engine."
+          description="Every step exposes just enough control to move forward without turning the redesign process into another design tool to learn."
+        />
+        <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="absolute left-[12%] right-[12%] top-[52px] hidden h-px bg-gradient-to-r from-transparent via-revision/25 to-transparent lg:block" />
+          {processSteps.map((step, index) => {
+            const Icon = stepIcons[index] ?? ScanLine;
+            return (
+              <Reveal key={step.version} delay={index * 0.1}>
+                <article className="glass relative min-h-[390px] p-7">
+                  <div className="relative z-10 flex items-center justify-between">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="font-mono text-[9px] tracking-[0.16em] text-muted-foreground">PASS / {step.version}</span>
+                  </div>
+                  <div className="relative z-10 mt-28">
+                    <h2 className="m-0 text-[44px] leading-[0.9]">{step.title}</h2>
+                    <p className="mb-0 mt-5 max-w-[38ch] text-[14px] leading-7 text-ink-soft">{step.body}</p>
+                  </div>
+                </article>
+              </Reveal>
+            );
+          })}
         </div>
-        <Reveal delay={0.3}>
-          <p className="mt-10 max-w-[560px] text-[15.5px] text-ink-soft">
-            Every file is rewritten in place, so you can diff it against the original and see
-            exactly what changed — and what didn't.
-          </p>
-          <div className="mt-8">
-            <Magnetic>
-              <Link
-                to="/projects"
-                className="glow-aurora inline-block bg-revision px-[28px] py-[13px] text-[14px] font-semibold tracking-[0.1em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-              >
-                Upload a project
-              </Link>
-            </Magnetic>
+      </Section>
+
+      <Section last tone="quiet">
+        <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_auto]">
+          <div>
+            <span className="eyebrow">Output principle</span>
+            <h2 className="mt-5 max-w-[13ch] text-[clamp(44px,6vw,84px)] leading-[0.92]">Your product stays yours. The perception changes.</h2>
+            <p className="mt-6 max-w-[680px] text-[16px] leading-8 text-ink-soft">
+              The transformation targets layout, visual hierarchy, spacing, typography, surface treatment, responsiveness and interaction states. Product meaning and working behavior remain the anchor.
+            </p>
           </div>
-        </Reveal>
+          <Link to="/projects" className="button-primary">
+            Enter workspace <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
       </Section>
     </main>
   );
