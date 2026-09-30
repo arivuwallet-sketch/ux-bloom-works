@@ -3,7 +3,11 @@ import type { PreviewGroup } from "@/data/site";
 
 function WebsiteDirectionPreview({ preview }: { preview: string }) {
   return (
-    <div className={`style-preview website-preview ${preview}`} aria-hidden>
+    <div
+      className={`style-preview website-preview ${preview}`}
+      style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr", gap: 0 }}
+      aria-hidden
+    >
       <div className="wp-browser">
         <div className="wp-chrome">
           <div className="wp-window-dots"><i /><i /><i /></div>
