@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -168,18 +169,28 @@ async function chatRedesignSource(opts: {
   currentContent: string;
   instruction: string;
   history: ChatTurn[];
+  style?: string | null;
 }): Promise<RedesignResult> {
   if (opts.currentContent.length > MAX_SOURCE_CHARS) {
     throw new Error("This file is too large for conversational redesign. Split it into smaller source files first.");
   }
 
+  const designIntelligence = buildDesignIntelligenceContext({
+    fileName: opts.fileName,
+    source: opts.currentContent,
+    style: opts.style,
+    instruction: opts.instruction,
+  });
+
   const systemPrompt =
-    "You are Rezyn Chat, a senior product designer and front-end engineer editing an existing product through conversation. " +
+    "You are Rezyn Chat, an elite product designer, UX architect, accessibility specialist, motion/visual designer, 2D/3D art director, and senior front-end engineer editing an existing product through conversation. " +
     "Work on the supplied CURRENT file, preserving every existing behavior that the user did not explicitly ask to change. " +
     "Keep routes, event handlers, state, data bindings, API calls, business logic, accessibility semantics, text meaning, and file format intact. " +
-    "You may change presentation: layout markup, UI composition, classes, CSS, design tokens, typography, spacing, color, visual hierarchy, interaction states, responsive behavior, and accessibility improvements. " +
+    "You may change presentation: layout markup, UI composition, classes, CSS, design tokens, typography, spacing, color, visual hierarchy, interaction states, responsive behavior, motion, rendering presentation, and accessibility improvements. " +
+    "If the user asks for a redesign, new style, new look, rebuild, reimagine, or from-scratch treatment, treat the current presentation only as a functional specification and reconstruct its visual system rather than patching the old UI. " +
     "Honor previous edits already present in CURRENT content. Never silently revert them. Resolve an ambiguous visual request with the safest reasonable interpretation. " +
-    "Before answering, internally verify that the rewritten file is complete and that important functional identifiers from the source were not intentionally removed. " +
+    "Use the supplied Design Intelligence Operating System as mandatory expert guidance. Apply every relevant capability and never fabricate research findings, experiments, analytics, tool executions, eye-tracking, biometric results, A/B outcomes, or performance measurements. " +
+    "Before answering, internally verify that the rewritten file is complete, important functional identifiers remain intact, and the result passes the relevant accessibility, responsive, state, hierarchy, motion, performance, visual-system, and 2D/3D quality gates. Fix defects before output. " +
     "Do not reveal private chain-of-thought. " +
     'Return ONLY one JSON object shaped exactly as {"reply":"...","file":"..."}. ' +
     '"reply" is a concise user-facing summary of the applied change (maximum 35 words). ' +
@@ -187,6 +198,7 @@ async function chatRedesignSource(opts: {
 
   const baseMessages: GatewayMessage[] = [
     { role: "system", content: systemPrompt },
+    { role: "system", content: designIntelligence },
     ...opts.history.map((turn) => ({ role: turn.role, content: turn.content })),
     {
       role: "user",
@@ -208,7 +220,7 @@ async function chatRedesignSource(opts: {
             {
               role: "system" as const,
               content:
-                "Your previous output could not be validated. Regenerate the complete file and obey the JSON-only response contract exactly. Do not shorten or summarize the file.",
+                "Your previous output could not be validated. Regenerate the complete file, rerun the Design Intelligence quality review, fix every identified issue internally, and obey the JSON-only response contract exactly. Do not shorten or summarize the file.",
             },
           ];
 
@@ -236,14 +248,27 @@ export const sendChatMessage = createServerFn({ method: "POST" })
     const supabase = context.supabase;
     const userId = context.userId;
 
+    const { data: project, error: projectError } = await supabase
+      .from("projects")
+      .select("target_style, style_mode")
+      .eq("id", data.projectId)
+      .maybeSingle();
+    if (projectError) throw new Error(projectError.message);
+
     const { data: file, error: fileError } = await supabase
       .from("project_files")
-      .select("id, name, content, redesigned_content, storage_path, status")
+      .select("id, name, content, redesigned_content, storage_path, status, target_style")
       .eq("id", data.fileId)
       .eq("project_id", data.projectId)
       .maybeSingle();
     if (fileError) throw new Error(fileError.message);
     if (!file) throw new Error("File not found");
+
+    const activeStyle =
+      (project?.style_mode === "file" ? file.target_style : project?.target_style) ??
+      file.target_style ??
+      project?.target_style ??
+      null;
 
     const emitStatus = async (content: string) => {
       const { error } = await supabase.from("redesign_chats").insert({
@@ -306,6 +331,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       if (startErr) throw new Error(startErr.message);
 
       await emitStatus("Understanding the instruction and protecting existing behavior.");
+      await emitStatus("Applying the full UI/UX and 2D/3D design intelligence framework.");
       await emitStatus("Designing and applying the requested interface change.");
 
       const { reply, file: updatedFile, model } = await chatRedesignSource({
@@ -313,8 +339,10 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         currentContent,
         instruction: data.message,
         history: chatHistory,
+        style: activeStyle,
       });
 
+      await emitStatus("Auditing accessibility, responsiveness, component states, motion and visual quality.");
       await emitStatus("Validating the complete rewritten file before saving.");
 
       const { error: doneErr } = await supabase
