@@ -3,6 +3,7 @@ import { ArrowUpRight, Asterisk, CircleDotDashed, Sparkles } from "lucide-react"
 import { DirectionLibrary } from "@/components/site/DirectionLibrary";
 import { Reveal } from "@/components/studio/motion";
 import { styleGroups } from "@/data/site";
+import "@/direction-library.css";
 
 export const Route = createFileRoute("/styles")({
   head: () => ({
