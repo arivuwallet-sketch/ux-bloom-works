@@ -286,20 +286,20 @@ function ChatRedesignPage() {
   }
 
   return (
-    <main className="pb-20 pt-[128px] sm:pt-[148px]">
+    <main className="pb-12 pt-7 sm:pb-16 sm:pt-9">
       <div className="wrap">
         <Reveal>
-          <header className="mb-8 grid grid-cols-1 gap-8 border-b border-border pb-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <header className="mb-5 grid grid-cols-1 gap-5 border-b border-border pb-5 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <Link
                 to="/projects/$projectId"
                 params={{ projectId }}
-                className="mb-6 inline-flex items-center gap-2 text-[12px] text-muted-foreground no-underline transition-colors hover:text-revision"
+                className="mb-4 inline-flex items-center gap-2 text-[12px] text-muted-foreground no-underline transition-colors hover:text-revision"
               >
                 <ArrowLeft className="h-4 w-4" /> {project.data.name}
               </Link>
               <span className="eyebrow block">Conversational transformation</span>
-              <h1 className="mb-0 mt-5 max-w-[11ch] text-[clamp(52px,7vw,94px)] leading-[0.86]">
+              <h1 className="mb-0 mt-3 max-w-[13ch] text-[clamp(40px,5.5vw,72px)] leading-[0.88]">
                 Describe the next version.
               </h1>
             </div>
@@ -315,9 +315,9 @@ function ChatRedesignPage() {
           </header>
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[300px_minmax(0,1fr)]">
           <Reveal>
-            <aside className="glass flex min-h-[680px] flex-col p-5">
+            <aside className="glass flex min-h-[520px] flex-col p-5 xl:h-[calc(100dvh-245px)] xl:min-h-[560px] xl:max-h-[760px]">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <span className="eyebrow">Source index</span>
@@ -328,7 +328,7 @@ function ChatRedesignPage() {
                 <FileCode2 className="h-5 w-5 text-revision" />
               </div>
 
-              <div className="dropzone min-h-[130px] p-5!">
+              <div className="dropzone min-h-[112px] p-5!">
                 <UploadCloud className="h-5 w-5 text-revision" aria-hidden />
                 <p className="mb-0 text-[13px]">
                   {uploading ? "Reading source…" : "Add files or ZIP"}
@@ -348,7 +348,7 @@ function ChatRedesignPage() {
                 <p className="mb-0 mt-2 text-[11px] text-destructive">{uploadError}</p>
               ) : null}
 
-              <div className="mt-6">
+              <div className="mt-5">
                 <label
                   htmlFor="chat-target"
                   className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase"
@@ -371,7 +371,7 @@ function ChatRedesignPage() {
                 </select>
               </div>
 
-              <div className="mt-6 flex-1 space-y-2 overflow-y-auto">
+              <div className="mt-5 min-h-0 flex-1 space-y-2 overflow-y-auto">
                 {files.data?.map((file) => {
                   const active = activeFileId === file.id;
                   const isRunning = file.status === "redesigning";
@@ -424,7 +424,7 @@ function ChatRedesignPage() {
                 })}
               </div>
 
-              <div className="mt-5 border-t border-border pt-4 font-mono text-[9px] leading-5 tracking-[0.06em] text-muted-foreground">
+              <div className="mt-4 border-t border-border pt-4 font-mono text-[9px] leading-5 tracking-[0.06em] text-muted-foreground">
                 {files.data?.length
                   ? `${doneCount}/${files.data.length} files have transformed output.`
                   : "No files attached yet."}
@@ -433,7 +433,7 @@ function ChatRedesignPage() {
           </Reveal>
 
           <Reveal delay={0.06}>
-            <section className="glass flex min-h-[680px] flex-col overflow-hidden">
+            <section className="glass flex min-h-[520px] flex-col overflow-hidden xl:h-[calc(100dvh-245px)] xl:min-h-[560px] xl:max-h-[760px]">
               <div className="flex items-center justify-between border-b border-border px-5 py-4 sm:px-6">
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center border border-foreground bg-foreground text-background">
@@ -466,9 +466,9 @@ function ChatRedesignPage() {
                 </div>
               ) : null}
 
-              <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-5 sm:p-7">
+              <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 sm:p-7">
                 {chat.isError ? (
-                  <div className="flex h-full items-center justify-center text-center">
+                  <div className="flex min-h-full items-center justify-center text-center">
                     <div className="max-w-[460px]">
                       <span className="eyebrow">Conversation unavailable</span>
                       <p className="mt-4 text-[14px] leading-7 text-destructive">
@@ -479,12 +479,12 @@ function ChatRedesignPage() {
                     </div>
                   </div>
                 ) : (chat.data?.length ?? 0) === 0 ? (
-                  <div className="flex h-full items-center justify-center text-center">
+                  <div className="flex min-h-full items-start justify-center pt-10 text-center sm:pt-14">
                     <div className="max-w-[460px]">
-                      <span className="mx-auto mb-6 flex h-14 w-14 items-center justify-center border border-foreground bg-[var(--revision-bg)] text-foreground">
-                        <Sparkles className="h-6 w-6" />
+                      <span className="mx-auto mb-5 flex h-12 w-12 items-center justify-center border border-foreground bg-[var(--revision-bg)] text-foreground">
+                        <Sparkles className="h-5 w-5" />
                       </span>
-                      <h2 className="text-[32px] leading-none">Tell the interface what to become.</h2>
+                      <h2 className="text-[30px] leading-none">Tell the interface what to become.</h2>
                       <p className="mt-4 text-[14px] leading-7 text-ink-soft">
                         Try “make the hero more cinematic”, “reduce dashboard density”, or “rebuild the navigation as a floating command bar”.
                       </p>
@@ -520,19 +520,19 @@ function ChatRedesignPage() {
                           className={`max-w-[82%] border px-4 py-3 text-[14px] leading-6 sm:max-w-[72%] ${
                             isUser
                               ? "border-foreground bg-foreground text-background"
-                              : "border-border bg-white/25 text-ink-soft"
+                              : "border-border bg-background/45 text-foreground"
                           }`}
                         >
+                          {message.content}
                           {message.file_name ? (
-                            <div
-                              className={`mb-1 font-mono text-[8px] tracking-[0.1em] uppercase ${
-                                isUser ? "text-background/60" : "text-revision"
+                            <span
+                              className={`mt-2 block font-mono text-[8px] tracking-[0.08em] uppercase ${
+                                isUser ? "text-background/55" : "text-muted-foreground"
                               }`}
                             >
                               {message.file_name}
-                            </div>
+                            </span>
                           ) : null}
-                          {message.content}
                         </div>
                       </div>
                     );
@@ -540,19 +540,10 @@ function ChatRedesignPage() {
                 )}
               </div>
 
-              {chatError ? (
-                <p className="m-0 border-t border-border px-5 py-3 text-[12px] text-destructive sm:px-6">
-                  {chatError}
-                </p>
-              ) : null}
-
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void handleSend();
-                }}
-                className="border-t border-border p-4 sm:p-5"
-              >
+              <div className="border-t border-border bg-background/30 p-4 sm:p-5">
+                {chatError ? (
+                  <p className="mb-3 mt-0 text-[12px] text-destructive">{chatError}</p>
+                ) : null}
                 <div className="agent-chat-input">
                   <textarea
                     value={input}
@@ -563,24 +554,25 @@ function ChatRedesignPage() {
                         void handleSend();
                       }
                     }}
-                    rows={2}
-                    placeholder={`Describe a change for ${activeFileLabel}…`}
                     disabled={sending}
+                    placeholder={`Describe what should change in ${activeFileLabel}…`}
+                    rows={2}
                   />
                   <button
-                    type="submit"
-                    disabled={sending || !input.trim()}
-                    className="button-primary min-w-[50px] px-4 disabled:opacity-40"
-                    aria-label="Send transformation instruction"
+                    type="button"
+                    onClick={() => void handleSend()}
+                    disabled={sending || !input.trim() || (files.data?.length ?? 0) === 0}
+                    className="button-primary h-[54px] w-[54px] shrink-0 p-0! disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Send redesign instruction"
                   >
                     <Send className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-4 font-mono text-[8px] tracking-[0.06em] text-muted-foreground uppercase">
-                  <span>Enter to send · Shift + Enter for new line</span>
-                  <span>Edits build on the latest saved source</span>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">
+                  <span>Enter to send · Shift + Enter for a new line</span>
+                  <span>{sending ? `Agent working on ${currentRunFile ?? activeFileLabel}` : `Editing ${activeFileLabel}`}</span>
                 </div>
-              </form>
+              </div>
             </section>
           </Reveal>
         </div>
