@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 
 const TEXT_EXT =
@@ -193,9 +194,14 @@ async function redesignSource(opts: {
 
   const styleBlueprint = getStyleBlueprint(opts.style);
   const projectManifest = opts.project.manifest.slice(0, 160).join("\n- ");
+  const designIntelligence = buildDesignIntelligenceContext({
+    fileName: opts.name,
+    source: opts.source,
+    style: opts.style,
+  });
 
   const reconstructionContract =
-    "You are Rezyn's full-reconstruction design engine: an elite product designer and senior front-end engineer. " +
+    "You are Rezyn's full-reconstruction design engine: an elite product designer, UX architect, interaction designer, accessibility specialist, motion/visual designer, 2D/3D art director, and senior front-end engineer. " +
     "The uploaded source is a FUNCTIONAL SPECIFICATION, not a visual reference. Before writing code, mentally discard the existing UI/UX presentation and reconstruct the interface from a blank visual canvas. " +
     "The chosen design direction must control the NEW information architecture, visual hierarchy, composition, navigation treatment, section structure, component geometry, typography, spacing system, color system, surfaces, states, responsive behavior, and interaction character. " +
     "A theme swap, CSS patch, wrapper around the old UI, token substitution, or light restyle is a FAILURE. Do not preserve the old layout merely because it already exists. " +
@@ -203,6 +209,7 @@ async function redesignSource(opts: {
     "You MUST preserve application behavior: routes, state, props, event handlers, API/data bindings, forms and submission behavior, business logic, content meaning, asset references, accessibility semantics, test/data hooks, IDs or selectors used functionally, and the source file's framework/language. " +
     "If a class/selector may be referenced across files or by JavaScript, keeping its identifier is acceptable for compatibility, but its PRESENTATION must be rebuilt rather than inherited. " +
     "For CSS/SCSS/LESS files, replace the visual system instead of appending override patches after the old rules. For JSX/TSX/Vue/Svelte/templates, recompose the rendered interface rather than retaining the same DOM hierarchy with new colors. " +
+    "Use the supplied Design Intelligence Operating System as mandatory expert guidance. Apply all relevant skills, but never fabricate research findings, analytics, experiments, tool runs, user studies, eye tracking, biometric results, or performance measurements. " +
     "Do not create fake functionality, do not remove real functionality, and do not return explanations. Return ONLY the complete rewritten file contents, with no markdown fence.";
 
   const context =
@@ -211,10 +218,12 @@ async function redesignSource(opts: {
     `Project notes: ${opts.project.notes?.trim() || "None"}\n` +
     `Chosen direction: ${opts.style}\n` +
     `Direction blueprint: ${styleBlueprint}\n\n` +
+    `${designIntelligence}\n\n` +
     `Project file manifest:\n- ${projectManifest || opts.name}\n\n` +
     `Current file: ${opts.name}\n\n` +
     "FULL REBUILD REQUIREMENT:\n" +
     "Treat the existing presentation as something to replace completely. Use the source only to learn what the product does, what content it contains, and what behavior must survive. The finished interface should look as if a different design team built the product from scratch in the chosen direction.\n\n" +
+    "Before returning the file, perform an internal expert review against the Design Intelligence quality gates and fix accessibility, hierarchy, responsive, state, interaction, motion, performance, visual-system, and relevant 2D/3D defects. Do not report the review; return the corrected file only.\n\n" +
     `SOURCE FILE:\n${opts.source}`;
 
   const baseMessages: GatewayMessage[] = [
@@ -233,7 +242,7 @@ async function redesignSource(opts: {
             {
               role: "system" as const,
               content:
-                "The previous result was rejected because it was incomplete or preserved too much of the uploaded visual presentation. Reconstruct the presentation more radically from a blank canvas while preserving behavior. Do not patch the previous design; replace it.",
+                "The previous result was rejected because it was incomplete or preserved too much of the uploaded visual presentation. Reconstruct the presentation more radically from a blank canvas while preserving behavior. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.",
             },
           ];
 
