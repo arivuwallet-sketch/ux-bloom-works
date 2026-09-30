@@ -1,57 +1,53 @@
-import { ClientOnly } from "@tanstack/react-router";
+import { ClientOnly, useLocation } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useRef } from "react";
 
 const ImmersiveScene = lazy(() => import("@/components/three/ImmersiveScene"));
 
-/** Cursor-tracked glow layered over the 3D scene — cheap, CSS-only depth cue. */
-function CursorSpotlight() {
+function CursorField() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const node = ref.current;
-    if (!node) return;
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    if (!node || window.matchMedia("(pointer: coarse)").matches) return;
 
-    let raf = 0;
-    const move = (e: PointerEvent) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        node.style.setProperty("--mx", `${e.clientX}px`);
-        node.style.setProperty("--my", `${e.clientY}px`);
-        node.classList.add("is-active");
+    let frame = 0;
+    const move = (event: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        node.style.setProperty("--mx", `${event.clientX}px`);
+        node.style.setProperty("--my", `${event.clientY}px`);
       });
     };
-    const leave = () => node.classList.remove("is-active");
 
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerleave", leave);
+    window.addEventListener("pointermove", move, { passive: true });
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(frame);
       window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerleave", leave);
     };
   }, []);
 
-  return <div ref={ref} className="cursor-spotlight" aria-hidden />;
+  return <div ref={ref} className="cursor-field" aria-hidden />;
 }
 
 export function ImmersiveBackground() {
+  const location = useLocation();
+
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10">
-      <div className="absolute inset-0 bg-background" />
-      <ClientOnly fallback={null}>
-        <Suspense fallback={null}>
-          <div className="absolute inset-0 opacity-90">
-            <ImmersiveScene />
+    <div className="immersive-world" aria-hidden>
+      <ClientOnly fallback={<div className="immersive-world__fallback" />}>
+        <Suspense fallback={<div className="immersive-world__fallback" />}>
+          <div className="immersive-world__canvas">
+            <ImmersiveScene pathname={location.pathname} />
           </div>
         </Suspense>
       </ClientOnly>
       <ClientOnly fallback={null}>
-        <CursorSpotlight />
+        <CursorField />
       </ClientOnly>
-      {/* readability veil + film grain */}
-      <div className="veil absolute inset-0" />
-      <div className="grain absolute inset-0" />
+      <div className="world-grid" />
+      <div className="world-scan" />
+      <div className="world-vignette" />
+      <div className="grain" />
     </div>
   );
 }
