@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import type { PreviewGroup } from "@/data/site";
+import "@/master-style-previews.css";
 
 function WebsiteDirectionPreview({ preview }: { preview: string }) {
   return (
@@ -90,7 +91,7 @@ export function PreviewGroups({ groups }: { groups: PreviewGroup[] }) {
         <section key={group.title} className="relative">
           <div className="mb-7 flex flex-wrap items-end justify-between gap-5 border-b border-border pb-5">
             <div className="flex items-center gap-4">
-              <span className="font-mono text-[9px] tracking-[0.14em] text-revision">0{groupIndex + 1}</span>
+              <span className="font-mono text-[9px] tracking-[0.14em] text-revision">{String(groupIndex + 1).padStart(2, "0")}</span>
               <h3 className="m-0 text-[clamp(28px,3.5vw,46px)] leading-none">{group.title}</h3>
             </div>
             <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
