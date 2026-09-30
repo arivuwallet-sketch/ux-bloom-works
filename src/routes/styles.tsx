@@ -8,11 +8,11 @@ import "@/direction-library.css";
 export const Route = createFileRoute("/styles")({
   head: () => ({
     meta: [
-      { title: "Direction Library — 28 interface design systems | Rezyn" },
+      { title: "Direction Library — 61 interface design systems | Rezyn" },
       {
         name: "description",
         content:
-          "Browse Rezyn's visual direction archive: 28 interface systems spanning minimal, expressive, dimensional, nostalgic, digital and editorial design languages.",
+          "Browse Rezyn's 61-direction reconstruction library across material systems, structural grids, art movements, retro-tech, flat architecture, modern modes, cinematic UI, organic aesthetics and AI-native spatial experiences.",
       },
     ],
   }),
@@ -27,7 +27,7 @@ function StylesPage() {
       <section className="direction-intro">
         <div className="direction-intro__topline">
           <span>Rezyn / Direction Library</span>
-          <span>Edition 01 — 2026</span>
+          <span>Edition 02 — 2026</span>
           <span>{String(total).padStart(2, "0")} indexed systems</span>
         </div>
 
@@ -46,24 +46,26 @@ function StylesPage() {
           <Reveal className="direction-intro__manifesto" delay={0.08}>
             <Asterisk className="direction-intro__asterisk" />
             <p>
-              The direction library is a catalog of complete interface attitudes. Each entry changes proportion,
-              typography, density, material, motion and hierarchy across the product.
+              The master direction library contains complete reconstruction systems. Each one rebuilds layout,
+              hierarchy, typography, material, motion, navigation and component character from a blank visual canvas.
             </p>
             <div className="direction-intro__manifesto-meta">
-              <span>06 families</span>
-              <span>28 directions</span>
-              <span>01 product / entirely different character</span>
+              <span>{String(styleGroups.length).padStart(2, "0")} families</span>
+              <span>{String(total).padStart(2, "0")} directions</span>
+              <span>01 product / entirely new visual architecture</span>
             </div>
           </Reveal>
         </div>
 
         <div className="direction-intro__strip" aria-hidden>
-          <span>MINIMAL</span>
-          <span>BRUTAL</span>
-          <span>TACTILE</span>
-          <span>NOSTALGIC</span>
-          <span>DIGITAL</span>
-          <span>EDITORIAL</span>
+          <span>MATERIAL</span>
+          <span>STRUCTURE</span>
+          <span>HISTORY</span>
+          <span>RETRO-TECH</span>
+          <span>MODERN</span>
+          <span>MOTION</span>
+          <span>ORGANIC</span>
+          <span>AI-NATIVE</span>
         </div>
       </section>
 
@@ -74,16 +76,16 @@ function StylesPage() {
       <section className="direction-outro">
         <div className="direction-outro__stamp">
           <Sparkles className="h-5 w-5" />
-          Mix the language with current interaction patterns
+          Rebuild the visual system, then layer interaction patterns
         </div>
         <div className="direction-outro__grid">
           <div>
             <span className="direction-outro__label">Next archive</span>
-            <h2>Style gives it character. Interaction gives it life.</h2>
+            <h2>Direction defines the world. Interaction makes it move.</h2>
           </div>
           <div className="direction-outro__copy">
             <p>
-              Once the visual language is chosen, layer in spatial navigation, kinetic backgrounds, magnetic controls,
+              After choosing a reconstruction direction, layer in spatial navigation, kinetic backgrounds, magnetic controls,
               conversational AI or advanced data patterns from the Signals library.
             </p>
             <Link to="/trends" className="direction-outro__link">
