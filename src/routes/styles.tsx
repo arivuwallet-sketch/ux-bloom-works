@@ -1,18 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Asterisk, CircleDotDashed, Sparkles } from "lucide-react";
+import { DirectionLibrary } from "@/components/site/DirectionLibrary";
 import { Reveal } from "@/components/studio/motion";
-import { PageHero } from "@/components/site/PageHero";
-import { Section, SectionHeading } from "@/components/site/Section";
-import { PreviewGroups } from "@/components/site/PreviewTile";
 import { styleGroups } from "@/data/site";
 
 export const Route = createFileRoute("/styles")({
   head: () => ({
     meta: [
-      { title: "Directions — 28 interface design systems | Rezyn" },
+      { title: "Direction Library — 28 interface design systems | Rezyn" },
       {
         name: "description",
-        content: "Explore 28 visual directions for interface transformation, from restrained systems to expressive spatial design.",
+        content:
+          "Browse Rezyn's visual direction archive: 28 interface systems spanning minimal, expressive, dimensional, nostalgic, digital and editorial design languages.",
       },
     ],
   }),
@@ -23,43 +22,75 @@ function StylesPage() {
   const total = styleGroups.reduce((sum, group) => sum + group.items.length, 0);
 
   return (
-    <main>
-      <PageHero
-        index="03"
-        eyebrow="Direction library"
-        title="Choose a language."
-        accent="Not a skin."
-        description="Each direction is treated as a system of hierarchy, proportion, typography, material and interaction—not a color preset dropped on top of the same layout."
-        stat={String(total).padStart(2, "0")}
-        statLabel="design directions"
-        action={{ to: "/projects", label: "Apply a direction" }}
-      />
-
-      <Section>
-        <SectionHeading
-          label="Library"
-          title="Different aesthetics. Consistent design logic."
-          description="Use the directory to choose the emotional and structural character of the redesign before the engine applies it across the product."
-        />
-        <Reveal>
-          <PreviewGroups groups={styleGroups} />
-        </Reveal>
-      </Section>
-
-      <Section last tone="quiet">
-        <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_auto]">
-          <div>
-            <span className="eyebrow">Beyond styles</span>
-            <h2 className="mt-5 max-w-[12ch] text-[clamp(44px,6vw,82px)] leading-[0.92]">Patterns move faster than labels.</h2>
-            <p className="mt-5 max-w-[650px] text-[16px] leading-8 text-ink-soft">
-              The trends library tracks interaction and layout patterns that can be mixed into a direction when the product needs something more specific than a named aesthetic.
-            </p>
-          </div>
-          <Link to="/trends" className="button-secondary">
-            Explore interface signals <ArrowUpRight className="h-4 w-4" />
-          </Link>
+    <main className="direction-page">
+      <section className="direction-intro">
+        <div className="direction-intro__topline">
+          <span>Rezyn / Direction Library</span>
+          <span>Edition 01 — 2026</span>
+          <span>{String(total).padStart(2, "0")} indexed systems</span>
         </div>
-      </Section>
+
+        <div className="direction-intro__hero">
+          <Reveal className="direction-intro__copy">
+            <div className="direction-intro__kicker">
+              <CircleDotDashed className="h-4 w-4" />
+              Choose the visual operating system
+            </div>
+            <h1>
+              Pick a <em>world</em>,
+              <br />not a theme.
+            </h1>
+          </Reveal>
+
+          <Reveal className="direction-intro__manifesto" delay={0.08}>
+            <Asterisk className="direction-intro__asterisk" />
+            <p>
+              The direction library is a catalog of complete interface attitudes. Each entry changes proportion,
+              typography, density, material, motion and hierarchy across the product.
+            </p>
+            <div className="direction-intro__manifesto-meta">
+              <span>06 families</span>
+              <span>28 directions</span>
+              <span>01 product / entirely different character</span>
+            </div>
+          </Reveal>
+        </div>
+
+        <div className="direction-intro__strip" aria-hidden>
+          <span>MINIMAL</span>
+          <span>BRUTAL</span>
+          <span>TACTILE</span>
+          <span>NOSTALGIC</span>
+          <span>DIGITAL</span>
+          <span>EDITORIAL</span>
+        </div>
+      </section>
+
+      <section className="direction-archive-shell">
+        <DirectionLibrary groups={styleGroups} />
+      </section>
+
+      <section className="direction-outro">
+        <div className="direction-outro__stamp">
+          <Sparkles className="h-5 w-5" />
+          Mix the language with current interaction patterns
+        </div>
+        <div className="direction-outro__grid">
+          <div>
+            <span className="direction-outro__label">Next archive</span>
+            <h2>Style gives it character. Interaction gives it life.</h2>
+          </div>
+          <div className="direction-outro__copy">
+            <p>
+              Once the visual language is chosen, layer in spatial navigation, kinetic backgrounds, magnetic controls,
+              conversational AI or advanced data patterns from the Signals library.
+            </p>
+            <Link to="/trends" className="direction-outro__link">
+              Open Signals Library <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
