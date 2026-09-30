@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Layers3, MoveUpRight } from "lucide-react";
 import type { PreviewGroup, PreviewItem } from "@/data/site";
@@ -128,10 +129,10 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
               <p>{active.desc}</p>
             </div>
 
-            <a href="/projects" className="direction-library__apply">
+            <Link to="/projects" className="direction-library__apply">
               <span>Apply this direction</span>
               <ArrowUpRight className="h-4 w-4" />
-            </a>
+            </Link>
           </div>
         </aside>
       </div>
