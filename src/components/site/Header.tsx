@@ -15,7 +15,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 18);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -29,65 +29,66 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className={`hud-header${scrolled ? " is-scrolled" : ""}`}>
-      <div className="hud-header__inner">
-        <Link to="/" onClick={() => setOpen(false)} className="brand-lockup" aria-label="Rezyn home">
-          <span className="brand-mark" aria-hidden>
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className="brand-word">REZYN</span>
-          <span className="brand-version">/ R3</span>
+    <header className={`archive-header${scrolled ? " is-scrolled" : ""}`}>
+      <div className="archive-header__utility">
+        <span>REZYN / INTERFACE TRANSFORMATION ARCHIVE</span>
+        <span className="archive-header__utility-center">EST. DIGITAL / REVISION SYSTEM</span>
+        <span>INDEX 00—05</span>
+      </div>
+
+      <div className="archive-header__main">
+        <Link to="/" onClick={() => setOpen(false)} className="archive-brand" aria-label="Rezyn home">
+          <span className="archive-brand__mark">RZ</span>
+          <span className="archive-brand__word">REZYN</span>
         </Link>
 
-        <nav className="hud-nav" aria-label="Primary navigation">
+        <nav className="archive-nav" aria-label="Primary navigation">
           {navItems.map((item, index) => (
             <Link
               key={item.to}
               to={item.to}
-              className="hud-nav__item"
+              className="archive-nav__item"
               activeProps={{ className: "is-active" }}
             >
-              <span className="hud-nav__index">0{index + 1}</span>
-              <span>{item.label}</span>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{item.label}</strong>
             </Link>
           ))}
         </nav>
 
-        <div className="hud-actions">
-          <Link to="/projects" className="hud-workspace">
-            <span>Launch workspace</span>
-            <ArrowUpRight className="h-4 w-4" />
+        <div className="archive-header__actions">
+          <Link to="/projects" className="archive-workspace">
+            Workspace <ArrowUpRight className="h-4 w-4" />
           </Link>
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-label={open ? "Close navigation" : "Open navigation"}
-            className="hud-menu"
+            className="archive-menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      <div className={`mobile-orbit${open ? " is-open" : ""}`} aria-hidden={!open}>
-        <div className="mobile-orbit__noise" />
-        <div className="mobile-orbit__ring" />
-        <div className="mobile-orbit__content">
-          <span className="eyebrow">Navigate / Rezyn system</span>
-          <div className="mobile-orbit__links">
-            {navItems.map((item, index) => (
-              <Link key={item.to} to={item.to} onClick={() => setOpen(false)}>
-                <span>0{index + 1}</span>
-                <strong>{item.label}</strong>
-                <ArrowUpRight />
-              </Link>
-            ))}
-          </div>
-          <Link to="/projects" onClick={() => setOpen(false)} className="button-primary">
-            Enter workspace
+      <div className={`archive-mobile${open ? " is-open" : ""}`} aria-hidden={!open}>
+        <div className="archive-mobile__top">
+          <span>REZYN / DIRECTORY</span>
+          <span>06 ENTRIES</span>
+        </div>
+        <div className="archive-mobile__links">
+          {navItems.map((item, index) => (
+            <Link key={item.to} to={item.to} onClick={() => setOpen(false)}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{item.label}</strong>
+              <ArrowUpRight className="h-5 w-5" />
+            </Link>
+          ))}
+          <Link to="/projects" onClick={() => setOpen(false)} className="archive-mobile__workspace">
+            <span>06</span>
+            <strong>Workspace</strong>
+            <ArrowUpRight className="h-5 w-5" />
           </Link>
         </div>
       </div>
@@ -97,44 +98,39 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer className="site-footer">
-      <div className="site-footer__glow" />
-      <div className="wrap relative z-10">
-        <div className="site-footer__grid">
-          <div>
-            <Link to="/" className="brand-lockup brand-lockup--footer">
-              <span className="brand-mark" aria-hidden>
-                <span />
-                <span />
-                <span />
-              </span>
-              <span className="brand-word">REZYN</span>
-            </Link>
-            <p className="site-footer__manifesto">
-              Existing product. New gravity. We transform interfaces without throwing away the system underneath.
-            </p>
+    <footer className="archive-footer">
+      <div className="archive-footer__marquee" aria-hidden>
+        REVISE / REFRAME / RESTRUCTURE / REZYN / REVISE / REFRAME / RESTRUCTURE / REZYN
+      </div>
+      <div className="wrap">
+        <div className="archive-footer__grid">
+          <div className="archive-footer__brand">
+            <span>RZ / 26</span>
+            <Link to="/">REZYN</Link>
+            <p>Existing product. New visual language. Structure and logic remain yours.</p>
           </div>
 
-          <div className="site-footer__links">
-            <span className="eyebrow">Explore</span>
-            {navItems.map((item) => (
+          <div className="archive-footer__directory">
+            <span className="archive-footer__label">Directory</span>
+            {navItems.map((item, index) => (
               <Link key={item.to} to={item.to}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
                 {item.label}
               </Link>
             ))}
           </div>
 
-          <div className="site-footer__links">
-            <span className="eyebrow">Build</span>
-            <Link to="/projects">Workspace</Link>
-            <Link to="/auth">Account</Link>
-            <a href="mailto:hello@rezyn.co">hello@rezyn.co</a>
+          <div className="archive-footer__directory">
+            <span className="archive-footer__label">System</span>
+            <Link to="/projects"><span>06</span>Workspace</Link>
+            <Link to="/auth"><span>07</span>Account</Link>
+            <a href="mailto:hello@rezyn.co"><span>08</span>Contact</a>
           </div>
         </div>
 
-        <div className="site-footer__rail">
-          <span>REZYN / INTERFACE TRANSFORMATION SYSTEM</span>
-          <span>DESIGNED FOR PRODUCTS THAT ALREADY EXIST</span>
+        <div className="archive-footer__bottom">
+          <span>REZYN INTERFACE TRANSFORMATION SYSTEM</span>
+          <span>DESIGN ARCHIVE / 2026</span>
         </div>
       </div>
     </footer>
