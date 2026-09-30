@@ -178,7 +178,7 @@ async function chatRedesignSource(opts: {
   const designIntelligence = buildDesignIntelligenceContext({
     fileName: opts.fileName,
     source: opts.currentContent,
-    style: opts.style,
+    style: opts.style ?? null,
     instruction: opts.instruction,
   });
 
