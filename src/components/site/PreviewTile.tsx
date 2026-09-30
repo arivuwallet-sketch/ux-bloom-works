@@ -1,7 +1,41 @@
 import { ArrowUpRight } from "lucide-react";
 import type { PreviewGroup } from "@/data/site";
 
+function DirectionThumbnail({ preview }: { preview: string }) {
+  return (
+    <div className={`style-preview direction-thumb ${preview}`} aria-hidden>
+      <div className="dt-browser">
+        <div className="dt-chrome">
+          <span className="dt-chrome-dot" />
+          <span className="dt-chrome-dot" />
+          <span className="dt-chrome-dot" />
+          <span className="dt-url" />
+        </div>
+        <div className="dt-screen">
+          <div className="dt-nav">
+            <span className="dt-logo">R</span>
+            <div className="dt-nav-lines"><i /><i /><i /></div>
+            <span className="dt-nav-action" />
+          </div>
+          <div className="dt-hero">
+            <span className="dt-kicker" />
+            <strong className="dt-title"><i /><i /></strong>
+            <span className="dt-copy"><i /><i /><i /></span>
+            <span className="dt-cta" />
+          </div>
+          <div className="dt-modules"><i /><i /><i /></div>
+          <span className="dt-decor dt-decor-a" />
+          <span className="dt-decor dt-decor-b" />
+          <span className="dt-decor dt-decor-c" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PreviewTile({ preview }: { preview: string }) {
+  if (preview.startsWith("sp-")) return <DirectionThumbnail preview={preview} />;
+
   return (
     <div className={`style-preview ${preview}`} aria-hidden>
       <div className="sp-block" />
@@ -32,11 +66,11 @@ export function PreviewGroups({ groups }: { groups: PreviewGroup[] }) {
                 key={item.name}
                 className="glass group relative p-3 transition-transform duration-300 hover:-translate-y-1"
               >
-                <div className="absolute left-5 top-5 z-10 rounded-full border border-white/10 bg-background/55 px-2 py-1 font-mono text-[8px] tracking-[0.1em] text-muted-foreground backdrop-blur-md">
+                <div className="absolute left-5 top-5 z-10 rounded-full border border-current/10 bg-background/70 px-2 py-1 font-mono text-[8px] tracking-[0.1em] text-muted-foreground backdrop-blur-md">
                   {String(index + 1).padStart(2, "0")}
                 </div>
-                <div className="overflow-hidden rounded-[15px] border border-white/[0.06] bg-black/20">
-                  <div className="transition-transform duration-700 ease-out group-hover:scale-[1.035]">
+                <div className="overflow-hidden border border-current/10 bg-black/5">
+                  <div className="transition-transform duration-700 ease-out group-hover:scale-[1.025]">
                     <PreviewTile preview={item.preview} />
                   </div>
                 </div>
