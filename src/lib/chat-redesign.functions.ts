@@ -103,7 +103,7 @@ async function callGateway(messages: GatewayMessage[]) {
 
       try {
         const body: Record<string, unknown> = { model, messages };
-        if (model.startsWith("openai/")) body.reasoning_effort = CHAT_REASONING_EFFORT;
+        if (model.startsWith("openai/")) body["reasoning_effort"] = CHAT_REASONING_EFFORT;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
@@ -128,8 +128,6 @@ async function callGateway(messages: GatewayMessage[]) {
             continue;
           }
 
-          // A model can be unavailable on one gateway account while another is enabled.
-          // Move to the fallback model for unsupported/not-found/transient model failures.
           if ([400, 404, 422, 429, 500, 502, 503, 504].includes(res.status)) break;
           throw new Error(lastError);
         }
@@ -223,7 +221,6 @@ async function chatRedesignSource(opts: {
   throw new Error(lastValidationError);
 }
 
-/** One turn of Rezyn Chat: apply a plain-language instruction to a single project file. */
 export const sendChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
