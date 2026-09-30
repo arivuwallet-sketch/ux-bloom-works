@@ -1,0 +1,192 @@
+.agent-livebar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(217, 255, 67, 0.52);
+  padding: 12px 18px;
+  color: var(--foreground);
+}
+
+.agent-livebar__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.agent-livebar__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #11110f;
+  box-shadow: 0 0 0 0 rgba(17, 17, 15, 0.35);
+  animation: agent-pulse 1.35s ease-out infinite;
+}
+
+.agent-livebar strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.agent-livebar__count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.agent-event {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 760px);
+  border-top: 1px solid rgba(17, 17, 15, 0.15);
+  border-bottom: 1px solid rgba(17, 17, 15, 0.15);
+  padding: 9px 2px;
+  color: var(--muted-foreground);
+}
+
+.agent-event__icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--revision);
+}
+
+.agent-event__copy {
+  min-width: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+
+.agent-event__file {
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.agent-event.is-error {
+  color: var(--destructive);
+}
+
+.agent-event.is-done .agent-event__icon {
+  color: #5a7f00;
+}
+
+.agent-chat-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.22);
+  padding: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agent-chat-input:focus-within {
+  border-color: var(--foreground);
+  box-shadow: 4px 4px 0 rgba(17, 17, 15, 0.18);
+}
+
+.agent-chat-input textarea {
+  width: 100%;
+  min-height: 54px;
+  max-height: 180px;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  padding: 10px 12px;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+}
+
+.agent-chat-input textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+.agent-file-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.agent-file-status__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(17, 17, 15, 0.28);
+}
+
+.agent-file-status.is-running .agent-file-status__dot {
+  background: var(--revision);
+  animation: agent-pulse 1.2s ease-out infinite;
+}
+
+.agent-file-status.is-done .agent-file-status__dot {
+  background: #6a9300;
+}
+
+.agent-file-status.is-failed .agent-file-status__dot {
+  background: var(--destructive);
+}
+
+@keyframes agent-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(17, 17, 15, 0.32); }
+  70% { box-shadow: 0 0 0 7px rgba(17, 17, 15, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(17, 17, 15, 0); }
+}
+
+@media (max-width: 640px) {
+  .agent-livebar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .agent-livebar strong {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: normal;
+  }
+
+  .agent-event {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+
+  .agent-event__file {
+    grid-column: 2;
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-livebar__pulse,
+  .agent-file-status.is-running .agent-file-status__dot {
+    animation: none;
+  }
+}
