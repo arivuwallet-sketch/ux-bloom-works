@@ -40,7 +40,7 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
         <div className="direction-library__mark">
           <span>RZ</span>
           <span>DIR</span>
-          <span>26</span>
+          <span>{String(entries.length).padStart(2, "0")}</span>
         </div>
         <div className="direction-library__toolbar-copy">
           <span>Visual language archive</span>
@@ -74,7 +74,7 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
 
           <div className="direction-library__rail-note">
             <Layers3 className="h-4 w-4" />
-            <p>Each direction changes hierarchy, type, spacing, material, motion and component character—not just color.</p>
+            <p>Each direction reconstructs hierarchy, layout, type, spacing, material, motion and component character—not just color.</p>
           </div>
         </aside>
 
