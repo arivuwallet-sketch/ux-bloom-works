@@ -12,13 +12,13 @@ export function Section({
   tone?: "default" | "quiet" | "signal";
 }) {
   return (
-    <section id={id} className={`experience-section experience-section--${tone}${last ? " is-last" : ""}`}>
-      <div className="section-orbit" aria-hidden>
-        <span className="section-orbit__line" />
-        <span className="section-orbit__dot" />
-      </div>
+    <section id={id} className={`archive-section archive-section--${tone}${last ? " is-last" : ""}`}>
       <div className="wrap">
-        <div className="section-surface">{children}</div>
+        <div className="archive-section__rule">
+          <span>REZYN / SECTION</span>
+          <span>↘</span>
+        </div>
+        <div className="archive-section__surface">{children}</div>
       </div>
     </section>
   );
@@ -34,12 +34,12 @@ export function SectionHeading({
   description?: string;
 }) {
   return (
-    <div className="section-heading">
-      <div className="section-heading__meta">
-        <span className="eyebrow">{label}</span>
-        <span className="section-heading__trace" aria-hidden />
+    <div className="archive-section-heading">
+      <div className="archive-section-heading__label">
+        <span>{label}</span>
+        <span>INDEX</span>
       </div>
-      <div className="section-heading__copy">
+      <div className="archive-section-heading__copy">
         <h2>{title}</h2>
         {description ? <p>{description}</p> : null}
       </div>
@@ -49,17 +49,19 @@ export function SectionHeading({
 
 export function ServiceRows({ items }: { items: { name: string; desc: string }[] }) {
   return (
-    <div className="capability-stack">
+    <div className="archive-ledger">
+      <div className="archive-ledger__head">
+        <span>No.</span>
+        <span>Capability</span>
+        <span>Description</span>
+        <span>↗</span>
+      </div>
       {items.map((item, index) => (
-        <article key={item.name} className="capability-row">
-          <div className="capability-row__number">0{index + 1}</div>
-          <div className="capability-row__title">{item.name}</div>
+        <article key={item.name} className="archive-ledger__row">
+          <span className="archive-ledger__number">{String(index + 1).padStart(2, "0")}</span>
+          <h3>{item.name}</h3>
           <p>{item.desc}</p>
-          <div className="capability-row__signal" aria-hidden>
-            <span />
-            <span />
-            <span />
-          </div>
+          <span className="archive-ledger__arrow">↗</span>
         </article>
       ))}
     </div>
