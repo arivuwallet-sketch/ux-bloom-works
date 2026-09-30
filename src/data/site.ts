@@ -1,3 +1,5 @@
+import { MASTER_STYLE_GROUPS, MASTER_STYLE_NAMES } from "@/data/style-catalog";
+
 export type Service = { name: string; desc: string };
 
 export const services: Service[] = [
@@ -49,90 +51,22 @@ export const processSteps: ProcessStep[] = [
   },
   {
     version: "02 — Pick a style",
-    title: "Choose the look",
-    body: "One direction for the whole project, or a different style per file. Twenty-eight to choose from.",
+    title: "Choose the visual world",
+    body: "Choose one of sixty-one full reconstruction directions for the whole project, or assign a different direction per file.",
   },
   {
     version: "03 — Download",
-    title: "Take the finished files",
-    body: "Every file is redesigned in your chosen style, then handed back as one ZIP you can drop into your codebase.",
+    title: "Take the rebuilt files",
+    body: "Presentation-bearing files are reconstructed from scratch in the chosen direction while functionality survives, then returned as one project ZIP.",
   },
 ];
 
 export type PreviewItem = { preview: string; name: string; desc: string };
 export type PreviewGroup = { title: string; unit: string; items: PreviewItem[] };
 
-export const styleGroups: PreviewGroup[] = [
-  {
-    title: "Minimal & functional",
-    unit: "styles",
-    items: [
-      { preview: "sp-minimalism", name: "Minimalism", desc: "Only what's necessary, nothing decorative left in." },
-      { preview: "sp-swiss", name: "Swiss / International", desc: "Grid-based, sans-serif, and mathematically precise." },
-      { preview: "sp-flat", name: "Flat design", desc: "No shadows or gradients — solid color blocks only." },
-      { preview: "sp-neumorphism", name: "Neumorphism", desc: "Soft, embossed shapes carved from one background." },
-      { preview: "sp-mono", name: "Monochrome UI", desc: "A single hue carrying the entire interface." },
-    ],
-  },
-  {
-    title: "Bold & expressive",
-    unit: "styles",
-    items: [
-      { preview: "sp-brutalism", name: "Brutalism", desc: "Raw, unstyled-HTML aesthetic, worn on purpose." },
-      { preview: "sp-neobrutalism", name: "Neo-brutalism", desc: "Brutalism with bright color and thick offset borders." },
-      { preview: "sp-maximalism", name: "Maximalism", desc: "Layered pattern, color, and density, by design." },
-      { preview: "sp-antidesign", name: "Anti-design", desc: "Deliberately breaks grid and hierarchy conventions." },
-      { preview: "sp-zine", name: "Punk / zine", desc: "Collage, cut-paper, do-it-yourself print aesthetic." },
-    ],
-  },
-  {
-    title: "Glass & depth",
-    unit: "styles",
-    items: [
-      { preview: "sp-glass", name: "Glassmorphism", desc: "Frosted, translucent panels over a blurred backdrop." },
-      { preview: "sp-skeuomorphism", name: "Skeuomorphism", desc: "Interfaces that mimic real-world material and texture." },
-      { preview: "sp-clay", name: "Claymorphism", desc: "Puffy, rounded shapes that look moldable." },
-      { preview: "sp-depth", name: "Layered depth", desc: "Elevation built from stacked, diffused shadows." },
-    ],
-  },
-  {
-    title: "Retro & nostalgic",
-    unit: "styles",
-    items: [
-      { preview: "sp-y2k", name: "Y2K", desc: "Chrome, bevels, and early-internet optimism." },
-      { preview: "sp-vaporwave", name: "Vaporwave", desc: "Pink-cyan gradients, glitch, faux-retro type." },
-      { preview: "sp-retrofuturism", name: "Retro-futurism", desc: "How the past imagined tomorrow would look." },
-      { preview: "sp-memphis", name: "Memphis", desc: "Postmodern shapes, squiggles, primary color clashes." },
-      { preview: "sp-artdeco", name: "Art deco revival", desc: "Geometric symmetry with metallic ornament." },
-    ],
-  },
-  {
-    title: "Tech & digital-native",
-    unit: "styles",
-    items: [
-      { preview: "sp-darkui", name: "Dark UI", desc: "Interfaces built for low-light, high-contrast focus." },
-      { preview: "sp-cyberpunk", name: "Cyberpunk", desc: "Neon-on-black, dense HUD-style information." },
-      { preview: "sp-bento", name: "Bento grid", desc: "Asymmetric grid of boxed modules, like a tray." },
-      { preview: "sp-aurora", name: "Gradient mesh / aurora", desc: "Soft, blurred color fields as backdrop." },
-      { preview: "sp-3d", name: "Generative / 3D", desc: "Depth and motion built from rendered objects." },
-    ],
-  },
-  {
-    title: "Editorial & organic",
-    unit: "styles",
-    items: [
-      { preview: "sp-editorial", name: "Editorial", desc: "Magazine layout logic: columns, captions, pull quotes." },
-      { preview: "sp-broadsheet", name: "Broadsheet", desc: "Newspaper density, hairline rules, serif type." },
-      { preview: "sp-organic", name: "Organic / hand-drawn", desc: "Imperfect lines and shapes standing in for polish." },
-      { preview: "sp-playful", name: "Playful / illustrative", desc: "Custom illustration carrying the brand's personality." },
-    ],
-  },
-];
-
-export const allStyleNames: string[] = styleGroups.flatMap((group) =>
-  group.items.map((item) => item.name),
-);
-
+/** The only active redesign direction catalog. */
+export const styleGroups: PreviewGroup[] = MASTER_STYLE_GROUPS;
+export const allStyleNames: string[] = MASTER_STYLE_NAMES;
 
 export const trendGroups: PreviewGroup[] = [
   {
