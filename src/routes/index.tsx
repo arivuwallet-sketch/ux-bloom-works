@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Magnetic, Reveal, SplitText, Ticker } from "@/components/studio/motion";
+import { ArrowDownRight, ArrowUpRight, Boxes, Braces, Layers3, ScanLine, Sparkles, WandSparkles } from "lucide-react";
+import { Reveal, Ticker } from "@/components/studio/motion";
+import { PageHero } from "@/components/site/PageHero";
 import { Section, SectionHeading, ServiceRows } from "@/components/site/Section";
 import { PreviewGroups } from "@/components/site/PreviewTile";
 import { BeforeAfter } from "@/components/site/BeforeAfter";
@@ -8,154 +10,127 @@ import { processSteps, services, styleGroups } from "@/data/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Rezyn — Upload your project, pick a style, download the redesign" },
+      { title: "Rezyn — AI interface transformation studio" },
       {
         name: "description",
         content:
-          "Upload your website, web app, mobile app, SaaS product or store files, choose a design style, and download every file redesigned as a ZIP.",
+          "Upload an existing digital product, choose a direction, and transform its interface while preserving the structure, content and logic underneath.",
       },
-      { property: "og:title", content: "Rezyn — Upload, pick a style, download the redesign" },
+      { property: "og:title", content: "Rezyn — Existing product. New gravity." },
       {
         property: "og:description",
-        content:
-          "Full-project UI redesigns for websites, web apps, mobile apps, SaaS products and e-commerce stores — delivered as a downloadable ZIP.",
+        content: "A full-project UI transformation system for websites, apps, SaaS products and storefronts.",
       },
     ],
   }),
   component: Index,
 });
 
+const engineSignals = [
+  { icon: ScanLine, label: "Structure read", value: "01" },
+  { icon: Layers3, label: "Visual system", value: "28" },
+  { icon: Braces, label: "Logic preserved", value: "100%" },
+  { icon: Boxes, label: "Delivery", value: "ZIP" },
+];
+
 function Index() {
   return (
     <main>
-      <section className="relative flex min-h-[92vh] items-center pt-[80px] pb-[90px]">
-        <div className="wrap">
-          <div className="rise relative">
-            {/* broken-grid ghost numeral */}
-            <span
-              aria-hidden
-              className="outline-text pointer-events-none absolute -top-[6vw] right-[-2vw] hidden font-serif text-[24vw] leading-none lg:block"
-            >
-              V2
-            </span>
-
-            <div className="glass relative z-10 inline-flex items-center gap-3 px-4 py-2 text-[12px] tracking-[0.34em] text-revision uppercase">
-              <span className="h-1.5 w-1.5 bg-revision shadow-[0_0_14px_var(--revision)]" />
-              full-project redesign studio
+      <PageHero
+        index="00"
+        eyebrow="Interface transformation engine"
+        title="Existing product."
+        accent="New gravity."
+        description="Rezyn takes the product you already built and reconstructs its visual hierarchy, interaction rhythm and interface system—without throwing away the routes, content or logic that make it yours."
+        action={{ to: "/projects", label: "Transform a project" }}
+        aside={
+          <div className="relative z-10 flex h-full flex-col justify-end">
+            <div className="mb-auto grid grid-cols-2 gap-2 pt-10">
+              {["UI", "UX", "3D", "AI"].map((item) => (
+                <span key={item} className="rounded-xl border border-white/8 bg-white/[0.025] px-3 py-3 font-mono text-[9px] tracking-[0.12em] text-muted-foreground">
+                  {item} / ACTIVE
+                </span>
+              ))}
             </div>
-
-            <h1 className="relative z-10 mt-7 max-w-[15ch] text-[16vw] leading-[0.86] sm:text-[11vw] lg:text-[9.2vw]">
-              <SplitText text="Good enough" className="block" delay={0.05} />
-              <SplitText
-                text="is a design"
-                className="block"
-                charClassName="aurora-text"
-                delay={0.3}
-              />
-              <SplitText
-                text="problem."
-                className="block"
-                charClassName="outline-text"
-                delay={0.6}
-              />
-            </h1>
-
-            <div className="relative z-10 mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,46ch)_minmax(0,1fr)]">
-              <p className="text-[19px] leading-[1.6] text-ink-soft">
-                Upload your project — site, web app, mobile app, SaaS, storefront. Pick a design
-                style. Every file comes back redesigned in it, zipped and ready to ship. Your
-                structure and logic stay untouched.
-              </p>
-              <div className="glass ml-auto w-full max-w-[420px] p-7 lg:-mt-16 lg:rotate-[-1.4deg]">
-                <div className="text-[12px] tracking-[0.3em] text-violet uppercase">the deal</div>
-                <p className="mt-3 text-[16.5px] text-ink-soft">
-                  Upload the files. Pick a direction from 28 styles. Download the whole project
-                  redesigned — structure kept, taste replaced.
-                </p>
-                <div className="mt-6 grid grid-cols-3 gap-4 border-t border-border/60 pt-5 text-center">
-                  {[
-                    ["28", "styles"],
-                    ["1", "zip"],
-                    ["0", "rebuilds"],
-                  ].map(([n, l]) => (
-                    <div key={l}>
-                      <div className="font-serif text-[34px] leading-none text-revision">{n}</div>
-                      <div className="mt-1 text-[11px] tracking-[0.22em] text-muted-foreground uppercase">
-                        {l}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="mb-3 flex items-center gap-2 text-revision">
+              <WandSparkles className="h-4 w-4" />
+              <span className="font-mono text-[9px] tracking-[0.14em] uppercase">Transformation core</span>
             </div>
-
-            <div className="relative z-10 mt-12 flex flex-wrap items-center gap-[14px]">
-              <Magnetic>
-                <Link
-                  to="/projects"
-                  className="glow-aurora inline-block bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-                >
-                  Upload a project
-                </Link>
-              </Magnetic>
-              <Magnetic>
-                <Link
-                  to="/process"
-                  className="glass inline-block px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-foreground uppercase transition-colors hover:text-revision"
-                >
-                  See the process
-                </Link>
-              </Magnetic>
-            </div>
-
-            <div className="relative z-10 mt-14 flex flex-wrap gap-10 text-[12px] tracking-[0.26em] text-muted-foreground uppercase">
-              <span>upload</span>
-              <span className="text-revision">redesign</span>
-              <span>download zip</span>
-            </div>
+            <strong>R3</strong>
+            <span>spatial interface system</span>
           </div>
-        </div>
-      </section>
-
-
+        }
+      />
 
       <div className="wrap">
         <Ticker
           items={[
             "websites",
             "web apps",
-            "mobile apps",
-            "saas products",
-            "storefronts",
-            "28 styles",
-            "one zip",
+            "mobile products",
+            "SaaS systems",
+            "commerce",
+            "28 directions",
+            "logic preserved",
+            "project export",
           ]}
+          speed={34}
         />
       </div>
 
       <Section>
         <SectionHeading
-          label="What we redesign"
-          title="Five kinds of interface. One ruthless redesign."
+          label="Transformation engine"
+          title="We redesign the layer people feel."
+          description="The visual system changes. The product beneath it remains recognizable, functional and yours."
+        />
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {engineSignals.map((signal, index) => {
+            const Icon = signal.icon;
+            return (
+              <Reveal key={signal.label} delay={index * 0.07}>
+                <article className="glass group min-h-[220px] p-6 transition-transform duration-300 hover:-translate-y-1">
+                  <div className="flex items-start justify-between">
+                    <Icon className="h-5 w-5 text-revision" />
+                    <span className="font-mono text-[9px] tracking-[0.14em] text-muted-foreground">SYS / 0{index + 1}</span>
+                  </div>
+                  <div className="mt-16 font-serif text-[48px] leading-none tracking-[-0.06em]">{signal.value}</div>
+                  <div className="mt-3 text-[12px] uppercase tracking-[0.12em] text-ink-soft">{signal.label}</div>
+                </article>
+              </Reveal>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section tone="quiet">
+        <SectionHeading
+          label="Coverage"
+          title="One system for every interface surface."
+          description="Marketing pages, operational products, commerce and dense software all move through the same transformation pipeline."
         />
         <Reveal>
           <ServiceRows items={services} />
         </Reveal>
       </Section>
 
-      <Section>
+      <Section tone="signal">
         <SectionHeading
-          label="How it works"
-          title="Three steps. Nothing wasted."
+          label="Flight path"
+          title="From source files to a new visual reality."
+          description="The workflow is intentionally short. Complexity belongs in the engine, not in the experience."
         />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {processSteps.map((step, i) => (
-            <Reveal key={step.version} delay={i * 0.09}>
-              <div className="glass h-full px-7 py-8 transition-colors hover:border-amber/40">
-                <div className="mb-[14px] text-sm font-semibold text-revision">{step.version}</div>
-                <h3 className="mb-[10px] text-[22px]">{step.title}</h3>
-                <p className="text-[15px] text-ink-soft">{step.body}</p>
-              </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {processSteps.map((step, index) => (
+            <Reveal key={step.version} delay={index * 0.08}>
+              <article className="glass relative min-h-[320px] p-7">
+                <div className="absolute right-6 top-6 font-mono text-[9px] tracking-[0.16em] text-muted-foreground">{step.version}</div>
+                <div className="mb-16 flex h-11 w-11 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
+                  {index === 0 ? <Boxes className="h-5 w-5" /> : index === 1 ? <Sparkles className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
+                </div>
+                <h3 className="mb-4 text-[34px] leading-[0.95]">{step.title}</h3>
+                <p className="m-0 max-w-[40ch] text-[14px] leading-7 text-ink-soft">{step.body}</p>
+              </article>
             </Reveal>
           ))}
         </div>
@@ -163,28 +138,37 @@ function Index() {
 
       <Section>
         <SectionHeading
-          label="Pick a direction"
-          title="Twenty-eight directions. Pick your weapon."
+          label="Direction library"
+          title="A visual language, not a preset filter."
+          description="Choose a direction and let the redesign system reinterpret hierarchy, type, spacing, surface and interaction as one connected system."
         />
         <PreviewGroups groups={styleGroups.slice(0, 2)} />
-        <div className="mt-12">
-          <Link to="/styles" className="text-[15px] underline underline-offset-4">
-            See all {styleGroups.reduce((n, g) => n + g.items.length, 0)} styles
+        <div className="mt-10 flex justify-end">
+          <Link to="/styles" className="button-secondary">
+            Explore every direction <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       </Section>
 
       <Section last>
-        <SectionHeading label="Show markup" title="Same screen. Different century." />
-        <BeforeAfter />
-        <div className="mt-10">
-          <Link
-            to="/projects"
-            className="glow-aurora bg-revision px-[32px] py-[16px] text-[13px] font-semibold tracking-[0.2em] text-primary-foreground uppercase transition-transform hover:scale-[1.03]"
-          >
-            Upload a project
-          </Link>
-        </div>
+        <SectionHeading
+          label="Before / after"
+          title="Same product. Different perception."
+          description="The most valuable redesign is the one that makes the existing product feel inevitable rather than unfamiliar."
+        />
+        <Reveal>
+          <BeforeAfter />
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-6 border-t border-border pt-8">
+            <p className="m-0 max-w-[680px] text-[18px] leading-8 text-ink-soft">
+              Your source is the starting point. Rezyn is the transformation layer between what already works and what the experience should become.
+            </p>
+            <Link to="/projects" className="button-primary">
+              Start transformation <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </Reveal>
       </Section>
     </main>
   );
