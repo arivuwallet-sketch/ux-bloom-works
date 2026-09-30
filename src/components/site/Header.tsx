@@ -1,114 +1,141 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const navItems = [
-  { to: "/services", label: "Services" },
+  { to: "/services", label: "Capabilities" },
   { to: "/process", label: "Process" },
-  { to: "/styles", label: "Styles" },
-  { to: "/trends", label: "Trends" },
-  { to: "/work", label: "Work" },
-  { to: "/projects", label: "Workspace" },
+  { to: "/styles", label: "Directions" },
+  { to: "/trends", label: "Signals" },
+  { to: "/work", label: "Proof" },
 ] as const;
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = "hidden";
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/50 bg-background/55 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1140px] items-center justify-between px-6 py-[18px] sm:px-8">
-        <Link
-          to="/"
-          onClick={() => setOpen(false)}
-          className="flex items-center gap-2 font-serif text-[26px] tracking-[0.14em] sm:text-[30px]"
-        >
-          <span className="h-2 w-2 rounded-full bg-amber shadow-[0_0_12px_var(--amber)]" />
-          Rezyn
+    <header className={`hud-header${scrolled ? " is-scrolled" : ""}`}>
+      <div className="hud-header__inner">
+        <Link to="/" onClick={() => setOpen(false)} className="brand-lockup" aria-label="Rezyn home">
+          <span className="brand-mark" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="brand-word">REZYN</span>
+          <span className="brand-version">/ R3</span>
         </Link>
 
-        <nav className="hidden gap-8 text-[14.5px] text-ink-soft md:flex">
-          {navItems.map((item) => (
+        <nav className="hud-nav" aria-label="Primary navigation">
+          {navItems.map((item, index) => (
             <Link
               key={item.to}
               to={item.to}
-              className="relative transition-colors hover:text-foreground"
-              activeProps={{ className: "text-amber" }}
+              className="hud-nav__item"
+              activeProps={{ className: "is-active" }}
             >
-              {item.label}
+              <span className="hud-nav__index">0{index + 1}</span>
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <Link
-            to="/projects"
-            className="glow-aurora hidden bg-revision px-[18px] py-[9px] text-[14.5px] font-medium text-primary-foreground transition-transform hover:scale-[1.03] sm:inline-block"
-          >
-            Upload a project
+        <div className="hud-actions">
+          <Link to="/projects" className="hud-workspace">
+            <span>Launch workspace</span>
+            <ArrowUpRight className="h-4 w-4" />
           </Link>
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
-            aria-label={open ? "Close menu" : "Open menu"}
-            className="glass flex h-11 w-11 items-center justify-center text-foreground md:hidden"
+            aria-label={open ? "Close navigation" : "Open navigation"}
+            className="hud-menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {open ? (
-        <div
-          className="glass border-t border-border/50 md:hidden"
-          style={{ animation: "rise-in .3s cubic-bezier(.22,1,.36,1) both" }}
-        >
-          <div className="menu-panel">
-            {navItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setOpen(false)}
-                activeProps={{ className: "is-active" }}
-              >
-                {item.label}
+      <div className={`mobile-orbit${open ? " is-open" : ""}`} aria-hidden={!open}>
+        <div className="mobile-orbit__noise" />
+        <div className="mobile-orbit__ring" />
+        <div className="mobile-orbit__content">
+          <span className="eyebrow">Navigate / Rezyn system</span>
+          <div className="mobile-orbit__links">
+            {navItems.map((item, index) => (
+              <Link key={item.to} to={item.to} onClick={() => setOpen(false)}>
+                <span>0{index + 1}</span>
+                <strong>{item.label}</strong>
+                <ArrowUpRight />
               </Link>
             ))}
           </div>
-          <div className="px-[10px] pb-[10px]">
-            <Link
-              to="/projects"
-              onClick={() => setOpen(false)}
-              className="block bg-revision px-4 py-[12px] text-center text-[15px] font-medium text-primary-foreground"
-            >
-              Upload a project
-            </Link>
-          </div>
+          <Link to="/projects" onClick={() => setOpen(false)} className="button-primary">
+            Enter workspace
+          </Link>
         </div>
-      ) : null}
+      </div>
     </header>
   );
 }
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/50 bg-background/50 py-10 backdrop-blur-xl">
-      <div className="wrap flex flex-col items-start gap-[10px] text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <Link to="/" className="font-serif text-[22px] tracking-[0.14em]">
-          Rezyn
-        </Link>
-        <div>We don’t rebuild. We revise.</div>
-        <a href="mailto:hello@rezyn.co" className="transition-colors hover:text-amber">
-          hello@rezyn.co
-        </a>
+    <footer className="site-footer">
+      <div className="site-footer__glow" />
+      <div className="wrap relative z-10">
+        <div className="site-footer__grid">
+          <div>
+            <Link to="/" className="brand-lockup brand-lockup--footer">
+              <span className="brand-mark" aria-hidden>
+                <span />
+                <span />
+                <span />
+              </span>
+              <span className="brand-word">REZYN</span>
+            </Link>
+            <p className="site-footer__manifesto">
+              Existing product. New gravity. We transform interfaces without throwing away the system underneath.
+            </p>
+          </div>
+
+          <div className="site-footer__links">
+            <span className="eyebrow">Explore</span>
+            {navItems.map((item) => (
+              <Link key={item.to} to={item.to}>
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="site-footer__links">
+            <span className="eyebrow">Build</span>
+            <Link to="/projects">Workspace</Link>
+            <Link to="/auth">Account</Link>
+            <a href="mailto:hello@rezyn.co">hello@rezyn.co</a>
+          </div>
+        </div>
+
+        <div className="site-footer__rail">
+          <span>REZYN / INTERFACE TRANSFORMATION SYSTEM</span>
+          <span>DESIGNED FOR PRODUCTS THAT ALREADY EXIST</span>
+        </div>
       </div>
     </footer>
   );
