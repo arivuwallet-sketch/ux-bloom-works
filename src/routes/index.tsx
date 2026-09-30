@@ -10,16 +10,16 @@ import { processSteps, services, styleGroups } from "@/data/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Rezyn — AI interface transformation studio" },
+      { title: "Rezyn — AI interface reconstruction studio" },
       {
         name: "description",
         content:
-          "Upload an existing digital product, choose a direction, and transform its interface while preserving the structure, content and logic underneath.",
+          "Upload an existing digital product, choose one of 61 directions, and reconstruct its UI/UX from scratch while preserving the functionality, content and logic underneath.",
       },
       { property: "og:title", content: "Rezyn — Existing product. New gravity." },
       {
         property: "og:description",
-        content: "A full-project UI transformation system for websites, apps, SaaS products and storefronts.",
+        content: "A full-project UI reconstruction system for websites, apps, SaaS products and storefronts.",
       },
     ],
   }),
@@ -27,8 +27,8 @@ export const Route = createFileRoute("/")({
 });
 
 const engineSignals = [
-  { icon: ScanLine, label: "Structure read", value: "01" },
-  { icon: Layers3, label: "Visual system", value: "28" },
+  { icon: ScanLine, label: "Source read", value: "01" },
+  { icon: Layers3, label: "Visual systems", value: "61" },
   { icon: Braces, label: "Logic preserved", value: "100%" },
   { icon: Boxes, label: "Delivery", value: "ZIP" },
 ];
@@ -38,11 +38,11 @@ function Index() {
     <main>
       <PageHero
         index="00"
-        eyebrow="Interface transformation engine"
+        eyebrow="Interface reconstruction engine"
         title="Existing product."
         accent="New gravity."
-        description="Rezyn takes the product you already built and reconstructs its visual hierarchy, interaction rhythm and interface system—without throwing away the routes, content or logic that make it yours."
-        action={{ to: "/projects", label: "Transform a project" }}
+        description="Rezyn reads the product you already built, keeps what it does, discards its existing presentation, and reconstructs the visual hierarchy, layout, interaction rhythm and interface system from a blank canvas."
+        action={{ to: "/projects", label: "Reconstruct a project" }}
         aside={
           <div className="relative z-10 flex h-full flex-col justify-end">
             <div className="mb-auto grid grid-cols-2 gap-2 pt-10">
@@ -54,10 +54,10 @@ function Index() {
             </div>
             <div className="mb-3 flex items-center gap-2 text-revision">
               <WandSparkles className="h-4 w-4" />
-              <span className="font-mono text-[9px] tracking-[0.14em] uppercase">Transformation core</span>
+              <span className="font-mono text-[9px] tracking-[0.14em] uppercase">Reconstruction core</span>
             </div>
             <strong>R3</strong>
-            <span>spatial interface system</span>
+            <span>full interface reconstruction</span>
           </div>
         }
       />
@@ -70,7 +70,8 @@ function Index() {
             "mobile products",
             "SaaS systems",
             "commerce",
-            "28 directions",
+            "61 directions",
+            "from-scratch UI",
             "logic preserved",
             "project export",
           ]}
@@ -80,9 +81,9 @@ function Index() {
 
       <Section>
         <SectionHeading
-          label="Transformation engine"
-          title="We redesign the layer people feel."
-          description="The visual system changes. The product beneath it remains recognizable, functional and yours."
+          label="Reconstruction engine"
+          title="We rebuild the layer people feel."
+          description="The existing presentation is discarded. The functionality, data, content and product behavior beneath it survive."
         />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {engineSignals.map((signal, index) => {
@@ -106,8 +107,8 @@ function Index() {
       <Section tone="quiet">
         <SectionHeading
           label="Coverage"
-          title="One system for every interface surface."
-          description="Marketing pages, operational products, commerce and dense software all move through the same transformation pipeline."
+          title="One engine for every interface surface."
+          description="Marketing pages, operational products, commerce and dense software all move through the same reconstruction pipeline."
         />
         <Reveal>
           <ServiceRows items={services} />
@@ -117,7 +118,7 @@ function Index() {
       <Section tone="signal">
         <SectionHeading
           label="Flight path"
-          title="From source files to a new visual reality."
+          title="From source files to a completely new visual system."
           description="The workflow is intentionally short. Complexity belongs in the engine, not in the experience."
         />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -139,13 +140,13 @@ function Index() {
       <Section>
         <SectionHeading
           label="Direction library"
-          title="A visual language, not a preset filter."
-          description="Choose a direction and let the redesign system reinterpret hierarchy, type, spacing, surface and interaction as one connected system."
+          title="A visual world, not a preset filter."
+          description="Choose a direction and let the reconstruction engine rebuild hierarchy, layout, navigation, type, spacing, surfaces and interaction as one new connected system."
         />
         <PreviewGroups groups={styleGroups.slice(0, 2)} />
         <div className="mt-10 flex justify-end">
           <Link to="/styles" className="button-secondary">
-            Explore every direction <ArrowUpRight className="h-4 w-4" />
+            Explore all 61 directions <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       </Section>
@@ -153,8 +154,8 @@ function Index() {
       <Section last>
         <SectionHeading
           label="Before / after"
-          title="Same product. Different perception."
-          description="The most valuable redesign is the one that makes the existing product feel inevitable rather than unfamiliar."
+          title="Same product logic. Entirely different interface."
+          description="The source tells Rezyn what the product must do. The selected direction decides how the rebuilt experience looks, feels and moves."
         />
         <Reveal>
           <BeforeAfter />
@@ -162,10 +163,10 @@ function Index() {
         <Reveal delay={0.1}>
           <div className="mt-12 flex flex-wrap items-center justify-between gap-6 border-t border-border pt-8">
             <p className="m-0 max-w-[680px] text-[18px] leading-8 text-ink-soft">
-              Your source is the starting point. Rezyn is the transformation layer between what already works and what the experience should become.
+              Your uploaded UI is not the template. Rezyn keeps the product behavior and reconstructs its presentation as if a different design team built it from scratch.
             </p>
             <Link to="/projects" className="button-primary">
-              Start transformation <ArrowUpRight className="h-4 w-4" />
+              Start reconstruction <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
         </Reveal>
