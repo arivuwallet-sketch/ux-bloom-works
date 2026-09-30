@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Boxes, FolderOpen, Plus, Sparkles } from "lucide-react";
+import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/studio/motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,10 +11,7 @@ export const Route = createFileRoute("/projects/")({
   head: () => ({
     meta: [
       { title: "Workspace — Rezyn interface transformation" },
-      {
-        name: "description",
-        content: "Create transformation projects, upload product source files and manage visual directions from the Rezyn workspace.",
-      },
+      { name: "description", content: "Create transformation projects, upload product source files and manage visual directions from the Rezyn workspace." },
     ],
   }),
   component: ProjectsPage,
@@ -79,49 +76,41 @@ function ProjectsPage() {
     return (
       <main className="system-state">
         <div className="system-state__card">
-          <span className="eyebrow">Workspace handshake</span>
-          <h1>Loading your transformation space.</h1>
+          <span className="eyebrow">Workspace / loading</span>
+          <h1>Opening your project archive.</h1>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="pb-28 pt-[130px] sm:pt-[150px]">
+    <main className="archive-workspace-page">
       <div className="wrap">
+        <div className="archive-workspace-page__topline">
+          <span>REZYN / PROJECT ARCHIVE</span>
+          <span>{String(projects.data?.length ?? 0).padStart(2, "0")} ACTIVE RECORDS</span>
+        </div>
+
         <Reveal>
-          <section className="mb-16 grid grid-cols-1 gap-8 border-b border-border pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
+          <header className="archive-workspace-page__hero">
             <div>
-              <div className="mb-6 flex items-center gap-3">
-                <span className="eyebrow">Workspace / projects</span>
-                <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">
-                  {projects.data?.length ?? 0} ACTIVE RECORDS
-                </span>
-              </div>
-              <h1 className="m-0 max-w-[10ch] text-[clamp(58px,8vw,118px)] leading-[0.84]">Build the next version.</h1>
+              <span className="archive-workspace-page__index">06 / WORKSPACE</span>
+              <h1>Build the next version.</h1>
             </div>
-            <div className="glass min-w-[240px] p-5">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">ENGINE STATUS</span>
-                <span className="signal-dot" />
-              </div>
-              <div className="mt-10 text-[30px] font-medium tracking-[-0.05em]">Ready</div>
-              <div className="mt-1 text-[12px] text-ink-soft">Create a project to begin.</div>
-            </div>
-          </section>
+            <aside>
+              <span>ENGINE STATUS</span>
+              <strong>READY</strong>
+              <p>Create a record, attach source files, choose a visual direction and transform.</p>
+            </aside>
+          </header>
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,680px)_1fr]">
+        <div className="archive-workspace-page__grid">
           <Reveal>
-            <section className="glass p-6 sm:p-8">
-              <div className="mb-8 flex items-center justify-between">
-                <div>
-                  <span className="eyebrow">New transformation</span>
-                  <h2 className="mb-0 mt-4 text-[38px] leading-none">Create project</h2>
-                </div>
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
-                  <Plus className="h-5 w-5" />
-                </span>
+            <section className="archive-project-form">
+              <div className="archive-project-form__head">
+                <span>01 / NEW TRANSFORMATION</span>
+                <span>CREATE RECORD</span>
               </div>
 
               <form
@@ -134,127 +123,82 @@ function ProjectsPage() {
                   }
                   createProject.mutate();
                 }}
-                className="grid grid-cols-1 gap-5 md:grid-cols-2"
               >
-                <div className="md:col-span-2">
-                  <label htmlFor="pname" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
-                    Project name
-                  </label>
-                  <input
-                    id="pname"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    className="field"
-                    placeholder="Acme product redesign"
-                  />
+                <div className="archive-form-field archive-form-field--full">
+                  <label htmlFor="pname">Project name</label>
+                  <input id="pname" value={name} onChange={(event) => setName(event.target.value)} className="field" placeholder="Acme product redesign" />
                 </div>
 
-                <div>
-                  <label htmlFor="ptype" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
-                    Product surface
-                  </label>
-                  <select id="ptype" value={productType} onChange={(event) => setProductType(event.target.value)} className="field">
-                    {productTypes.map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
+                <div className="archive-project-form__columns">
+                  <div className="archive-form-field">
+                    <label htmlFor="ptype">Product surface</label>
+                    <select id="ptype" value={productType} onChange={(event) => setProductType(event.target.value)} className="field">
+                      {productTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                  </div>
 
-                <div>
-                  <label htmlFor="smode" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
-                    Direction control
-                  </label>
-                  <select
-                    id="smode"
-                    value={styleMode}
-                    onChange={(event) => setStyleMode(event.target.value as "project" | "file")}
-                    className="field"
-                  >
-                    <option value="project">One direction for the project</option>
-                    <option value="file">Direction per file</option>
-                  </select>
+                  <div className="archive-form-field">
+                    <label htmlFor="smode">Direction control</label>
+                    <select id="smode" value={styleMode} onChange={(event) => setStyleMode(event.target.value as "project" | "file")} className="field">
+                      <option value="project">One direction for project</option>
+                      <option value="file">Direction per file</option>
+                    </select>
+                  </div>
                 </div>
 
                 {styleMode === "project" ? (
-                  <div className="md:col-span-2">
-                    <label htmlFor="pstyle" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
-                      Target direction
-                    </label>
+                  <div className="archive-form-field archive-form-field--full">
+                    <label htmlFor="pstyle">Target direction</label>
                     <select id="pstyle" value={targetStyle} onChange={(event) => setTargetStyle(event.target.value)} className="field">
-                      {allStyleNames.map((style) => (
-                        <option key={style} value={style}>{style}</option>
-                      ))}
+                      {allStyleNames.map((style) => <option key={style} value={style}>{style}</option>)}
                     </select>
                   </div>
                 ) : null}
 
-                <div className="md:col-span-2">
-                  <label htmlFor="pnotes" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
-                    Transformation brief / optional
-                  </label>
-                  <textarea
-                    id="pnotes"
-                    rows={4}
-                    value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
-                    className="field resize-y"
-                    placeholder="What currently feels wrong, dated or difficult?"
-                  />
+                <div className="archive-form-field archive-form-field--full">
+                  <label htmlFor="pnotes">Transformation brief / optional</label>
+                  <textarea id="pnotes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} className="field resize-y" placeholder="What currently feels wrong, dated or difficult?" />
                 </div>
 
-                {error ? <p className="m-0 text-[13px] text-destructive md:col-span-2">{error}</p> : null}
+                {error ? <p className="archive-project-form__error">{error}</p> : null}
 
-                <div className="md:col-span-2">
-                  <button type="submit" disabled={createProject.isPending} className="button-primary disabled:opacity-50">
-                    <Sparkles className="h-4 w-4" />
-                    {createProject.isPending ? "Creating…" : "Create transformation"}
-                  </button>
-                </div>
+                <button type="submit" disabled={createProject.isPending} className="button-primary archive-project-form__submit">
+                  <Sparkles className="h-4 w-4" />
+                  {createProject.isPending ? "Creating…" : "Create transformation"}
+                </button>
               </form>
             </section>
           </Reveal>
 
           <Reveal delay={0.08}>
-            <section>
-              <div className="mb-5 flex items-end justify-between gap-4">
-                <div>
-                  <span className="eyebrow">Project archive</span>
-                  <h2 className="mb-0 mt-4 text-[38px] leading-none">Open projects</h2>
-                </div>
-                <Boxes className="h-5 w-5 text-revision" />
+            <section className="archive-project-list">
+              <div className="archive-project-list__head">
+                <span>02 / PROJECT RECORDS</span>
+                <span>OPEN ARCHIVE</span>
               </div>
 
               {projects.isLoading ? (
-                <div className="glass p-8 text-ink-soft">Loading projects…</div>
+                <div className="archive-project-list__empty">Loading project archive…</div>
               ) : (projects.data?.length ?? 0) === 0 ? (
-                <div className="glass flex min-h-[280px] flex-col items-center justify-center gap-4 p-8 text-center">
-                  <FolderOpen className="h-8 w-8 text-muted-foreground" />
-                  <div>
-                    <div className="text-[18px] font-medium">No project records yet.</div>
-                    <p className="mb-0 mt-2 text-[13px] text-ink-soft">Create the first transformation from the panel beside this one.</p>
-                  </div>
+                <div className="archive-project-list__empty">
+                  <FolderOpen className="h-8 w-8" />
+                  <strong>No project records yet.</strong>
+                  <p>Create the first transformation from the form beside this index.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="archive-project-list__rows">
+                  <div className="archive-project-list__columns">
+                    <span>No.</span><span>Project</span><span>Direction</span><span>Open</span>
+                  </div>
                   {projects.data?.map((project, index) => (
-                    <Link
-                      key={project.id}
-                      to="/projects/$projectId"
-                      params={{ projectId: project.id }}
-                      className="glass group grid grid-cols-[44px_1fr_auto] items-center gap-4 p-4 text-inherit no-underline transition-transform hover:-translate-y-0.5"
-                    >
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.025] font-mono text-[9px] text-muted-foreground">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="truncate text-[16px] font-semibold tracking-[-0.02em] group-hover:text-revision">{project.name}</div>
-                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[9px] tracking-[0.08em] text-muted-foreground uppercase">
-                          <span>{project.product_type}</span>
-                          <span>•</span>
-                          <span>{project.style_mode === "project" ? (project.target_style ?? "No direction") : "Per-file directions"}</span>
-                        </div>
+                    <Link key={project.id} to="/projects/$projectId" params={{ projectId: project.id }} className="archive-project-row">
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <div>
+                        <strong>{project.name}</strong>
+                        <small>{project.product_type}</small>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-revision" />
+                      <em>{project.style_mode === "project" ? (project.target_style ?? "No direction") : "Per-file directions"}</em>
+                      <ArrowRight className="h-4 w-4" />
                     </Link>
                   ))}
                 </div>
