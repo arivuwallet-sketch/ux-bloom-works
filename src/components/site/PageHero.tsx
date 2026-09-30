@@ -25,30 +25,28 @@ export function PageHero({
   aside?: ReactNode;
 }) {
   return (
-    <section className="page-hero">
-      <div className="page-hero__scan" aria-hidden />
-      <div className="wrap page-hero__inner">
-        <div className="page-hero__rail" aria-hidden>
+    <section className="archive-hero">
+      <div className="wrap archive-hero__wrap">
+        <div className="archive-hero__index" aria-hidden>
           <span>{index}</span>
-          <span className="page-hero__rail-line" />
-          <ArrowDownRight className="h-4 w-4" />
+          <ArrowDownRight className="h-5 w-5" />
         </div>
 
-        <div className="page-hero__copy">
+        <div className="archive-hero__main">
           <Reveal>
-            <div className="page-hero__meta">
-              <span className="eyebrow">{eyebrow}</span>
-              <span>REZYN / EXPERIENCE SYSTEM</span>
+            <div className="archive-hero__meta">
+              <span>{eyebrow}</span>
+              <span>REZYN / VISUAL SYSTEM</span>
             </div>
             <h1>
               <span>{title}</span>
               {accent ? <em>{accent}</em> : null}
             </h1>
-            <div className="page-hero__lower">
+            <div className="archive-hero__caption">
               <p>{description}</p>
               {action ? (
-                <Link to={action.to} className="button-secondary">
-                  {action.label}
+                <Link to={action.to} className="archive-hero__action">
+                  <span>{action.label}</span>
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>
               ) : null}
@@ -56,17 +54,16 @@ export function PageHero({
           </Reveal>
         </div>
 
-        <Reveal className="page-hero__module" delay={0.12}>
-          <div className="page-hero__module-grid" aria-hidden />
-          <div className="page-hero__module-top">
-            <span>LIVE MODULE</span>
-            <span className="signal-dot" />
+        <Reveal className="archive-hero__aside" delay={0.12}>
+          <div className="archive-hero__aside-head">
+            <span>ISSUE / {index}</span>
+            <span>LIVE</span>
           </div>
           {aside ?? (
-            <>
+            <div className="archive-hero__stat">
               <strong>{stat ?? "∞"}</strong>
               <span>{statLabel ?? "directions available"}</span>
-            </>
+            </div>
           )}
         </Reveal>
       </div>
