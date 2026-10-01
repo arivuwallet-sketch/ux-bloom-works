@@ -1,6 +1,8 @@
+import { buildSeoM1M8Context } from "@/lib/seo-modules-m1-m8";
+
 export type SeoProvenance = "VERIFIED" | "DERIVED" | "ASSUMED" | "UNKNOWN";
 
-export const SEO_KNOWLEDGE_VERSION = "2026-10";
+export const SEO_KNOWLEDGE_VERSION = "2026-10+m1-m8";
 
 export const SEO_QA_GATE = [
   "No invented numbers, quotes, reviews, URLs, endpoints, rankings, traffic, authority metrics, search volume or keyword difficulty; unknowns stay null/UNKNOWN.",
@@ -207,5 +209,7 @@ ${SEO_COMMON_FAILURES.map((item, index) => `${index + 1}. ${item}`).join("\n")}
 - Use plain language and define jargon once.
 - When tools/data are available, prefer them before factual assertions and retain provenance.
 - Refuse only the unsafe/spam/manipulative part (fake reviews, cloaking, link schemes, fabricated stats) and implement the compliant alternative.
-- Never expose hidden reasoning or internal chain-of-thought.`;
+- Never expose hidden reasoning or internal chain-of-thought.
+
+${buildSeoM1M8Context()}`;
 }
