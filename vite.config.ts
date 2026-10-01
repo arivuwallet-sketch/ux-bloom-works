@@ -4,6 +4,7 @@
 //     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
+import { readFileSync } from "node:fs";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const creditGateBlock = /const\s+\{\s*data:\s*unlocked,\s*error:\s*unlockError\s*\}\s*=\s*await\s+supabase\.rpc\(\s*["']unlock_project["']\s*,\s*\{\s*_project_id:\s*data\.projectId\s*\}\s*\);\s*if\s*\(unlockError\)\s*throw\s+new\s+Error\(unlockError\.message\);\s*if\s*\(!unlocked\)\s*throw\s+new\s+Error\(\s*["']NO_CREDITS: You need a website credit to redesign this project\. Buy a pack on the Pricing page\.["']\s*\);?/g;
@@ -12,22 +13,24 @@ function paymentGateDisabledPlugin() {
   return {
     name: "rezyn-payment-gate-disabled",
     enforce: "pre" as const,
-    transform(code: string, id: string) {
+    load(id: string) {
+      const cleanId = id.split("?", 1)[0] ?? id;
       const target =
-        id.includes("/src/lib/redesign.functions.ts") ||
-        id.includes("/src/lib/chat-redesign.functions.ts");
+        cleanId.endsWith("/src/lib/redesign.functions.ts") ||
+        cleanId.endsWith("/src/lib/chat-redesign.functions.ts");
       if (!target) return null;
 
-      const transformed = code.replace(
+      const source = readFileSync(cleanId, "utf8");
+      const transformed = source.replace(
         creditGateBlock,
         "// Pricing/payment gate intentionally disabled; authenticated project ownership checks remain active.",
       );
 
-      if (transformed === code) {
-        this.error(`Expected project credit gate was not found in ${id}`);
+      if (transformed === source) {
+        this.error(`Expected project credit gate was not found in ${cleanId}`);
       }
 
-      return { code: transformed, map: null };
+      return transformed;
     },
   };
 }
