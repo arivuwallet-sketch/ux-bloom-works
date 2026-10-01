@@ -1,7 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
+import {
+  buildProjectDependencyGraph,
+  buildProjectPlanSignatures,
+  formatProjectPlanForPrompt,
+  parseProjectDesignPlan,
+  type PlanningFile,
+  type ProjectDependencyGraph,
+  type ProjectDesignPlan,
+} from "@/lib/project-design-plan";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 
 const TEXT_EXT =
@@ -11,6 +21,7 @@ const DIRECT_PRESENTATION_EXT =
   /\.(html?|css|scss|sass|less|jsx|tsx|vue|svelte|astro|hbs|ejs|twig)$/i;
 
 const MAX_SOURCE_CHARS = 300_000;
+const MAX_PLAN_CONTEXT_CHARS = 140_000;
 const REDESIGN_MODELS = ["openai/gpt-6-astra", "google/gemini-2.5-flash"] as const;
 const REASONING_EFFORT = "high";
 const TRANSIENT_STATUS = new Set([408, 429, 500, 502, 503, 504]);
@@ -22,6 +33,8 @@ type ProjectVisualContext = {
   productType: string | null;
   notes: string | null;
   manifest: string[];
+  designPlan: ProjectDesignPlan;
+  dependencyGraph: ProjectDependencyGraph;
 };
 
 type DesignAuditResult = {
@@ -120,6 +133,42 @@ function clipForAudit(value: string, limit = 80_000) {
   return `${value.slice(0, half)}\n\n/* ... middle clipped for QA context ... */\n\n${value.slice(-half)}`;
 }
 
+function buildPlanningSnapshot(files: PlanningFile[], graph: ProjectDependencyGraph) {
+  const priority = new Map<string, number>();
+  graph.sharedRoots.forEach((name, index) => priority.set(name, index));
+  graph.entryCandidates.forEach((name, index) => {
+    if (!priority.has(name)) priority.set(name, 100 + index);
+  });
+
+  const ordered = [...files].sort((a, b) => {
+    const aRank = priority.get(a.name) ?? 10_000;
+    const bRank = priority.get(b.name) ?? 10_000;
+    return aRank - bRank || a.name.localeCompare(b.name);
+  });
+
+  let used = 0;
+  const sections: string[] = [];
+  for (const file of ordered) {
+    if (!file.content.trim() || used >= MAX_PLAN_CONTEXT_CHARS) continue;
+    const node = graph.nodes.find((candidate) => candidate.file === file.name);
+    const remaining = MAX_PLAN_CONTEXT_CHARS - used;
+    const excerptLimit = Math.min(6_000, remaining);
+    const excerpt = file.content.length <= excerptLimit
+      ? file.content
+      : `${file.content.slice(0, Math.floor(excerptLimit * 0.7))}\n/* ... clipped ... */\n${file.content.slice(-Math.floor(excerptLimit * 0.3))}`;
+    const section = [
+      `FILE: ${file.name}`,
+      `ROLE: ${node?.role ?? "unknown"}`,
+      `INTERNAL DEPENDENCIES: ${node?.internalDependencies.join(", ") || "none resolved"}`,
+      `DEPENDENTS: ${node?.dependents.join(", ") || "none resolved"}`,
+      `SOURCE EXCERPT:\n${excerpt}`,
+    ].join("\n");
+    sections.push(section);
+    used += section.length;
+  }
+  return sections.join("\n\n---\n\n");
+}
+
 async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -193,23 +242,122 @@ async function callGateway(messages: GatewayMessage[]) {
   throw new Error(lastError);
 }
 
+async function generateProjectDesignPlan(opts: {
+  project: {
+    name: string;
+    productType: string | null;
+    notes: string | null;
+    styleMode: string;
+    targetStyle: string | null;
+  };
+  files: PlanningFile[];
+  graph: ProjectDependencyGraph;
+}) {
+  const styleAssignments = opts.files
+    .map((file) => `${file.name}: ${opts.project.styleMode === "file" ? (file.targetStyle ?? "unset") : (opts.project.targetStyle ?? "unset")}`)
+    .join("\n");
+  const styleBlueprints = Array.from(new Set(opts.files.map((file) =>
+    opts.project.styleMode === "file" ? file.targetStyle : opts.project.targetStyle,
+  ).filter((style): style is string => Boolean(style))))
+    .map((style) => `${style}: ${getStyleBlueprint(style)}`)
+    .join("\n\n");
+  const snapshot = buildPlanningSnapshot(opts.files, opts.graph);
+
+  const systemPrompt =
+    "You are Rezyn Project Architect. Before any file is transformed, create one authoritative project-level dependency and design plan for the entire uploaded product. " +
+    "Base dependency decisions on the supplied static dependency graph and source excerpts; do not invent imports, routes, APIs, components or files. " +
+    "Preserve the existing runtime architecture, behavior, routes, state, APIs and data contracts, while defining a coherent NEW presentation architecture for the selected design direction(s). " +
+    "Plan shared tokens, layout primitives, typography, color, surfaces, component conventions, navigation treatment, motion, accessibility and responsive behavior once at project scope so individual file transformations cannot drift. " +
+    "Identify shared files/components and explicit coordination rules. Put shared foundations before dependent screens in transformationOrder when practical. " +
+    "Do not reveal chain-of-thought. Return ONLY valid JSON and no markdown fences.";
+
+  const schemaInstruction = `Return exactly this JSON shape:
+{
+  "version": 1,
+  "summary": "short architecture/design summary",
+  "architecture": {
+    "framework": "observed framework/runtime and constraints",
+    "appShell": "shell/layout architecture",
+    "navigation": "navigation architecture and invariants",
+    "stateAndDataFlow": "state/API/data contracts that must survive",
+    "sharedStyleEntryPoints": ["known/file/path"]
+  },
+  "designSystem": {
+    "directionStrategy": "how the selected direction(s) become one coherent product",
+    "layoutSystem": "grid/container/layout rules",
+    "typography": "type hierarchy rules",
+    "color": "semantic palette/contrast rules",
+    "spacing": "spacing/rhythm rules",
+    "surfaces": "materials/elevation/border rules",
+    "components": "shared component geometry/state rules",
+    "motion": "motion/easing/reduced-motion rules",
+    "accessibility": "keyboard/focus/contrast/labels/targets rules",
+    "responsive": "mobile/tablet/desktop adaptation rules"
+  },
+  "sharedComponents": [{"name":"system name","role":"responsibility","files":["known/file"],"rules":["specific rule"]}],
+  "filePlans": [{"file":"known/file","role":"role","redesignResponsibility":"what this file owns visually","preserve":["functional invariant"],"coordinateWith":["known/file"]}],
+  "transformationOrder": ["known/file"],
+  "risks": ["cross-file risk to avoid"]
+}`;
+
+  const userPrompt = [
+    `PROJECT: ${opts.project.name}`,
+    `PRODUCT TYPE: ${opts.project.productType ?? "Unknown"}`,
+    `NOTES: ${opts.project.notes?.trim() || "None"}`,
+    `STYLE MODE: ${opts.project.styleMode}`,
+    "STYLE ASSIGNMENTS:",
+    styleAssignments || "none",
+    "",
+    "STYLE BLUEPRINTS:",
+    styleBlueprints || "No style selected",
+    "",
+    "STATIC DEPENDENCY GRAPH:",
+    JSON.stringify(opts.graph, null, 2),
+    "",
+    "PROJECT SOURCE EVIDENCE:",
+    snapshot || "No text source available.",
+    "",
+    schemaInstruction,
+  ].join("\n");
+
+  let lastError = "Project planning returned invalid JSON";
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const messages: GatewayMessage[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ];
+      if (attempt > 0) {
+        messages.push({ role: "system", content: `The previous plan was invalid: ${lastError}. Return complete JSON in the required schema using only known file paths.` });
+      }
+      const raw = await callGateway(messages);
+      return parseProjectDesignPlan(raw, opts.files);
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : lastError;
+    }
+  }
+  throw new Error(lastError);
+}
+
 async function auditReconstruction(opts: {
   name: string;
   style: string;
   source: string;
   candidate: string;
   designIntelligence: string;
+  projectPlan: string;
 }) : Promise<DesignAuditResult> {
   const raw = await callGateway([
     {
       role: "system",
       content:
-        "You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, and the applicable design-intelligence quality gates are satisfied. Treat accessibility, responsive behavior, interaction states, hierarchy, spacing, typography, contrast, forms, ethical UX, motion/reduced-motion, performance and relevant 2D/3D constraints as release blockers when materially wrong. Do not invent requirements that are absent from the file. Return ONLY JSON shaped exactly as {\"pass\":true|false,\"issues\":[\"concise actionable issue\"]}. Use at most 8 issues.",
+        "You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, the file follows the authoritative project-level design plan, and the applicable design-intelligence quality gates are satisfied. Treat cross-file consistency, accessibility, responsive behavior, interaction states, hierarchy, spacing, typography, contrast, forms, ethical UX, motion/reduced-motion, performance and relevant 2D/3D constraints as release blockers when materially wrong. Do not invent requirements that are absent from the file or project plan. Return ONLY JSON shaped exactly as {\"pass\":true|false,\"issues\":[\"concise actionable issue\"]}. Use at most 8 issues.",
     },
     {
       role: "user",
       content:
         `File: ${opts.name}\nTarget direction: ${opts.style}\n\n` +
+        `${opts.projectPlan}\n\n` +
         `${opts.designIntelligence}\n\n` +
         `ORIGINAL FUNCTIONAL SOURCE (may be clipped):\n${clipForAudit(opts.source)}\n\n` +
         `RECONSTRUCTED CANDIDATE (may be clipped):\n${clipForAudit(opts.candidate)}`,
@@ -248,18 +396,19 @@ async function redesignSource(opts: {
     source: opts.source,
     style: opts.style,
   });
+  const projectPlan = formatProjectPlanForPrompt(opts.project.designPlan, opts.project.dependencyGraph, opts.name);
 
   const reconstructionContract =
     "You are Rezyn's full-reconstruction design engine: an elite product designer, UX architect, interaction designer, accessibility specialist, motion/visual designer, 2D/3D art director, and senior front-end engineer. " +
     "The uploaded source is a FUNCTIONAL SPECIFICATION, not a visual reference. Before writing code, mentally discard the existing UI/UX presentation and reconstruct the interface from a blank visual canvas. " +
-    "The chosen design direction must control the NEW information architecture, visual hierarchy, composition, navigation treatment, section structure, component geometry, typography, spacing system, color system, surfaces, states, responsive behavior, and interaction character. " +
-    "A theme swap, CSS patch, wrapper around the old UI, token substitution, or light restyle is a FAILURE. Do not preserve the old layout merely because it already exists. " +
-    "You ARE allowed and expected to reorganize presentation markup, replace visual wrappers, rebuild grids/flex layouts, rewrite Tailwind/className styling, replace CSS declarations, introduce a new token system inside the file, change visual ordering where behavior is unaffected, and remove obsolete presentational markup. " +
+    "The chosen design direction and the supplied PROJECT-LEVEL DESIGN PLAN must control the NEW information architecture, visual hierarchy, composition, navigation treatment, section structure, component geometry, typography, spacing system, color system, surfaces, states, responsive behavior, and interaction character. " +
+    "A theme swap, CSS patch, wrapper around the old UI, token substitution, local one-off design system, or light restyle is a FAILURE. Do not preserve the old layout merely because it already exists. " +
+    "You ARE allowed and expected to reorganize presentation markup, replace visual wrappers, rebuild grids/flex layouts, rewrite Tailwind/className styling, replace CSS declarations, introduce the planned token system inside the appropriate file, change visual ordering where behavior is unaffected, and remove obsolete presentational markup. " +
     "You MUST preserve application behavior: routes, state, props, event handlers, API/data bindings, forms and submission behavior, business logic, content meaning, asset references, accessibility semantics, test/data hooks, IDs or selectors used functionally, and the source file's framework/language. " +
     "If a class/selector may be referenced across files or by JavaScript, keeping its identifier is acceptable for compatibility, but its PRESENTATION must be rebuilt rather than inherited. " +
     "For CSS/SCSS/LESS files, replace the visual system instead of appending override patches after the old rules. For JSX/TSX/Vue/Svelte/templates, recompose the rendered interface rather than retaining the same DOM hierarchy with new colors. " +
     "Use the supplied Design Intelligence Operating System as mandatory expert guidance. Apply all relevant skills, but never fabricate research findings, analytics, experiments, tool runs, user studies, eye tracking, biometric results, or performance measurements. " +
-    "Do not create fake functionality, do not remove real functionality, and do not return explanations. Return ONLY the complete rewritten file contents, with no markdown fence.";
+    "Do not create fake functionality, do not remove real functionality, do not contradict shared project decisions without a proven source constraint, and do not return explanations. Return ONLY the complete rewritten file contents, with no markdown fence.";
 
   const context =
     `Project: ${opts.project.name}\n` +
@@ -267,12 +416,13 @@ async function redesignSource(opts: {
     `Project notes: ${opts.project.notes?.trim() || "None"}\n` +
     `Chosen direction: ${opts.style}\n` +
     `Direction blueprint: ${styleBlueprint}\n\n` +
+    `${projectPlan}\n\n` +
     `${designIntelligence}\n\n` +
     `Project file manifest:\n- ${projectManifest || opts.name}\n\n` +
     `Current file: ${opts.name}\n\n` +
     "FULL REBUILD REQUIREMENT:\n" +
-    "Treat the existing presentation as something to replace completely. Use the source only to learn what the product does, what content it contains, and what behavior must survive. The finished interface should look as if a different design team built the product from scratch in the chosen direction.\n\n" +
-    "Before returning the file, perform an internal expert review against the Design Intelligence quality gates and fix accessibility, hierarchy, responsive, state, interaction, motion, performance, visual-system, and relevant 2D/3D defects. Do not report the review; return the corrected file only.\n\n" +
+    "Treat the existing presentation as something to replace completely. Use the source only to learn what the product does, what content it contains, and what behavior must survive. The finished interface should look as if one coordinated design team rebuilt the entire product from scratch in the chosen direction while following the shared project plan.\n\n" +
+    "Before returning the file, perform an internal expert review against both the PROJECT-LEVEL DESIGN PLAN and Design Intelligence quality gates. Fix cross-file consistency, accessibility, hierarchy, responsive, state, interaction, motion, performance, visual-system, and relevant 2D/3D defects. Do not report the review; return the corrected file only.\n\n" +
     `SOURCE FILE:\n${opts.source}`;
 
   const baseMessages: GatewayMessage[] = [
@@ -291,7 +441,7 @@ async function redesignSource(opts: {
             {
               role: "system" as const,
               content:
-                `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}. Reconstruct the presentation from a blank canvas while preserving behavior. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
+                `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}. Reconstruct the presentation from a blank canvas while preserving behavior and following the shared project plan exactly. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
             },
           ];
 
@@ -304,6 +454,7 @@ async function redesignSource(opts: {
         source: opts.source,
         candidate,
         designIntelligence,
+        projectPlan,
       });
       if (!audit.pass) {
         throw new Error(audit.issues.length > 0 ? audit.issues.join(" | ") : "Design QA rejected the reconstruction.");
@@ -317,7 +468,7 @@ async function redesignSource(opts: {
   throw new Error(lastError);
 }
 
-/** Redesigns the next queued file and reports what is left. */
+/** Builds/reuses the project-level plan, then redesigns the next dependency-ordered file. */
 export const redesignNextFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
@@ -332,24 +483,156 @@ export const redesignNextFile = createServerFn({ method: "POST" })
     if (projectError) throw new Error(projectError.message);
     if (!project) throw new Error("Project not found");
 
-    // One purchased website credit unlocks this project (spent once, idempotent).
     const { data: unlocked, error: unlockError } = await supabase.rpc("unlock_project", { _project_id: data.projectId });
     if (unlockError) throw new Error(unlockError.message);
     if (!unlocked) throw new Error("NO_CREDITS: You need a website credit to redesign this project. Buy a pack on the Pricing page.");
 
     const { data: files, error: filesError } = await supabase
       .from("project_files")
-      .select("id, name, source, content, storage_path, target_style, status")
+      .select("id, name, source, content, storage_path, target_style, status, size_bytes, updated_at")
       .eq("project_id", data.projectId)
       .order("created_at", { ascending: true });
     if (filesError) throw new Error(filesError.message);
 
-    const queue = (files ?? []).filter((f) => f.status !== "done" && f.status !== "skipped");
-    const file = queue[0];
+    if (!files || files.length === 0) {
+      await supabase.from("projects").update({ status: "done" }).eq("id", data.projectId);
+      return { done: true as const, remaining: 0, total: 0, current: null, planCreated: false };
+    }
+
+    // Hydrate project source before planning. Planning is project-level and must see
+    // actual source evidence, not merely file names.
+    const planningFiles: PlanningFile[] = [];
+    for (const entry of files) {
+      let content = entry.content ?? "";
+      if (!content && entry.storage_path && isTextFile(entry.name)) {
+        const dl = await supabase.storage.from("project-files").download(entry.storage_path);
+        if (dl.error) throw new Error(`Planning could not read ${entry.name}: ${dl.error.message}`);
+        content = await dl.data.text();
+      }
+      planningFiles.push({
+        id: entry.id,
+        name: entry.name.replace(/\\/g, "/"),
+        content,
+        sizeBytes: entry.size_bytes,
+        targetStyle: entry.target_style,
+        updatedAt: entry.updated_at,
+      });
+    }
+
+    const dependencyGraph = buildProjectDependencyGraph(planningFiles);
+    const signatures = buildProjectPlanSignatures({
+      projectId: project.id,
+      styleMode: project.style_mode,
+      targetStyle: project.target_style,
+      files: planningFiles,
+    });
+
+    const { data: storedPlan, error: storedPlanError } = await supabase
+      .from("project_design_plans")
+      .select("status, source_signature, style_signature, dependency_graph, plan, error")
+      .eq("project_id", data.projectId)
+      .maybeSingle();
+    if (storedPlanError) {
+      throw new Error(`Project planning schema is unavailable: ${storedPlanError.message}. Apply migration 0007_create_project_design_plans.sql.`);
+    }
+
+    let designPlan: ProjectDesignPlan;
+    let activeGraph = dependencyGraph;
+    let planCreated = false;
+    const canReuse =
+      storedPlan?.status === "ready" &&
+      storedPlan.source_signature === signatures.sourceSignature &&
+      storedPlan.style_signature === signatures.styleSignature;
+
+    if (canReuse) {
+      try {
+        designPlan = storedPlan.plan as unknown as ProjectDesignPlan;
+        activeGraph = storedPlan.dependency_graph as unknown as ProjectDependencyGraph;
+        if (designPlan.version !== 1 || activeGraph.version !== 1) throw new Error("stale plan version");
+      } catch {
+        planCreated = true;
+        designPlan = await generateProjectDesignPlan({
+          project: {
+            name: project.name,
+            productType: project.product_type,
+            notes: project.notes,
+            styleMode: project.style_mode,
+            targetStyle: project.target_style,
+          },
+          files: planningFiles,
+          graph: dependencyGraph,
+        });
+      }
+    } else {
+      planCreated = true;
+      await supabase.from("projects").update({ status: "planning" }).eq("id", data.projectId);
+      const { error: planningWriteError } = await supabase.from("project_design_plans").upsert({
+        project_id: data.projectId,
+        user_id: context.userId,
+        status: "planning",
+        source_signature: signatures.sourceSignature,
+        style_signature: signatures.styleSignature,
+        dependency_graph: dependencyGraph as unknown as Json,
+        plan: {} as Json,
+        error: null,
+        updated_at: new Date().toISOString(),
+      });
+      if (planningWriteError) throw new Error(`Could not start project planning: ${planningWriteError.message}`);
+
+      try {
+        designPlan = await generateProjectDesignPlan({
+          project: {
+            name: project.name,
+            productType: project.product_type,
+            notes: project.notes,
+            styleMode: project.style_mode,
+            targetStyle: project.target_style,
+          },
+          files: planningFiles,
+          graph: dependencyGraph,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Project planning failed";
+        await supabase.from("project_design_plans").update({
+          status: "failed",
+          error: message,
+          updated_at: new Date().toISOString(),
+        }).eq("project_id", data.projectId);
+        await supabase.from("projects").update({ status: "failed" }).eq("id", data.projectId);
+        throw new Error(`PROJECT_PLAN_FAILED: ${message}`);
+      }
+    }
+
+    if (planCreated) {
+      const { error: readyError } = await supabase.from("project_design_plans").upsert({
+        project_id: data.projectId,
+        user_id: context.userId,
+        status: "ready",
+        source_signature: signatures.sourceSignature,
+        style_signature: signatures.styleSignature,
+        dependency_graph: dependencyGraph as unknown as Json,
+        plan: designPlan as unknown as Json,
+        error: null,
+        updated_at: new Date().toISOString(),
+      });
+      if (readyError) throw new Error(`Could not save project design plan: ${readyError.message}`);
+      activeGraph = dependencyGraph;
+    }
+
+    // Plan order is authoritative for queued files. Any file omitted by the AI is
+    // appended deterministically so the queue can never strand source files.
+    const pending = files.filter((entry) => entry.status !== "done" && entry.status !== "skipped");
+    const byName = new Map(pending.map((entry) => [entry.name.replace(/\\/g, "/"), entry]));
+    const orderedQueue = designPlan.transformationOrder
+      .map((name) => byName.get(name.replace(/\\/g, "/")))
+      .filter((entry): entry is (typeof pending)[number] => Boolean(entry));
+    const orderedIds = new Set(orderedQueue.map((entry) => entry.id));
+    orderedQueue.push(...pending.filter((entry) => !orderedIds.has(entry.id)));
+    const file = orderedQueue[0];
 
     if (!file) {
       await supabase.from("projects").update({ status: "done" }).eq("id", data.projectId);
-      return { done: true as const, remaining: 0, total: files?.length ?? 0, current: null };
+      return { done: true as const, remaining: 0, total: files.length, current: null, planCreated };
     }
 
     await supabase.from("projects").update({ status: "redesigning" }).eq("id", data.projectId);
@@ -359,7 +642,8 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       .eq("id", file.id);
 
     try {
-      let source = file.content ?? "";
+      const planningFile = planningFiles.find((entry) => entry.id === file.id);
+      let source = planningFile?.content ?? file.content ?? "";
       if (!source && file.storage_path) {
         if (!isTextFile(file.name)) {
           await supabase
@@ -368,9 +652,10 @@ export const redesignNextFile = createServerFn({ method: "POST" })
             .eq("id", file.id);
           return {
             done: false as const,
-            remaining: queue.length - 1,
-            total: files?.length ?? 0,
+            remaining: orderedQueue.length - 1,
+            total: files.length,
             current: file.name,
+            planCreated,
           };
         }
         const dl = await supabase.storage.from("project-files").download(file.storage_path);
@@ -392,14 +677,16 @@ export const redesignNextFile = createServerFn({ method: "POST" })
           .eq("id", file.id);
       } else {
         const redesigned = await redesignSource({
-          name: file.name,
+          name: file.name.replace(/\\/g, "/"),
           style,
           source,
           project: {
             name: project.name,
             productType: project.product_type,
             notes: project.notes,
-            manifest: (files ?? []).map((entry) => entry.name),
+            manifest: files.map((entry) => entry.name.replace(/\\/g, "/")),
+            designPlan,
+            dependencyGraph: activeGraph,
           },
         });
 
@@ -419,9 +706,10 @@ export const redesignNextFile = createServerFn({ method: "POST" })
 
     return {
       done: false as const,
-      remaining: queue.length - 1,
-      total: files?.length ?? 0,
+      remaining: orderedQueue.length - 1,
+      total: files.length,
       current: file.name,
+      planCreated,
     };
   });
 
