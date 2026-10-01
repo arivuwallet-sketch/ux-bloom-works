@@ -102,8 +102,8 @@ function PricingPage() {
           })}
         </div>
         <p className="mt-6 max-w-[70ch] text-[13px] leading-6 text-muted-foreground">
-          Savings are compared with buying the same number of Starter packs one at a time. Every multi-website pack is 10% off the
-          Starter rate, so the bigger the pack, the more you save in total.
+          Savings are compared with buying the same number of Starter packs one at a time. The discount steps up with each pack —
+          about 20% off on Studio, 30% on Agency and 40% on Scale — so every website costs less the more you buy.
         </p>
       </Section>
 
