@@ -6,7 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const creditGateBlock = /\n\s*const \{ data: unlocked, error: unlockError \} = await supabase\.rpc\("unlock_project", \{ _project_id: data\.projectId \}\);\n\s*if \(unlockError\) throw new Error\(unlockError\.message\);\n\s*if \(!unlocked\) throw new Error\("NO_CREDITS: You need a website credit to redesign this project\. Buy a pack on the Pricing page\."\);\n/g;
+const creditGateBlock = /const\s+\{\s*data:\s*unlocked,\s*error:\s*unlockError\s*\}\s*=\s*await\s+supabase\.rpc\(\s*["']unlock_project["']\s*,\s*\{\s*_project_id:\s*data\.projectId\s*\}\s*\);\s*if\s*\(unlockError\)\s*throw\s+new\s+Error\(unlockError\.message\);\s*if\s*\(!unlocked\)\s*throw\s+new\s+Error\(\s*["']NO_CREDITS: You need a website credit to redesign this project\. Buy a pack on the Pricing page\.["']\s*\);?/g;
 
 function paymentGateDisabledPlugin() {
   return {
@@ -20,7 +20,7 @@ function paymentGateDisabledPlugin() {
 
       const transformed = code.replace(
         creditGateBlock,
-        "\n    // Pricing/payment gate intentionally disabled; authenticated project ownership checks remain active.\n",
+        "// Pricing/payment gate intentionally disabled; authenticated project ownership checks remain active.",
       );
 
       if (transformed === code) {
