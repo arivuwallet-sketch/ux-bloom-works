@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import archiveCss from "../archive-global.css?url";
 import archiveWorkspaceCss from "../archive-workspace.css?url";
+import transformationConsoleFixCss from "../transformation-console-fix.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header, Footer } from "@/components/site/Header";
 import { ImmersiveBackground } from "@/components/site/ImmersiveBackground";
@@ -79,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "stylesheet", href: archiveCss },
       { rel: "stylesheet", href: archiveWorkspaceCss },
+      { rel: "stylesheet", href: transformationConsoleFixCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
