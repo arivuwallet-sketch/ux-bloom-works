@@ -9,7 +9,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const creditGateBlock = /const\s+\{\s*data:\s*unlocked,\s*error:\s*unlockError\s*\}\s*=\s*await\s+supabase\.rpc\(\s*["']unlock_project["']\s*,\s*\{\s*_project_id:\s*data\.projectId\s*\}\s*\);\s*if\s*\(unlockError\)\s*throw\s+new\s+Error\(unlockError\.message\);\s*if\s*\(!unlocked\)\s*throw\s+new\s+Error\(\s*["']NO_CREDITS: You need a website credit to redesign this project\. Buy a pack on the Pricing page\.["']\s*\);?/g;
 const projectFoundGuard = /if\s*\(!project\)\s*throw\s+new\s+Error\(\s*["']Project not found["']\s*\);?/;
-const artifactImport = 'import { ensureProjectArtifacts } from "@/lib/project-artifact-bootstrap";';
+const artifactImport = 'import { ensureProjectArtifacts } from "@/lib/project-artifact-orchestrator";';
 
 function injectArtifactBootstrap(source: string, call: string, file: string) {
   if (source.includes(artifactImport)) return source;
