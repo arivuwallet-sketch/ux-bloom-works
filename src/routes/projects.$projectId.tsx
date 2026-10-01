@@ -421,7 +421,7 @@ function ProjectDetailPage() {
             ) : (
               <div className="flex flex-col gap-2">
                 {files.data?.map((file, index) => {
-                  const status = statusBadge[file.status] ?? statusBadge.queued!;
+                  const status = statusBadge[file.status] ?? statusBadge['queued']!;
                   const StatusIcon = status.icon;
                   return (
                     <article key={file.id} className="glass grid grid-cols-1 items-center gap-4 p-4 md:grid-cols-[46px_1fr_150px_minmax(180px,240px)_40px]">

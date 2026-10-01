@@ -29,6 +29,13 @@
       "when": 1788493220193,
       "tag": "0003_add_redesign_output_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790816668265,
+      "tag": "0004_create_redesign_chats",
+      "breakpoints": true
     }
   ]
 }
