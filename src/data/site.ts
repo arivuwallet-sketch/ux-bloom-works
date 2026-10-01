@@ -24,8 +24,8 @@ export const services: Service[] = [
     desc: "Product and commerce experiences rebuilt around clarity, accessibility, real structured data and trustworthy search presentation.",
   },
   {
-    name: "SEO / GEO / AEO / AAO",
-    desc: "Project-wide technical SEO, content and entity analysis, answer extraction, structured data, keyword-to-page mapping and AI/agent readiness without fabricated metrics.",
+    name: "SEO + AI search optimization",
+    desc: "Project-wide technical and on-page SEO, content trust analysis, structured data, keyword-to-page mapping, answer-engine optimization and AI-search readiness without fabricated metrics.",
   },
 ];
 
@@ -56,7 +56,7 @@ export const processSteps: ProcessStep[] = [
   {
     version: "02 — Choose engine",
     title: "Redesign, SEO, or both",
-    body: "Run UI/UX reconstruction, the SEO Agent, or Redesign + SEO. The SEO path applies M1–M8 across search mechanics, technical SEO, on-page, E-E-A-T, keyword mapping, structured data, AEO and GEO.",
+    body: "Run UI/UX reconstruction, the SEO Agent, or Redesign + SEO. The SEO path covers search visibility, technical SEO, on-page optimization, content quality and trust, keyword-to-page mapping, structured data, answer engines and AI-search readiness.",
   },
   {
     version: "03 — Analyze + transform",
