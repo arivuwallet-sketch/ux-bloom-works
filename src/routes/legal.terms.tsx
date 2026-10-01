@@ -80,8 +80,11 @@ export const Route = createFileRoute("/legal/terms")({
           heading: "Pricing",
           body: (
             <p>
-              Any paid plans, prices and what they include will be shown clearly before you pay. We will not charge you for
-              anything you didn't explicitly agree to.
+              Rezyn sells one-off packs of website credits shown on the <Link to="/pricing">Pricing page</Link>. One credit
+              is used the first time you start a redesign on a project; re-running or refining that same project is free.
+              Credits don't expire. Prices are shown in your local currency before you pay, and payments are processed by
+              Cashfree Payments. There is no subscription and no automatic renewal. Refunds follow our{" "}
+              <Link to="/legal/refunds">Refund Policy</Link>.
             </p>
           ),
         },

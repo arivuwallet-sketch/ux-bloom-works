@@ -11,21 +11,26 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ProcessRouteImport } from './routes/process'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as StylesRouteImport } from './routes/styles'
 import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as WhyRezynRouteImport } from './routes/why-rezyn'
 import { Route as WorkRouteImport } from './routes/work'
+import { Route as BillingReturnRouteImport } from './routes/billing.return'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as LegalAcceptableUseRouteImport } from './routes/legal.acceptable-use'
 import { Route as LegalAiDisclosureRouteImport } from './routes/legal.ai-disclosure'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalRefundsRouteImport } from './routes/legal.refunds'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ProjectsProjectIdChatRouteImport } from './routes/projects.$projectId_.chat'
+import { Route as ApiPublicCashfreeWebhookRouteImport } from './routes/api/public/cashfree/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -37,9 +42,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProcessRoute = ProcessRouteImport.update({
   id: '/process',
   path: '/process',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -67,6 +82,11 @@ const WorkRoute = WorkRouteImport.update({
   path: '/work',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BillingReturnRoute = BillingReturnRouteImport.update({
+  id: '/billing/return',
+  path: '/billing/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalIndexRoute = LegalIndexRouteImport.update({
   id: '/legal/',
   path: '/legal/',
@@ -92,6 +112,11 @@ const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   path: '/legal/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRefundsRoute = LegalRefundsRouteImport.update({
+  id: '/legal/refunds',
+  path: '/legal/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalTermsRoute = LegalTermsRouteImport.update({
   id: '/legal/terms',
   path: '/legal/terms',
@@ -112,143 +137,184 @@ const ProjectsProjectIdChatRoute = ProjectsProjectIdChatRouteImport.update({
   path: '/projects/$projectId/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCashfreeWebhookRoute =
+  ApiPublicCashfreeWebhookRouteImport.update({
+    id: '/api/public/cashfree/webhook',
+    path: '/api/public/cashfree/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pricing': typeof PricingRoute
   '/process': typeof ProcessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
+  '/billing/return': typeof BillingReturnRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refunds': typeof LegalRefundsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/legal/': typeof LegalIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$projectId/chat': typeof ProjectsProjectIdChatRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pricing': typeof PricingRoute
   '/process': typeof ProcessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
+  '/billing/return': typeof BillingReturnRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refunds': typeof LegalRefundsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/legal': typeof LegalIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/projects/$projectId/chat': typeof ProjectsProjectIdChatRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pricing': typeof PricingRoute
   '/process': typeof ProcessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
+  '/billing/return': typeof BillingReturnRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refunds': typeof LegalRefundsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/legal/': typeof LegalIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$projectId_/chat': typeof ProjectsProjectIdChatRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/pricing'
     | '/process'
+    | '/reset-password'
     | '/services'
     | '/styles'
     | '/trends'
     | '/why-rezyn'
     | '/work'
+    | '/billing/return'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
     | '/legal/cookies'
     | '/legal/privacy'
+    | '/legal/refunds'
     | '/legal/terms'
     | '/projects/$projectId'
     | '/legal/'
     | '/projects/'
     | '/projects/$projectId/chat'
+    | '/api/public/cashfree/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/pricing'
     | '/process'
+    | '/reset-password'
     | '/services'
     | '/styles'
     | '/trends'
     | '/why-rezyn'
     | '/work'
+    | '/billing/return'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
     | '/legal/cookies'
     | '/legal/privacy'
+    | '/legal/refunds'
     | '/legal/terms'
     | '/projects/$projectId'
     | '/legal'
     | '/projects'
     | '/projects/$projectId/chat'
+    | '/api/public/cashfree/webhook'
   id:
     | '__root__'
     | '/'
     | '/auth'
+    | '/pricing'
     | '/process'
+    | '/reset-password'
     | '/services'
     | '/styles'
     | '/trends'
     | '/why-rezyn'
     | '/work'
+    | '/billing/return'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
     | '/legal/cookies'
     | '/legal/privacy'
+    | '/legal/refunds'
     | '/legal/terms'
     | '/projects/$projectId'
     | '/legal/'
     | '/projects/'
     | '/projects/$projectId_/chat'
+    | '/api/public/cashfree/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  PricingRoute: typeof PricingRoute
   ProcessRoute: typeof ProcessRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ServicesRoute: typeof ServicesRoute
   StylesRoute: typeof StylesRoute
   TrendsRoute: typeof TrendsRoute
   WhyRezynRoute: typeof WhyRezynRoute
   WorkRoute: typeof WorkRoute
+  BillingReturnRoute: typeof BillingReturnRoute
   LegalAcceptableUseRoute: typeof LegalAcceptableUseRoute
   LegalAiDisclosureRoute: typeof LegalAiDisclosureRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalRefundsRoute: typeof LegalRefundsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   LegalIndexRoute: typeof LegalIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ProjectsProjectIdChatRoute: typeof ProjectsProjectIdChatRoute
+  ApiPublicCashfreeWebhookRoute: typeof ApiPublicCashfreeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -267,11 +333,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/process': {
       id: '/process'
       path: '/process'
       fullPath: '/process'
       preLoaderRoute: typeof ProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -309,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/billing/return': {
+      id: '/billing/return'
+      path: '/billing/return'
+      fullPath: '/billing/return'
+      preLoaderRoute: typeof BillingReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/': {
       id: '/legal/'
       path: '/legal'
@@ -344,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalPrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/refunds': {
+      id: '/legal/refunds'
+      path: '/legal/refunds'
+      fullPath: '/legal/refunds'
+      preLoaderRoute: typeof LegalRefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/terms': {
       id: '/legal/terms'
       path: '/legal/terms'
@@ -372,27 +466,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cashfree/webhook': {
+      id: '/api/public/cashfree/webhook'
+      path: '/api/public/cashfree/webhook'
+      fullPath: '/api/public/cashfree/webhook'
+      preLoaderRoute: typeof ApiPublicCashfreeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  PricingRoute: PricingRoute,
   ProcessRoute: ProcessRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ServicesRoute: ServicesRoute,
   StylesRoute: StylesRoute,
   TrendsRoute: TrendsRoute,
   WhyRezynRoute: WhyRezynRoute,
   WorkRoute: WorkRoute,
+  BillingReturnRoute: BillingReturnRoute,
   LegalAcceptableUseRoute: LegalAcceptableUseRoute,
   LegalAiDisclosureRoute: LegalAiDisclosureRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalRefundsRoute: LegalRefundsRoute,
   LegalTermsRoute: LegalTermsRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   LegalIndexRoute: LegalIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsProjectIdChatRoute: ProjectsProjectIdChatRoute,
+  ApiPublicCashfreeWebhookRoute: ApiPublicCashfreeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

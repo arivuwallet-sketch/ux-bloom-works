@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { to: "/services", label: "Capabilities" },
@@ -9,11 +13,22 @@ const navItems = [
   { to: "/trends", label: "Signals" },
   { to: "/work", label: "Proof" },
   { to: "/why-rezyn", label: "Why Rezyn" },
+  { to: "/pricing", label: "Pricing" },
 ] as const;
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    void navigate({ to: "/auth", replace: true });
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 18);
@@ -34,7 +49,14 @@ export function Header() {
       <div className="archive-header__utility">
         <span>REZYN / INTERFACE TRANSFORMATION ARCHIVE</span>
         <span className="archive-header__utility-center">EST. DIGITAL / REVISION SYSTEM</span>
-        <span>INDEX 00—06</span>
+        {user ? (
+          <span className="archive-header__account">
+            {user.email}
+            <button type="button" onClick={() => void signOut()}>Sign out</button>
+          </span>
+        ) : (
+          <Link to="/auth" className="archive-header__account">Sign in / Sign up</Link>
+        )}
       </div>
 
       <div className="archive-header__main">
@@ -76,7 +98,7 @@ export function Header() {
       <div className={`archive-mobile${open ? " is-open" : ""}`} aria-hidden={!open}>
         <div className="archive-mobile__top">
           <span>REZYN / DIRECTORY</span>
-          <span>07 ENTRIES</span>
+          <span>08 ENTRIES</span>
         </div>
         <div className="archive-mobile__links">
           {navItems.map((item, index) => (
@@ -87,7 +109,7 @@ export function Header() {
             </Link>
           ))}
           <Link to="/projects" onClick={() => setOpen(false)} className="archive-mobile__workspace">
-            <span>07</span>
+            <span>08</span>
             <strong>Workspace</strong>
             <ArrowUpRight className="h-5 w-5" />
           </Link>
@@ -123,9 +145,9 @@ export function Footer() {
 
           <div className="archive-footer__directory">
             <span className="archive-footer__label">System</span>
-            <Link to="/projects"><span>07</span>Workspace</Link>
-            <Link to="/auth"><span>08</span>Account</Link>
-            <a href="mailto:hello@rezyn.co"><span>09</span>Contact</a>
+            <Link to="/projects"><span>08</span>Workspace</Link>
+            <Link to="/auth"><span>09</span>Account</Link>
+            <a href="mailto:hello@rezyn.co"><span>10</span>Contact</a>
           </div>
 
           <div className="archive-footer__directory">
@@ -135,6 +157,7 @@ export function Footer() {
             <Link to="/legal/ai-disclosure"><span>L3</span>AI Disclosure</Link>
             <Link to="/legal/acceptable-use"><span>L4</span>Acceptable Use</Link>
             <Link to="/legal/cookies"><span>L5</span>Cookies</Link>
+            <Link to="/legal/refunds"><span>L6</span>Refunds</Link>
           </div>
         </div>
 
