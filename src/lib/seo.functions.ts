@@ -35,6 +35,27 @@ type HydratedSeoFile = {
   sourceMode: SourceMode;
 };
 
+type SeoResultRow = {
+  project_file_id: string;
+  status: string;
+  seo_content: string | null;
+  error?: string | null;
+  source_signature: string;
+};
+
+type SeoStatePlan = {
+  status: string;
+  source_mode: SourceMode;
+  source_signature: string;
+  plan: unknown;
+  audit_before: SeoAudit | null;
+  audit_after: SeoAudit | null;
+  score_before: number | null;
+  score_after: number | null;
+  error: string | null;
+  updated_at: string;
+};
+
 export type SeoProjectPlan = {
   version: 1;
   summary: string;
@@ -85,7 +106,11 @@ function safeString(value: unknown, fallback = "") {
 
 function stringArray(value: unknown) {
   if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean).slice(0, 80);
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 80);
 }
 
 function normalizeName(value: string) {
@@ -156,7 +181,9 @@ function existingLinkTargets(source: string) {
 function validateSeoOutput(name: string, source: string, candidate: string) {
   const output = stripOuterFence(candidate);
   if (!output) throw new Error("SEO agent returned an empty file");
-  if (source.length > 4_000 && output.length < source.length * 0.7) throw new Error("SEO agent output looks truncated");
+  if (source.length > 4_000 && output.length < source.length * 0.7) {
+    throw new Error("SEO agent output looks truncated");
+  }
   if (/^(here(?:'s| is)|sure[,!]|i(?:'ve| have) (?:optimized|updated|rewritten))/i.test(output)) {
     throw new Error("SEO agent returned commentary instead of source code");
   }
@@ -169,7 +196,6 @@ function validateSeoOutput(name: string, source: string, candidate: string) {
       throw new Error("SEO agent returned invalid JSON");
     }
   }
-
   if (!["md", "mdx", "txt"].includes(ext) && /^```/.test(output)) {
     throw new Error("SEO agent returned markdown instead of source code");
   }
@@ -185,7 +211,6 @@ function validateSeoOutput(name: string, source: string, candidate: string) {
     const retained = [...beforeLinks].filter((target) => afterLinks.has(target)).length / beforeLinks.size;
     if (retained < 0.85) throw new Error("SEO agent removed or changed too many existing link destinations");
   }
-
   return output;
 }
 
@@ -214,7 +239,6 @@ async function callGateway(messages: GatewayMessage[]) {
           body: JSON.stringify(body),
           signal: controller.signal,
         });
-
         if (response.status === 402) throw new Error("AI credits exhausted.");
         if (!response.ok) {
           lastError = response.status === 429 ? "SEO AI rate limit reached" : `SEO AI request failed (${response.status})`;
@@ -225,17 +249,13 @@ async function callGateway(messages: GatewayMessage[]) {
           if ([400, 404, 422, 429, 500, 502, 503, 504].includes(response.status)) break;
           throw new Error(lastError);
         }
-
         const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
         const content = json.choices?.[0]?.message?.content?.trim() ?? "";
         if (!content) throw new Error("SEO AI returned an empty response");
         return content;
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          lastError = "SEO AI request timed out";
-        } else if (error instanceof Error) {
-          lastError = error.message;
-        }
+        if (error instanceof Error && error.name === "AbortError") lastError = "SEO AI request timed out";
+        else if (error instanceof Error) lastError = error.message;
         if (lastError === "AI credits exhausted.") throw new Error(lastError);
         if (attempt === 0) {
           await sleep(500);
@@ -247,7 +267,6 @@ async function callGateway(messages: GatewayMessage[]) {
       }
     }
   }
-
   throw new Error(lastError);
 }
 
@@ -264,7 +283,6 @@ function normalizeSeoPlan(raw: string, files: HydratedSeoFile[]): SeoProjectPlan
   const strategy = (parsed.technicalStrategy && typeof parsed.technicalStrategy === "object" ? parsed.technicalStrategy : {}) as Record<string, unknown>;
   const rawPlans = Array.isArray(parsed.filePlans) ? parsed.filePlans : [];
   const filePlans: SeoProjectPlan["filePlans"] = [];
-
   for (const entry of rawPlans) {
     if (!entry || typeof entry !== "object") continue;
     const row = entry as Record<string, unknown>;
@@ -327,7 +345,6 @@ async function generateSeoPlan(opts: {
   audit: SeoAudit;
   sourceMode: SourceMode;
 }) {
-  const intelligence = buildSeoIntelligenceContext();
   const schema = `Return ONLY JSON in this shape:
 {
   "version": 1,
@@ -343,16 +360,11 @@ async function generateSeoPlan(opts: {
   "transformationOrder": ["known/file"],
   "risks": ["risk"]
 }`;
-
   const baseMessages: GatewayMessage[] = [
     {
       role: "system",
       content:
-        "You are Rezyn SEO Architect. Build one authoritative project-wide SEO plan before any SEO edits happen. " +
-        "Use only the uploaded source, deterministic audit and project metadata. Never claim rankings, search volume, traffic, competitors, user research or keyword demand unless supplied in source. " +
-        "Do not invent URLs, facts, reviews, ratings, prices, authors, FAQ answers, company details or structured-data properties. " +
-        "SEO-only work must preserve the visual design exactly; redesigned-source work must preserve the new visual design exactly. " +
-        "Prefer framework-native metadata patterns already present in the project. Do not reveal chain-of-thought. Return JSON only.\n\n" + intelligence,
+        "You are Rezyn SEO Architect. Build one authoritative project-wide SEO plan before any SEO edits happen. Use only the uploaded source, deterministic audit and project metadata. Never claim rankings, search volume, traffic, competitors, user research or keyword demand unless supplied in source. Do not invent URLs, facts, reviews, ratings, prices, authors, FAQ answers, company details or structured-data properties. SEO-only work must preserve the visual design exactly; redesigned-source work must preserve the new visual design exactly. Prefer framework-native metadata patterns already present in the project. Do not reveal chain-of-thought. Return JSON only.\n\n" + buildSeoIntelligenceContext(),
     },
     {
       role: "user",
@@ -387,13 +399,12 @@ async function generateSeoPlan(opts: {
   throw new Error(lastError);
 }
 
-async function seoQa(opts: { name: string; source: string; candidate: string; plan: SeoProjectPlan }) : Promise<SeoQaResult> {
+async function seoQa(opts: { name: string; source: string; candidate: string; plan: SeoProjectPlan }): Promise<SeoQaResult> {
   const raw = await callGateway([
     {
       role: "system",
       content:
-        "You are an independent SEO release reviewer. Decide whether the candidate is safe to ship. Reject if it changes visual design, layout, styling, business logic, routes, working links, factual claims or user-facing meaning unnecessarily; invents SEO facts/schema data; keyword-stuffs; adds unsupported canonicals/hreflang/URLs; or violates the supplied project SEO plan. " +
-        "Approve safe semantic HTML, metadata, accurate alt/accessibility improvements, framework-native SEO configuration and structured data strictly grounded in source. Return ONLY JSON: {\"pass\":true|false,\"issues\":[\"release blocker\"]}. Do not reveal chain-of-thought.",
+        "You are an independent SEO release reviewer. Reject if the candidate changes visual design, layout, styling, business logic, routes, working links, factual claims or user-facing meaning unnecessarily; invents SEO facts/schema data; keyword-stuffs; adds unsupported canonicals/hreflang/URLs; or violates the supplied project SEO plan. Approve safe semantic HTML, metadata, accurate alt/accessibility improvements, framework-native SEO configuration and structured data strictly grounded in source. Return ONLY JSON: {\"pass\":true|false,\"issues\":[\"release blocker\"]}. Do not reveal chain-of-thought.",
     },
     {
       role: "user",
@@ -417,14 +428,8 @@ async function optimizeSeoFile(opts: {
   const fileName = normalizeName(opts.file.name);
   const filePlan = opts.plan.filePlans.find((entry) => entry.file === fileName);
   const relevantIssues = opts.audit.issues.filter((issue) => issue.file === fileName || issue.file === null);
-  const intelligence = buildSeoIntelligenceContext();
   const system =
-    "You are Rezyn SEO Updater. Modify this ONE file according to the authoritative project SEO plan and measured audit. " +
-    "This is not a redesign. Preserve the visual design, classes, CSS, layout, spacing, typography, colors, motion, component geometry, behavior, routes, APIs, state, forms, event handlers, IDs/test hooks and existing valid links. " +
-    "Make only source-grounded SEO/AEO/GEO improvements that belong in this file. Never invent facts, URLs, keyword metrics, rankings, reviews, ratings, prices, authors, FAQ answers or schema data. " +
-    "Do not add structured data unless this source contains the real facts needed for it. If an absolute canonical or sitemap URL cannot be known from source, do not fabricate one. " +
-    "Return the COMPLETE updated source file only, with no markdown fences or commentary.\n\n" + intelligence;
-
+    "You are Rezyn SEO Updater. Modify this ONE file according to the authoritative project SEO plan and measured audit. This is not a redesign. Preserve the visual design, classes, CSS, layout, spacing, typography, colors, motion, component geometry, behavior, routes, APIs, state, forms, event handlers, IDs/test hooks and existing valid links. Make only source-grounded SEO/AEO/GEO improvements that belong in this file. Never invent facts, URLs, keyword metrics, rankings, reviews, ratings, prices, authors, FAQ answers or schema data. Do not add structured data unless this source contains the real facts needed for it. If an absolute canonical or sitemap URL cannot be known from source, do not fabricate one. Return the COMPLETE updated source file only, with no markdown fences or commentary.\n\n" + buildSeoIntelligenceContext();
   const context = [
     `PROJECT: ${opts.project.name}`,
     `PRODUCT TYPE: ${opts.project.productType ?? "Unknown"}`,
@@ -465,11 +470,7 @@ async function optimizeSeoFile(opts: {
   throw new Error(lastError);
 }
 
-async function hydrateSeoFiles(
-  supabase: any,
-  files: ProjectSourceFile[],
-  sourceMode: SourceMode,
-): Promise<HydratedSeoFile[]> {
+async function hydrateSeoFiles(supabase: any, files: ProjectSourceFile[], sourceMode: SourceMode): Promise<HydratedSeoFile[]> {
   const result: HydratedSeoFile[] = [];
   for (const entry of files) {
     let original = entry.content ?? "";
@@ -493,23 +494,24 @@ export const getSeoProjectState = createServerFn({ method: "GET" })
   .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const db = context.supabase as any;
-    const [{ data: plan, error: planError }, { data: files, error: filesError }] = await Promise.all([
+    const [{ data: planData, error: planError }, { data: fileData, error: filesError }] = await Promise.all([
       db.from("project_seo_plans").select("status, source_mode, source_signature, plan, audit_before, audit_after, score_before, score_after, error, updated_at").eq("project_id", data.projectId).maybeSingle(),
       db.from("project_seo_files").select("project_file_id, status, seo_content, error, source_signature").eq("project_id", data.projectId),
     ]);
     if (planError || filesError) {
       const message = planError?.message ?? filesError?.message ?? "SEO schema unavailable";
       if (schemaUnavailable(message)) {
-        return { schemaReady: false as const, plan: null, files: [], completed: 0, totalResults: 0, error: `Apply migration 0008_create_seo_agent.sql: ${message}` };
+        return { schemaReady: false as const, plan: null, files: [] as SeoResultRow[], completed: 0, totalResults: 0, error: `Apply migration 0008_create_seo_agent.sql: ${message}` };
       }
       throw new Error(message);
     }
-    const rows = files ?? [];
+    const rows = (fileData ?? []) as SeoResultRow[];
+    const plan = (planData ?? null) as SeoStatePlan | null;
     return {
       schemaReady: true as const,
-      plan: plan ?? null,
+      plan,
       files: rows,
-      completed: rows.filter((row: any) => row.status === "done" || row.status === "skipped").length,
+      completed: rows.filter((row) => row.status === "done" || row.status === "skipped").length,
       totalResults: rows.length,
       error: plan?.error ?? null,
     };
@@ -520,11 +522,7 @@ export const seoNextFile = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({ projectId: z.string().uuid(), sourceMode: z.enum(["original", "redesigned"]) }).parse(data))
   .handler(async ({ data, context }) => {
     const db = context.supabase as any;
-    const { data: project, error: projectError } = await db
-      .from("projects")
-      .select("id, name, product_type, notes")
-      .eq("id", data.projectId)
-      .maybeSingle();
+    const { data: project, error: projectError } = await db.from("projects").select("id, name, product_type, notes").eq("id", data.projectId).maybeSingle();
     if (projectError) throw new Error(projectError.message);
     if (!project) throw new Error("Project not found");
 
@@ -551,14 +549,7 @@ export const seoNextFile = createServerFn({ method: "POST" })
       throw new Error(`SEO planning schema is unavailable: ${planReadError.message}.${suffix}`);
     }
 
-    const canReuse =
-      storedPlan &&
-      storedPlan.source_signature === signature &&
-      storedPlan.source_mode === data.sourceMode &&
-      ["ready", "optimizing", "done"].includes(storedPlan.status) &&
-      storedPlan.plan &&
-      typeof storedPlan.plan === "object";
-
+    const canReuse = storedPlan && storedPlan.source_signature === signature && storedPlan.source_mode === data.sourceMode && ["ready", "optimizing", "done"].includes(storedPlan.status) && storedPlan.plan && typeof storedPlan.plan === "object";
     let plan: SeoProjectPlan;
     let planCreated = false;
 
@@ -623,11 +614,14 @@ export const seoNextFile = createServerFn({ method: "POST" })
       .select("project_file_id, status, seo_content, source_signature")
       .eq("project_id", data.projectId);
     if (resultError) throw new Error(resultError.message);
-    const currentResults = new Map((resultRows ?? []).filter((row: any) => row.source_signature === signature).map((row: any) => [row.project_file_id, row]));
+    const typedRows = (resultRows ?? []) as SeoResultRow[];
+    const currentResults = new Map<string, SeoResultRow>(
+      typedRows.filter((row) => row.source_signature === signature).map((row) => [row.project_file_id, row] as const),
+    );
 
     const orderedIds = new Set<string>();
     const ordered: HydratedSeoFile[] = [];
-    const byName = new Map(hydrated.map((file) => [normalizeName(file.name), file]));
+    const byName = new Map(hydrated.map((file) => [normalizeName(file.name), file] as const));
     for (const name of plan.transformationOrder) {
       const file = byName.get(normalizeName(name));
       if (file && !orderedIds.has(file.id)) {
@@ -635,9 +629,7 @@ export const seoNextFile = createServerFn({ method: "POST" })
         orderedIds.add(file.id);
       }
     }
-    for (const file of hydrated) {
-      if (!orderedIds.has(file.id)) ordered.push(file);
-    }
+    for (const file of hydrated) if (!orderedIds.has(file.id)) ordered.push(file);
 
     const pending = ordered.filter((file) => {
       const row = currentResults.get(file.id);
