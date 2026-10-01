@@ -5,7 +5,7 @@ export type Service = { name: string; desc: string };
 export const services: Service[] = [
   {
     name: "Website",
-    desc: "Marketing sites that stopped converting somewhere along the way — usually the homepage, sometimes the whole funnel.",
+    desc: "Marketing sites that need a stronger interface plus search-ready metadata, semantics, crawl/index hygiene and AI-answer visibility.",
   },
   {
     name: "Web app",
@@ -17,11 +17,15 @@ export const services: Service[] = [
   },
   {
     name: "SaaS product",
-    desc: "Onboarding, information architecture, and the accumulated UI debt that's quietly costing you activation.",
+    desc: "Onboarding, information architecture, accumulated UI debt and public product pages that need clearer search intent and entity structure.",
   },
   {
     name: "E-commerce store",
-    desc: "Product pages and checkout flows, rebuilt around where shoppers actually drop off.",
+    desc: "Product and commerce experiences rebuilt around clarity, accessibility, real structured data and trustworthy search presentation.",
+  },
+  {
+    name: "SEO / GEO / AEO / AAO",
+    desc: "Project-wide technical SEO, content and entity analysis, answer extraction, structured data, keyword-to-page mapping and AI/agent readiness without fabricated metrics.",
   },
 ];
 
@@ -47,17 +51,22 @@ export const processSteps: ProcessStep[] = [
   {
     version: "01 — Upload",
     title: "Drop the whole project in",
-    body: "Upload every file you want touched, or write new ones straight in the browser. Your originals are kept untouched alongside every redesigned version.",
+    body: "Upload the complete project or selected source files. Rezyn hydrates the real source, preserves folder structure, keeps originals intact and builds one project-wide model before edits begin.",
   },
   {
-    version: "02 — Pick a style",
-    title: "Choose the visual world",
-    body: "Choose one of sixty-one full reconstruction directions for the whole project, or assign a different direction per file.",
+    version: "02 — Choose engine",
+    title: "Redesign, SEO, or both",
+    body: "Run UI/UX reconstruction, the SEO Agent, or Redesign + SEO. The SEO path applies M1–M8 across search mechanics, technical SEO, on-page, E-E-A-T, keyword mapping, structured data, AEO and GEO.",
   },
   {
-    version: "03 — Download",
-    title: "Take the rebuilt files",
-    body: "Presentation-bearing files are rebuilt in the chosen direction, checked, and returned as one ZIP. Review and test before shipping.",
+    version: "03 — Analyze + transform",
+    title: "Plan the system before editing",
+    body: "Rezyn creates project-level design and/or SEO plans, measures deterministic issues first, then transforms files in coordinated order with source-grounded AI generation and independent QA.",
+  },
+  {
+    version: "04 — Export",
+    title: "Take the validated project",
+    body: "Download one ZIP containing the best final version of every file — SEO-optimized output first when available, then redesigned source, then untouched originals for anything that did not need modification.",
   },
 ];
 
