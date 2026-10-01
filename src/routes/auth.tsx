@@ -39,15 +39,10 @@ function AuthPage() {
   const [googleBusy, setGoogleBusy] = useState(false);
 
   useEffect(() => {
+    if (loading || !user) return;
     const stored = sessionStorage.getItem("rezyn.auth.next");
-    if (stored && user) {
-      sessionStorage.removeItem("rezyn.auth.next");
-      void navigate({ to: safeNext(stored) });
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
-    if (!loading && user) void navigate({ to: destination });
+    sessionStorage.removeItem("rezyn.auth.next");
+    void navigate({ to: stored ? safeNext(stored) : destination });
   }, [loading, user, navigate, destination]);
 
   async function onSubmit(event: React.FormEvent) {
