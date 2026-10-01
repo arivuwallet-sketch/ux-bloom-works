@@ -84,4 +84,4 @@ export const verifyOrder = createServerFn({ method: "POST" })
 export const getProjectAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
-  .handler(async () => ({ unlocked: true, balance: 0 }));
+  .handler(async () => ({ unlocked: Boolean(true), balance: Number(0) }));
