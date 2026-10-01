@@ -51,17 +51,29 @@ export function Reveal({
       setShown(true);
       return;
     }
+
+    const reveal = () => setShown(true);
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            setShown(true);
+            reveal();
             io.disconnect();
+            break;
           }
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+      {
+        // Do not use a percentage threshold here. Very tall sections (for example
+        // a project manifest containing 100+ files) can never have 15% of their
+        // full height inside the viewport, leaving them permanently transparent
+        // while they still occupy layout space. Any real viewport intersection is
+        // enough to trigger the one-time reveal.
+        threshold: 0,
+        rootMargin: "0px 0px -4% 0px",
+      },
     );
+
     io.observe(node);
     return () => io.disconnect();
   }, []);
