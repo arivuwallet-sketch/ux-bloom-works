@@ -21,7 +21,7 @@ import { downloadProjectZip } from "@/lib/download-zip";
 import { sendChatMessage } from "@/lib/chat-redesign.functions";
 import "../chat-agent.css";
 
-export const Route = createFileRoute("/projects/$projectId/chat")({
+export const Route = createFileRoute("/projects/$projectId_/chat")({
   head: () => ({
     meta: [
       { title: "Rezyn Chat — conversational interface transformation" },
