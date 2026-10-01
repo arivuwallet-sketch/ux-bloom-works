@@ -64,26 +64,47 @@ function PricingPage() {
         <div className="pricing-grid">
           {pricing.packs.map((pack, i) => {
             const featured = i === 1;
+            const single = pricing.packs[0]?.amount ?? pack.amount;
+            const compareAt = Math.round(single * pack.websites * 100) / 100;
+            const saving = Math.round((compareAt - pack.amount) * 100) / 100;
+            const savingPct = compareAt > 0 ? Math.round((saving / compareAt) * 100) : 0;
             const perSite = Math.round((pack.amount / pack.websites) * 100) / 100;
             return (
               <article key={pack.id} className={`glass pricing-card${featured ? " is-featured" : ""}`}>
-                <div className="flex items-center justify-between">
-                  <span className="legal-page__label">{pack.label}</span>
-                  {featured ? <span className="pricing-card__badge">Popular</span> : null}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="pricing-card__tier">{pack.label}</span>
+                  {featured ? <span className="pricing-card__badge">Most popular</span> : null}
                 </div>
+                <p className="pricing-card__for">{pack.bestFor}</p>
                 <div className="pricing-card__count">
                   {pack.websites}
                   <span>{pack.websites === 1 ? "website" : "websites"}</span>
                 </div>
-                <div className="pricing-card__price">{formatPrice(pack.amount, currency)}</div>
+                <div className="pricing-card__pricing">
+                  <div className="flex items-baseline gap-3">
+                    <span className="pricing-card__price">{formatPrice(pack.amount, currency)}</span>
+                    {saving > 0 ? <s className="pricing-card__compare">{formatPrice(compareAt, currency)}</s> : null}
+                  </div>
+                  {saving > 0 ? (
+                    <span className="pricing-card__save">
+                      You save {formatPrice(saving, currency)} · {savingPct}% off
+                    </span>
+                  ) : (
+                    <span className="pricing-card__save is-muted">Standard rate</span>
+                  )}
+                </div>
                 <p className="pricing-card__per">
                   {formatPrice(perSite, currency)} per website · {pack.note}
                 </p>
-                <BuyPackButton packId={pack.id} label={`Buy ${pack.websites}`} featured={featured} />
+                <BuyPackButton packId={pack.id} label={`Get ${pack.label}`} featured={featured} />
               </article>
             );
           })}
         </div>
+        <p className="mt-6 max-w-[70ch] text-[13px] leading-6 text-muted-foreground">
+          Savings are compared with buying the same number of Starter packs one at a time. Every multi-website pack is 10% off the
+          Starter rate, so the bigger the pack, the more you save in total.
+        </p>
       </Section>
 
       <Section last tone="quiet">

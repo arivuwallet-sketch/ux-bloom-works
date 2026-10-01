@@ -2,13 +2,13 @@
 
 export type PackId = "pack_1" | "pack_5" | "pack_10" | "pack_20";
 
-export type Pack = { id: PackId; websites: number; baseInr: number; label: string; note: string };
+export type Pack = { id: PackId; websites: number; baseInr: number; label: string; note: string; bestFor: string };
 
 export const PACKS: Pack[] = [
-  { id: "pack_1", websites: 1, baseInr: 100, label: "Single", note: "Try it on one project." },
-  { id: "pack_5", websites: 5, baseInr: 450, label: "Studio", note: "Save 10% per website." },
-  { id: "pack_10", websites: 10, baseInr: 900, label: "Agency", note: "Save 10% per website." },
-  { id: "pack_20", websites: 20, baseInr: 1800, label: "Scale", note: "Save 10% per website." },
+  { id: "pack_1", websites: 1, baseInr: 100, label: "Starter", note: "Try it on one project.", bestFor: "One site you want to refresh" },
+  { id: "pack_5", websites: 5, baseInr: 450, label: "Studio", note: "For a small portfolio.", bestFor: "Freelancers and side projects" },
+  { id: "pack_10", websites: 10, baseInr: 900, label: "Agency", note: "For client work.", bestFor: "Agencies with a steady client list" },
+  { id: "pack_20", websites: 20, baseInr: 1800, label: "Scale", note: "For high volume.", bestFor: "Teams redesigning many products" },
 ];
 
 export type CurrencyCode = "INR" | "USD" | "EUR" | "GBP" | "AED" | "SGD" | "AUD" | "CAD";

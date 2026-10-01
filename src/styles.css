@@ -777,7 +777,13 @@ select.field {
 .pricing-card__badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 4px 10px; background: var(--revision); color: var(--revision-bg); }
 .pricing-card__count { font-family: var(--font-display, inherit); font-size: 88px; line-height: .85; margin-top: 18px; display: flex; align-items: baseline; gap: 10px; }
 .pricing-card__count span { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
-.pricing-card__price { font-size: 34px; font-weight: 600; color: var(--foreground); margin-top: auto; }
+.pricing-card__tier { font-family: var(--font-display, inherit); font-size: 30px; line-height: 1; letter-spacing: .02em; text-transform: uppercase; color: var(--foreground); }
+.pricing-card__for { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted-foreground); min-height: 2.6em; }
+.pricing-card__pricing { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+.pricing-card__price { font-size: 34px; font-weight: 600; color: var(--foreground); }
+.pricing-card__compare { font-size: 16px; color: var(--muted-foreground); }
+.pricing-card__save { align-self: flex-start; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--revision); color: var(--revision); }
+.pricing-card__save.is-muted { border-color: var(--border); color: var(--muted-foreground); }
 .pricing-card__per { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }
 .pay-dialog { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: color-mix(in oklab, var(--background, #000) 70%, transparent); backdrop-filter: blur(6px); }
 .pay-dialog__panel { width: min(440px, 100%); display: flex; flex-direction: column; gap: 14px; padding: 28px; background: var(--card, var(--background)); }

@@ -16,7 +16,14 @@ export const getPricing = createServerFn({ method: "GET" }).handler(async () => 
   return {
     country,
     currency,
-    packs: PACKS.map((p) => ({ id: p.id, websites: p.websites, label: p.label, note: p.note, amount: priceFor(p, currency) })),
+    packs: PACKS.map((p) => ({
+      id: p.id,
+      websites: p.websites,
+      label: p.label,
+      note: p.note,
+      bestFor: p.bestFor,
+      amount: priceFor(p, currency),
+    })),
   };
 });
 
