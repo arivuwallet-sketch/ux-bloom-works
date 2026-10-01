@@ -27,7 +27,7 @@ function paymentGateDisabledPlugin() {
       );
 
       if (transformed === source) {
-        this.error(`Expected project credit gate was not found in ${cleanId}`);
+        throw new Error(`Expected project credit gate was not found in ${cleanId}`);
       }
 
       return transformed;
