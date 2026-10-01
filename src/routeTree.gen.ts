@@ -15,6 +15,7 @@ import { Route as ProcessRouteImport } from './routes/process'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as StylesRouteImport } from './routes/styles'
 import { Route as TrendsRouteImport } from './routes/trends'
+import { Route as WhyRezynRouteImport } from './routes/why-rezyn'
 import { Route as WorkRouteImport } from './routes/work'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as LegalAcceptableUseRouteImport } from './routes/legal.acceptable-use'
@@ -54,6 +55,11 @@ const StylesRoute = StylesRouteImport.update({
 const TrendsRoute = TrendsRouteImport.update({
   id: '/trends',
   path: '/trends',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhyRezynRoute = WhyRezynRouteImport.update({
+  id: '/why-rezyn',
+  path: '/why-rezyn',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkRoute = WorkRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
+  '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
+  '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
+  '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/styles'
     | '/trends'
+    | '/why-rezyn'
     | '/work'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/styles'
     | '/trends'
+    | '/why-rezyn'
     | '/work'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/styles'
     | '/trends'
+    | '/why-rezyn'
     | '/work'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   StylesRoute: typeof StylesRoute
   TrendsRoute: typeof TrendsRoute
+  WhyRezynRoute: typeof WhyRezynRoute
   WorkRoute: typeof WorkRoute
   LegalAcceptableUseRoute: typeof LegalAcceptableUseRoute
   LegalAiDisclosureRoute: typeof LegalAiDisclosureRoute
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof TrendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/why-rezyn': {
+      id: '/why-rezyn'
+      path: '/why-rezyn'
+      fullPath: '/why-rezyn'
+      preLoaderRoute: typeof WhyRezynRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/work': {
@@ -362,6 +382,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   StylesRoute: StylesRoute,
   TrendsRoute: TrendsRoute,
+  WhyRezynRoute: WhyRezynRoute,
   WorkRoute: WorkRoute,
   LegalAcceptableUseRoute: LegalAcceptableUseRoute,
   LegalAiDisclosureRoute: LegalAiDisclosureRoute,
