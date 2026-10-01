@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Upload an existing website or product, reconstruct its UI/UX, run project-wide SEO/GEO/AEO/AAO analysis with M1–M8 intelligence, or combine both while preserving the underlying functionality.",
+          "Upload an existing website or product, reconstruct its UI/UX, improve technical and on-page SEO, strengthen content and structured data, optimize for answer engines and AI visibility, or run everything together while preserving functionality.",
       },
       { property: "og:title", content: "Rezyn — Redesign the interface. Rebuild search intelligence." },
       {
@@ -31,9 +31,52 @@ export const Route = createFileRoute("/")({
 const engineSignals = [
   { icon: ScanLine, label: "Source read", value: "01" },
   { icon: Layers3, label: "Visual systems", value: "61" },
-  { icon: Search, label: "SEO intelligence", value: "M1–M8" },
+  { icon: Search, label: "Search + AI visibility", value: "SEO+" },
   { icon: Braces, label: "Deterministic + AI QA", value: "QA" },
   { icon: Boxes, label: "Delivery", value: "ZIP" },
+];
+
+const seoCapabilities = [
+  {
+    number: "01",
+    title: "Search foundations",
+    body: "Checks whether search engines can discover, crawl, render and index the right pages, then protects canonicals, redirects, hreflang and important URLs.",
+  },
+  {
+    number: "02",
+    title: "Technical SEO",
+    body: "Improves robots rules, sitemaps, crawl paths, internal architecture, rendering strategy, mobile accessibility and performance-related implementation issues.",
+  },
+  {
+    number: "03",
+    title: "On-page optimization",
+    body: "Strengthens titles, descriptions, headings, semantic HTML, image text, internal links, social metadata and answer-first page structure without keyword stuffing.",
+  },
+  {
+    number: "04",
+    title: "Content quality + trust",
+    body: "Analyzes topical coverage, information gain, freshness, authorship, trust signals and E-E-A-T needs while avoiding fabricated expertise, reviews or claims.",
+  },
+  {
+    number: "05",
+    title: "Keyword-to-page mapping",
+    body: "Maps real topics and search intent to the correct existing pages, reduces cannibalization and keeps search-volume or difficulty metrics unknown unless real data is provided.",
+  },
+  {
+    number: "06",
+    title: "Structured data",
+    body: "Selects and implements appropriate schema such as Organization, WebSite, Article, Product, Breadcrumb or SoftwareApplication only when the project contains the facts required to support it.",
+  },
+  {
+    number: "07",
+    title: "Answer engine optimization",
+    body: "Makes important information easier for search assistants and answer engines to extract through direct answers, clear comparisons, how-to structure, lists and factual page organization.",
+  },
+  {
+    number: "08",
+    title: "AI search + agent readiness",
+    body: "Improves entity clarity, source attribution, machine-readable content, AI crawler access and agent-ready artifacts so the project is easier for modern search and AI systems to understand.",
+  },
 ];
 
 function Index() {
@@ -44,7 +87,7 @@ function Index() {
         eyebrow="AI reconstruction + search intelligence"
         title="Existing product."
         accent="New gravity."
-        description="Rezyn understands the product you already built, preserves what it does, and can reconstruct the interface, strengthen technical SEO and content structure, improve AEO/GEO/agent readiness, or run the whole pipeline together as one project-aware system."
+        description="Rezyn understands the product you already built, preserves what it does, and can reconstruct the interface, strengthen technical SEO and content structure, improve answer-engine and AI-search visibility, or run the whole pipeline together as one project-aware system."
         action={{ to: "/projects", label: "Transform a project" }}
         aside={
           <div className="relative z-10 flex h-full flex-col justify-end">
@@ -74,10 +117,13 @@ function Index() {
             "commerce",
             "61 directions",
             "SEO Agent",
-            "M1–M8 intelligence",
-            "GEO + AEO",
+            "technical SEO",
+            "on-page optimization",
+            "content trust",
             "structured data",
             "keyword mapping",
+            "answer engines",
+            "AI search visibility",
             "project export",
           ]}
           speed={34}
@@ -111,6 +157,25 @@ function Index() {
 
       <Section tone="quiet">
         <SectionHeading
+          label="SEO intelligence"
+          title="What the SEO Agent actually improves."
+          description="No internal module names to decode. Rezyn audits the real project across eight practical areas, turns the findings into a coordinated plan, updates the right files, creates missing search artifacts when justified, and validates the result before export."
+        />
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {seoCapabilities.map((capability, index) => (
+            <Reveal key={capability.number} delay={index * 0.04}>
+              <article className="glass min-h-[260px] p-6">
+                <div className="font-mono text-[9px] tracking-[0.14em] text-revision">SEO / {capability.number}</div>
+                <h3 className="mb-4 mt-12 text-[30px] leading-[0.98]">{capability.title}</h3>
+                <p className="m-0 text-[13px] leading-6 text-ink-soft">{capability.body}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </Section>
+
+      <Section tone="quiet">
+        <SectionHeading
           label="Coverage"
           title="One project model across interface and search."
           description="Marketing sites, operational products, commerce and dense software can move through the same project-aware pipeline. Public website surfaces can also be audited and optimized for crawlability, indexability, semantics, structured data, internal linking, answer extraction and AI visibility."
@@ -124,7 +189,7 @@ function Index() {
         <SectionHeading
           label="Flight path"
           title="From source files to a redesigned and search-ready project."
-          description="The workflow stays simple in the UI while the engine handles project hydration, planning, M1–M8 analysis, transformation ordering, QA and export underneath."
+          description="The workflow stays simple in the UI while the engine handles project hydration, technical and on-page SEO analysis, content and trust checks, keyword-to-page mapping, structured data, answer-engine readiness, AI visibility, transformation ordering, QA and export underneath."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {processSteps.map((step, index) => (
