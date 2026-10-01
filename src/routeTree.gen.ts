@@ -16,6 +16,12 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as StylesRouteImport } from './routes/styles'
 import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as WorkRouteImport } from './routes/work'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
+import { Route as LegalAcceptableUseRouteImport } from './routes/legal.acceptable-use'
+import { Route as LegalAiDisclosureRouteImport } from './routes/legal.ai-disclosure'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ProjectsProjectIdChatRouteImport } from './routes/projects.$projectId_.chat'
@@ -55,6 +61,36 @@ const WorkRoute = WorkRouteImport.update({
   path: '/work',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/legal/',
+  path: '/legal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalAcceptableUseRoute = LegalAcceptableUseRouteImport.update({
+  id: '/legal/acceptable-use',
+  path: '/legal/acceptable-use',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalAiDisclosureRoute = LegalAiDisclosureRouteImport.update({
+  id: '/legal/ai-disclosure',
+  path: '/legal/ai-disclosure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
@@ -79,7 +115,13 @@ export interface FileRoutesByFullPath {
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/work': typeof WorkRoute
+  '/legal/acceptable-use': typeof LegalAcceptableUseRoute
+  '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/legal/': typeof LegalIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$projectId/chat': typeof ProjectsProjectIdChatRoute
 }
@@ -91,7 +133,13 @@ export interface FileRoutesByTo {
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/work': typeof WorkRoute
+  '/legal/acceptable-use': typeof LegalAcceptableUseRoute
+  '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/legal': typeof LegalIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/projects/$projectId/chat': typeof ProjectsProjectIdChatRoute
 }
@@ -104,7 +152,13 @@ export interface FileRoutesById {
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/work': typeof WorkRoute
+  '/legal/acceptable-use': typeof LegalAcceptableUseRoute
+  '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/legal/': typeof LegalIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$projectId_/chat': typeof ProjectsProjectIdChatRoute
 }
@@ -118,7 +172,13 @@ export interface FileRouteTypes {
     | '/styles'
     | '/trends'
     | '/work'
+    | '/legal/acceptable-use'
+    | '/legal/ai-disclosure'
+    | '/legal/cookies'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/projects/$projectId'
+    | '/legal/'
     | '/projects/'
     | '/projects/$projectId/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -130,7 +190,13 @@ export interface FileRouteTypes {
     | '/styles'
     | '/trends'
     | '/work'
+    | '/legal/acceptable-use'
+    | '/legal/ai-disclosure'
+    | '/legal/cookies'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/projects/$projectId'
+    | '/legal'
     | '/projects'
     | '/projects/$projectId/chat'
   id:
@@ -142,7 +208,13 @@ export interface FileRouteTypes {
     | '/styles'
     | '/trends'
     | '/work'
+    | '/legal/acceptable-use'
+    | '/legal/ai-disclosure'
+    | '/legal/cookies'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/projects/$projectId'
+    | '/legal/'
     | '/projects/'
     | '/projects/$projectId_/chat'
   fileRoutesById: FileRoutesById
@@ -155,7 +227,13 @@ export interface RootRouteChildren {
   StylesRoute: typeof StylesRoute
   TrendsRoute: typeof TrendsRoute
   WorkRoute: typeof WorkRoute
+  LegalAcceptableUseRoute: typeof LegalAcceptableUseRoute
+  LegalAiDisclosureRoute: typeof LegalAiDisclosureRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+  LegalIndexRoute: typeof LegalIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ProjectsProjectIdChatRoute: typeof ProjectsProjectIdChatRoute
 }
@@ -211,6 +289,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/legal'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/acceptable-use': {
+      id: '/legal/acceptable-use'
+      path: '/legal/acceptable-use'
+      fullPath: '/legal/acceptable-use'
+      preLoaderRoute: typeof LegalAcceptableUseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/ai-disclosure': {
+      id: '/legal/ai-disclosure'
+      path: '/legal/ai-disclosure'
+      fullPath: '/legal/ai-disclosure'
+      preLoaderRoute: typeof LegalAiDisclosureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/': {
       id: '/projects/'
       path: '/projects'
@@ -243,7 +363,13 @@ const rootRouteChildren: RootRouteChildren = {
   StylesRoute: StylesRoute,
   TrendsRoute: TrendsRoute,
   WorkRoute: WorkRoute,
+  LegalAcceptableUseRoute: LegalAcceptableUseRoute,
+  LegalAiDisclosureRoute: LegalAiDisclosureRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+  LegalIndexRoute: LegalIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsProjectIdChatRoute: ProjectsProjectIdChatRoute,
 }
