@@ -1,4 +1,6 @@
 import { buildSeoKnowledgeContext, type SeoProvenance } from "@/lib/seo-knowledge";
+import { analyzeM1M8, type M1M8Analysis, type M1M8Module, type M1M8ModuleCoverage } from "@/lib/seo-m1-m8-analysis";
+import type { SeoKeywordCandidate } from "@/lib/seo-modules-m1-m8";
 
 export type SeoCategory =
   | "crawlability"
@@ -18,6 +20,7 @@ export type SeoConfidence = "high" | "medium" | "low";
 
 export type SeoAuditIssue = {
   id: string;
+  module?: M1M8Module;
   layer: SeoAuditLayer;
   category: SeoCategory;
   severity: SeoSeverity;
@@ -66,6 +69,9 @@ export type SeoAudit = {
     hasSitemap: boolean;
     siteModel: SeoSiteModel;
     auditLayers: Record<SeoAuditLayer, number>;
+    moduleCoverage: M1M8ModuleCoverage;
+    keywordCandidates: SeoKeywordCandidate[];
+    moduleSignals: M1M8Analysis["signals"];
   };
 };
 
@@ -123,6 +129,7 @@ function snippet(value: string, max = 220) {
 function addIssue(
   issues: SeoAuditIssue[],
   opts: {
+    module?: M1M8Module;
     layer: SeoAuditLayer;
     category: SeoCategory;
     severity: SeoSeverity;
@@ -137,7 +144,8 @@ function addIssue(
   },
 ) {
   issues.push({
-    id: `${opts.layer}:${opts.category}:${opts.file ?? "project"}:${issues.length + 1}`,
+    id: `${opts.module ? `${opts.module}:` : ""}${opts.layer}:${opts.category}:${opts.file ?? "project"}:${issues.length + 1}`,
+    module: opts.module,
     layer: opts.layer,
     category: opts.category,
     severity: opts.severity,
@@ -755,6 +763,24 @@ export function auditSeoProject(files: SeoAuditFile[]): SeoAudit {
     });
   }
 
+  const m1m8 = analyzeM1M8(normalized);
+  for (const advanced of m1m8.findings) {
+    addIssue(issues, {
+      module: advanced.module,
+      layer: advanced.layer,
+      category: advanced.category,
+      severity: advanced.severity,
+      file: advanced.file,
+      message: advanced.message,
+      recommendation: advanced.recommendation,
+      evidence: advanced.evidence,
+      impact: advanced.impact,
+      effort: advanced.effort,
+      confidence: advanced.confidence,
+      provenance: advanced.provenance,
+    });
+  }
+
   const categories = Object.keys(categoryWeights).reduce((acc, category) => {
     const key = category as SeoCategory;
     const penalty = issues.filter((issue) => issue.category === key).reduce((sum, issue) => sum + severityPenalty[issue.severity], 0);
@@ -784,6 +810,9 @@ export function auditSeoProject(files: SeoAuditFile[]): SeoAudit {
       hasSitemap: siteModel.hasSitemap,
       siteModel,
       auditLayers,
+      moduleCoverage: m1m8.moduleCoverage,
+      keywordCandidates: m1m8.keywordCandidates,
+      moduleSignals: m1m8.signals,
     },
   };
 }
@@ -799,5 +828,6 @@ export function buildSeoIntelligenceContext() {
     "- Prefer framework-native metadata/SSR/schema patterns already present in the project; do not add large client-only SEO dependencies or duplicate head managers.",
     "- Improve internal linking only with known real routes/anchors. If a domain, canonical, hreflang alternate, sitemap URL, endpoint, price, rating or author is unknown, preserve/omit it rather than inventing it.",
     "- For page copy, improve extractability and direct-answer structure only when it preserves the page's real meaning and visible design. Do not manufacture demand, expertise or claims.",
+    "- M1-M8 is mandatory coverage. If a module cannot execute because required external data is absent, mark it partial/not-run rather than fabricating measurements.",
   ].join("\n");
 }
