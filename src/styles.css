@@ -774,7 +774,7 @@ select.field {
 .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
 .pricing-card { display: flex; flex-direction: column; gap: 14px; padding: 28px; min-height: 380px; }
 .pricing-card.is-featured { outline: 2px solid var(--revision); outline-offset: -2px; }
-.pricing-card__badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 4px 10px; background: var(--revision); color: var(--revision-bg); }
+.pricing-card__badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 4px 10px; white-space: nowrap; background: var(--revision); color: var(--revision-bg); }
 .pricing-card__count { font-family: var(--font-display, inherit); font-size: 88px; line-height: .85; margin-top: 18px; display: flex; align-items: baseline; gap: 10px; }
 .pricing-card__count span { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
 .pricing-card__tier { font-family: var(--font-display, inherit); font-size: 30px; line-height: 1; letter-spacing: .02em; text-transform: uppercase; color: var(--foreground); }
