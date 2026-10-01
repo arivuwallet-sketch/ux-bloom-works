@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -12,6 +12,7 @@ import {
   FileCode2,
   Loader2,
   RotateCcw,
+  Search,
   Sparkles,
   Trash2,
   UploadCloud,
@@ -22,7 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { allStyleNames } from "@/data/site";
 import { redesignNextFile, resetRedesign } from "@/lib/redesign.functions";
-import { getProjectAccess } from "@/lib/billing.functions";
+import { getSeoProjectState, resetSeoAgent, seoNextFile } from "@/lib/seo.functions";
+import type { SeoAudit, SeoCategory } from "@/lib/seo-intelligence";
 import { uploadFileList } from "@/lib/upload-files";
 import { downloadProjectZip } from "@/lib/download-zip";
 
@@ -32,7 +34,7 @@ export const Route = createFileRoute("/projects/$projectId")({
       { title: "Transformation console — Rezyn" },
       {
         name: "description",
-        content: "Upload source files, configure visual directions, run AI transformation and export the redesigned project.",
+        content: "Upload source files, redesign interfaces, run the AI SEO Agent and export the transformed project.",
       },
     ],
   }),
@@ -45,6 +47,32 @@ const statusBadge: Record<string, { label: string; cls: string; icon: typeof Clo
   done: { label: "Done", cls: "badge-done", icon: CheckCircle2 },
   failed: { label: "Failed", cls: "badge-error", icon: XCircle },
   skipped: { label: "Skipped", cls: "", icon: XCircle },
+};
+
+type EngineMode = "redesign" | "seo" | "combined";
+type SeoPlanState = {
+  status: string;
+  source_mode: "original" | "redesigned";
+  source_signature: string;
+  plan: unknown;
+  audit_before: SeoAudit | null;
+  audit_after: SeoAudit | null;
+  score_before: number | null;
+  score_after: number | null;
+  error: string | null;
+  updated_at: string;
+};
+
+const seoCategoryLabels: Record<SeoCategory, string> = {
+  crawlability: "Crawlability",
+  indexability: "Indexability",
+  metadata: "Metadata",
+  semantics: "Semantics",
+  structuredData: "Structured data",
+  internalLinking: "Internal linking",
+  social: "Social metadata",
+  accessibility: "Accessibility SEO",
+  performance: "Performance SEO",
 };
 
 function ProjectDetailPage() {
@@ -60,12 +88,15 @@ function ProjectDetailPage() {
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newStyle, setNewStyle] = useState<string>(allStyleNames[0] ?? "");
+  const [engineMode, setEngineMode] = useState<EngineMode>("redesign");
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [zipping, setZipping] = useState(false);
   const runNext = useServerFn(redesignNextFile);
   const runReset = useServerFn(resetRedesign);
-  const fetchAccess = useServerFn(getProjectAccess);
+  const runSeoNext = useServerFn(seoNextFile);
+  const runSeoReset = useServerFn(resetSeoAgent);
+  const fetchSeoState = useServerFn(getSeoProjectState);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -99,17 +130,18 @@ function ProjectDetailPage() {
     },
   });
 
-  const access = useQuery({
-    queryKey: ["project-access", projectId],
+  const seoState = useQuery({
+    queryKey: ["project-seo-state", projectId],
     enabled: Boolean(user),
-    queryFn: () => fetchAccess({ data: { projectId } }),
+    queryFn: () => fetchSeoState({ data: { projectId } }),
   });
-  const locked = access.data ? !access.data.unlocked && access.data.balance === 0 : false;
 
   const perFile = project.data?.style_mode === "file";
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["project-files", projectId] });
+  const invalidateSeo = () =>
+    queryClient.invalidateQueries({ queryKey: ["project-seo-state", projectId] });
 
   const uploadFiles = async (list: FileList | null) => {
     if (!list || !user) return;
@@ -126,6 +158,7 @@ function ProjectDetailPage() {
       if (result.archiveNotice) setArchiveNotice(result.archiveNotice);
       if (result.error) setUploadError(result.error);
       await invalidate();
+      await invalidateSeo();
       if (fileInput.current) fileInput.current.value = "";
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed");
@@ -152,6 +185,7 @@ function ProjectDetailPage() {
       setNewName("");
       setNewContent("");
       await invalidate();
+      await invalidateSeo();
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Could not create file"),
   });
@@ -164,7 +198,10 @@ function ProjectDetailPage() {
         .eq("id", id);
       if (err) throw err;
     },
-    onSuccess: invalidate,
+    onSuccess: async () => {
+      await invalidate();
+      await invalidateSeo();
+    },
   });
 
   const removeFile = useMutation({
@@ -173,33 +210,61 @@ function ProjectDetailPage() {
       const { error: err } = await supabase.from("project_files").delete().eq("id", id);
       if (err) throw err;
     },
-    onSuccess: invalidate,
+    onSuccess: async () => {
+      await invalidate();
+      await invalidateSeo();
+    },
   });
 
-  const startRedesign = async () => {
+  const runRedesignPhase = async () => {
+    for (let i = 0; i < 250; i += 1) {
+      const res = await runNext({ data: { projectId } });
+      await invalidate();
+      if (res.done) return;
+      const complete = res.total - res.remaining;
+      setProgress(`Redesigning ${Math.min(complete, res.total)} of ${res.total} — ${res.current}`);
+      if (res.remaining === 0) return;
+    }
+    throw new Error("Redesign queue exceeded the safe step limit.");
+  };
+
+  const runSeoPhase = async (sourceMode: "original" | "redesigned") => {
+    for (let i = 0; i < 250; i += 1) {
+      const res = await runSeoNext({ data: { projectId, sourceMode } });
+      await invalidateSeo();
+      if (res.done) {
+        setProgress(`SEO optimization complete — measured score ${res.score}/100.`);
+        return;
+      }
+      const complete = res.total - res.remaining;
+      setProgress(`SEO Agent ${Math.min(complete, res.total)} of ${res.total} — ${res.current}`);
+      if (res.remaining === 0) continue;
+    }
+    throw new Error("SEO queue exceeded the safe step limit.");
+  };
+
+  const startTransformation = async () => {
     setError(null);
+    setProgress(null);
     setRunning(true);
     try {
-      for (let i = 0; i < 200; i += 1) {
-        const res = await runNext({ data: { projectId } });
-        await invalidate();
-        if (res.done) {
-          setProgress("All files transformed.");
-          break;
-        }
-        const total = res.total;
-        setProgress(`Transformed ${total - res.remaining} of ${total} — ${res.current}`);
-        if (res.remaining === 0) {
-          setProgress("All files transformed.");
-          break;
-        }
+      if (engineMode === "redesign") {
+        await runRedesignPhase();
+        setProgress("Redesign complete.");
+      } else if (engineMode === "seo") {
+        await runSeoPhase("original");
+      } else {
+        setProgress("Stage 1/2 — reconstructing the interface from the project design plan.");
+        await runRedesignPhase();
+        setProgress("Stage 2/2 — auditing and optimizing the redesigned project for SEO.");
+        await runSeoPhase("redesigned");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transformation failed");
     } finally {
       setRunning(false);
       await invalidate();
-      await queryClient.invalidateQueries({ queryKey: ["project-access", projectId] });
+      await invalidateSeo();
     }
   };
 
@@ -207,12 +272,27 @@ function ProjectDetailPage() {
     setError(null);
     setProgress(null);
     try {
-      await runReset({ data: { projectId } });
+      if (engineMode === "redesign" || engineMode === "combined") {
+        await runReset({ data: { projectId } });
+      }
+      if (engineMode === "seo" || engineMode === "combined") {
+        await runSeoReset({ data: { projectId } });
+      }
       await invalidate();
+      await invalidateSeo();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not reset" );
     }
   };
+
+  const seoPlanState = (seoState.data?.plan ?? null) as SeoPlanState | null;
+  const expectedSeoSourceMode = engineMode === "combined" ? "redesigned" : "original";
+  const seoResultsAreCurrent = engineMode !== "redesign" && seoPlanState?.source_mode === expectedSeoSourceMode;
+  const seoRows = seoState.data?.files ?? [];
+  const seoByFile = useMemo(
+    () => new Map(seoRows.map((row) => [row.project_file_id, row])),
+    [seoRows],
+  );
 
   const downloadZip = async () => {
     setZipping(true);
@@ -220,7 +300,10 @@ function ProjectDetailPage() {
     try {
       await downloadProjectZip({
         projectName: project.data?.name ?? "project",
-        files: files.data ?? [],
+        files: (files.data ?? []).map((file) => ({
+          ...file,
+          seo_content: seoResultsAreCurrent ? (seoByFile.get(file.id)?.seo_content ?? null) : null,
+        })),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not build the ZIP");
@@ -229,9 +312,16 @@ function ProjectDetailPage() {
     }
   };
 
-  const doneCount = (files.data ?? []).filter((file) => file.status === "done").length;
+  const redesignDoneCount = (files.data ?? []).filter((file) => file.status === "done" || file.status === "skipped").length;
   const totalCount = files.data?.length ?? 0;
-  const progressPct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
+  const seoDoneCount = seoResultsAreCurrent ? (seoState.data?.completed ?? 0) : 0;
+  const completedUnits = engineMode === "redesign" ? redesignDoneCount : engineMode === "seo" ? seoDoneCount : redesignDoneCount + seoDoneCount;
+  const totalUnits = engineMode === "combined" ? totalCount * 2 : totalCount;
+  const progressPct = totalUnits === 0 ? 0 : Math.round((completedUnits / totalUnits) * 100);
+  const canExport = engineMode === "redesign" ? redesignDoneCount > 0 : seoDoneCount > 0;
+  const activeAudit = (seoPlanState?.audit_after ?? seoPlanState?.audit_before ?? null) as SeoAudit | null;
+  const scoreBefore = seoPlanState?.score_before ?? null;
+  const scoreAfter = seoPlanState?.score_after ?? null;
 
   if (loading || !user || project.isLoading) {
     return (
@@ -273,6 +363,7 @@ function ProjectDetailPage() {
                   <span className="badge badge-active">
                     {perFile ? "Per-file direction" : (project.data.target_style ?? "Direction unset")}
                   </span>
+                  <span className="badge">{engineMode === "redesign" ? "Redesign" : engineMode === "seo" ? "SEO Agent" : "Redesign + SEO"}</span>
                 </div>
                 {project.data.notes ? <p className="mb-0 mt-6 max-w-[720px] text-[15px] leading-7 text-ink-soft">{project.data.notes}</p> : null}
               </div>
@@ -283,7 +374,7 @@ function ProjectDetailPage() {
                 </div>
                 <div className="mt-9 flex items-end gap-3">
                   <strong className="font-serif text-[52px] leading-none tracking-[-0.07em]">{progressPct}%</strong>
-                  <span className="pb-1 text-[12px] text-ink-soft">{doneCount}/{totalCount} files</span>
+                  <span className="pb-1 text-[12px] text-ink-soft">{completedUnits}/{totalUnits} units</span>
                 </div>
                 <div className="progress-track mt-4"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
               </div>
@@ -314,7 +405,7 @@ function ProjectDetailPage() {
               <div className="dropzone">
                 <UploadCloud className="h-7 w-7 text-revision" aria-hidden />
                 <p className="mb-0 text-[15px] font-medium">{uploading ? "Reading source…" : "Drop source files or a project ZIP"}</p>
-                <p className="mb-0 max-w-[52ch] text-[12px] leading-6 text-muted-foreground">Individual files or a complete project archive. Rezyn extracts redesignable files while keeping folder structure intact.</p>
+                <p className="mb-0 max-w-[52ch] text-[12px] leading-6 text-muted-foreground">Individual files or a complete project archive. Rezyn extracts project files while keeping folder structure intact.</p>
                 <input ref={fileInput} type="file" multiple onChange={(event) => void uploadFiles(event.target.files)} aria-label="Upload files or a zip archive" />
               </div>
               {archiveNotice ? <p className="mb-0 mt-3 text-[13px] text-revision">{archiveNotice}</p> : null}
@@ -329,41 +420,40 @@ function ProjectDetailPage() {
                   <span className="eyebrow">02 / transform</span>
                   <h2 className="mb-0 mt-4 text-[38px] leading-none">AI engine</h2>
                 </div>
-                <Sparkles className="h-5 w-5 text-revision" />
+                {engineMode === "seo" ? <Search className="h-5 w-5 text-revision" /> : <Sparkles className="h-5 w-5 text-revision" />}
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="engine-mode" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Engine mode</label>
+                <select id="engine-mode" value={engineMode} disabled={running} onChange={(event) => setEngineMode(event.target.value as EngineMode)} className="field">
+                  <option value="redesign">Redesign — UI/UX reconstruction only</option>
+                  <option value="seo">SEO Agent — preserve design, optimize SEO</option>
+                  <option value="combined">Redesign + SEO — reconstruct, then optimize</option>
+                </select>
               </div>
 
               <p className="mb-6 text-[14px] leading-7 text-ink-soft">
-                {totalCount === 0 ? "Add source files before starting the transformation." : `${doneCount} of ${totalCount} files currently transformed.`}
+                {totalCount === 0
+                  ? "Add source files before starting the transformation."
+                  : engineMode === "redesign"
+                    ? `${redesignDoneCount} of ${totalCount} files currently redesigned.`
+                    : engineMode === "seo"
+                      ? `${seoDoneCount} of ${totalCount} files processed by the SEO Agent.`
+                      : `${redesignDoneCount}/${totalCount} redesign + ${seoDoneCount}/${totalCount} SEO.`}
               </p>
               <div className="progress-track"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
               {progress ? <p className="mb-0 mt-3 font-mono text-[10px] tracking-[0.06em] text-revision">{progress}</p> : null}
-              {error ? (
-                <p className="mb-0 mt-3 text-[13px] text-destructive">
-                  {error.replace(/^NO_CREDITS:\s*/, "")}{" "}
-                  {error.startsWith("NO_CREDITS") ? <Link to="/pricing" className="underline">See pricing</Link> : null}
-                </p>
-              ) : null}
-
-              {access.data ? (
-                <div className="credit-strip">
-                  {access.data.unlocked ? (
-                    <span>Project unlocked — re-runs and refinements are free.</span>
-                  ) : access.data.balance > 0 ? (
-                    <span>Starting will use 1 of your {access.data.balance} website credit{access.data.balance === 1 ? "" : "s"}.</span>
-                  ) : (
-                    <span>
-                      You need 1 website credit to redesign this project. <Link to="/pricing" className="underline">Buy a pack</Link>
-                    </span>
-                  )}
-                </div>
+              {error ? <p className="mb-0 mt-3 text-[13px] text-destructive">{error.replace(/^NO_CREDITS:\s*/, "")}</p> : null}
+              {engineMode !== "redesign" && seoState.data?.schemaReady === false ? (
+                <p className="mb-0 mt-3 text-[12px] leading-6 text-destructive">SEO Agent database schema is not installed. Apply <code>0008_create_seo_agent.sql</code> to the connected Supabase project.</p>
               ) : null}
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <button type="button" onClick={() => void startRedesign()} disabled={running || totalCount === 0 || locked} className="button-primary disabled:opacity-50">
-                  {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  {running ? "Transforming…" : "Run transformation"}
+                <button type="button" onClick={() => void startTransformation()} disabled={running || totalCount === 0 || (engineMode !== "redesign" && seoState.data?.schemaReady === false)} className="button-primary disabled:opacity-50">
+                  {running ? <Loader2 className="h-4 w-4 animate-spin" /> : engineMode === "seo" ? <Search className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+                  {running ? "Running…" : engineMode === "redesign" ? "Run redesign" : engineMode === "seo" ? "Run SEO Agent" : "Run redesign + SEO"}
                 </button>
-                <button type="button" onClick={() => void downloadZip()} disabled={zipping || doneCount === 0} className="button-secondary disabled:opacity-50">
+                <button type="button" onClick={() => void downloadZip()} disabled={zipping || !canExport} className="button-secondary disabled:opacity-50">
                   <Download className="h-4 w-4" /> {zipping ? "Packing…" : "Export ZIP"}
                 </button>
               </div>
@@ -374,20 +464,77 @@ function ProjectDetailPage() {
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-violet/25 bg-violet/5 text-violet"><Sparkles className="h-4 w-4" /></span>
                     <span>
                       <strong className="block text-[14px]">Open conversational redesign</strong>
-                      <span className="text-[11px] text-muted-foreground">Describe changes instead of choosing a direction.</span>
+                      <span className="text-[11px] text-muted-foreground">Describe visual changes instead of choosing a direction.</span>
                     </span>
                   </span>
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-revision" />
                 </Link>
-                {doneCount > 0 ? (
+                {completedUnits > 0 ? (
                   <button type="button" onClick={() => void restart()} className="mt-5 inline-flex items-center gap-2 border-0 bg-transparent p-0 text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground">
-                    <RotateCcw className="h-3.5 w-3.5" /> Reset transformation queue
+                    <RotateCcw className="h-3.5 w-3.5" /> Reset current engine queue
                   </button>
                 ) : null}
               </div>
             </section>
           </Reveal>
         </div>
+
+        {engineMode !== "redesign" ? (
+          <Reveal className="mt-5" delay={0.07}>
+            <section className="glass p-6 sm:p-8">
+              <div className="flex flex-col gap-7 xl:flex-row xl:items-start xl:justify-between">
+                <div className="max-w-[620px]">
+                  <span className="eyebrow">SEO Intelligence</span>
+                  <div className="mt-4 flex items-end gap-4">
+                    <h2 className="mb-0 text-[42px] leading-none">Measured project audit</h2>
+                    {scoreBefore !== null ? (
+                      <span className="badge badge-active">{scoreBefore}{scoreAfter !== null ? ` → ${scoreAfter}` : ""} / 100</span>
+                    ) : null}
+                  </div>
+                  <p className="mb-0 mt-5 text-[13px] leading-6 text-ink-soft">
+                    Deterministic checks first, AI planning second. Rezyn does not invent rankings, search volume, reviews, ratings, traffic or unsupported schema facts.
+                  </p>
+                  {seoPlanState?.error ? <p className="mb-0 mt-4 text-[12px] text-destructive">{seoPlanState.error}</p> : null}
+                </div>
+
+                {activeAudit ? (
+                  <div className="grid w-full max-w-[620px] grid-cols-2 gap-2 sm:grid-cols-3">
+                    {(Object.keys(seoCategoryLabels) as SeoCategory[]).map((category) => (
+                      <div key={category} className="rounded-xl border border-border bg-white/[0.02] p-3">
+                        <span className="block font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">{seoCategoryLabels[category]}</span>
+                        <strong className="mt-2 block text-[24px] leading-none">{activeAudit.categories[category]}</strong>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="max-w-[520px] text-[12px] leading-6 text-muted-foreground">
+                    Run the SEO Agent to create the project-wide SEO constitution, baseline audit, file plan and post-update validation report.
+                  </div>
+                )}
+              </div>
+
+              {activeAudit?.issues?.length ? (
+                <div className="mt-7 border-t border-border pt-6">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Measured findings</span>
+                    <span className="badge">{activeAudit.issueCount} issues</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+                    {activeAudit.issues.slice(0, 8).map((issue) => (
+                      <div key={issue.id} className="rounded-xl border border-border p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <strong className="text-[12px]">{issue.file ?? "Project-wide"}</strong>
+                          <span className="font-mono text-[8px] uppercase text-muted-foreground">{issue.severity}</span>
+                        </div>
+                        <p className="mb-0 mt-2 text-[11px] leading-5 text-ink-soft">{issue.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          </Reveal>
+        ) : null}
 
         <Reveal className="mt-5" delay={0.08}>
           <section className="glass p-6 sm:p-8">
@@ -450,8 +597,9 @@ function ProjectDetailPage() {
             ) : (
               <div className="flex flex-col gap-2">
                 {files.data?.map((file, index) => {
-                  const status = statusBadge[file.status] ?? statusBadge['queued']!;
+                  const status = statusBadge[file.status] ?? statusBadge.queued!;
                   const StatusIcon = status.icon;
+                  const seoRow = seoResultsAreCurrent ? seoByFile.get(file.id) : undefined;
                   return (
                     <article key={file.id} className="glass grid grid-cols-1 items-center gap-4 p-4 md:grid-cols-[46px_1fr_150px_minmax(180px,240px)_40px]">
                       <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/[0.025] font-mono text-[9px] text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
@@ -461,6 +609,8 @@ function ProjectDetailPage() {
                           {file.source === "upload" ? "Uploaded" : "Created"}{file.size_bytes ? ` / ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
                         </div>
                         {file.redesign_error ? <div className="mt-1 text-[11px] text-destructive">{file.redesign_error}</div> : null}
+                        {seoRow?.error ? <div className="mt-1 text-[11px] text-destructive">SEO: {seoRow.error}</div> : null}
+                        {seoRow ? <div className="mt-1 font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">SEO / {seoRow.status}</div> : null}
                       </div>
                       <span className={`badge ${status.cls}`}>
                         <StatusIcon className={`h-3 w-3 ${file.status === "redesigning" ? "animate-spin" : ""}`} /> {status.label}
