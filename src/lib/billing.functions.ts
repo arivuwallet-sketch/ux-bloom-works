@@ -76,14 +76,12 @@ export const verifyOrder = createServerFn({ method: "POST" })
     return { status, credits: own.credits };
   });
 
-/** Signed-in: whether a project has already been unlocked with a credit. */
+/**
+ * Pricing/checkout is disconnected, so project transformations are currently
+ * unrestricted. Keep this API shape for the existing console and switch it back
+ * to the persisted credit lookup when payments are re-enabled.
+ */
 export const getProjectAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
-  .handler(async ({ data, context }) => {
-    const [{ data: unlock }, { data: credits }] = await Promise.all([
-      context.supabase.from("project_unlocks").select("project_id").eq("project_id", data.projectId).maybeSingle(),
-      context.supabase.from("user_credits").select("balance").eq("user_id", context.userId).maybeSingle(),
-    ]);
-    return { unlocked: Boolean(unlock), balance: credits?.balance ?? 0 };
-  });
+  .handler(async () => ({ unlocked: true, balance: 0 }));
