@@ -332,6 +332,11 @@ export const redesignNextFile = createServerFn({ method: "POST" })
     if (projectError) throw new Error(projectError.message);
     if (!project) throw new Error("Project not found");
 
+    // One purchased website credit unlocks this project (spent once, idempotent).
+    const { data: unlocked, error: unlockError } = await supabase.rpc("unlock_project", { _project_id: data.projectId });
+    if (unlockError) throw new Error(unlockError.message);
+    if (!unlocked) throw new Error("NO_CREDITS: You need a website credit to redesign this project. Buy a pack on the Pricing page.");
+
     const { data: files, error: filesError } = await supabase
       .from("project_files")
       .select("id, name, source, content, storage_path, target_style, status")

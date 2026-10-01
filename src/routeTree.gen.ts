@@ -26,6 +26,7 @@ import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ProjectsProjectIdChatRouteImport } from './routes/projects.$projectId_.chat'
+import { Route as ApiPublicCashfreeWebhookRouteImport } from './routes/api/public/cashfree/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,6 +113,12 @@ const ProjectsProjectIdChatRoute = ProjectsProjectIdChatRouteImport.update({
   path: '/projects/$projectId/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCashfreeWebhookRoute =
+  ApiPublicCashfreeWebhookRouteImport.update({
+    id: '/api/public/cashfree/webhook',
+    path: '/api/public/cashfree/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/legal/': typeof LegalIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$projectId/chat': typeof ProjectsProjectIdChatRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +158,7 @@ export interface FileRoutesByTo {
   '/legal': typeof LegalIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/projects/$projectId/chat': typeof ProjectsProjectIdChatRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +179,7 @@ export interface FileRoutesById {
   '/legal/': typeof LegalIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$projectId_/chat': typeof ProjectsProjectIdChatRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/legal/'
     | '/projects/'
     | '/projects/$projectId/chat'
+    | '/api/public/cashfree/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/projects'
     | '/projects/$projectId/chat'
+    | '/api/public/cashfree/webhook'
   id:
     | '__root__'
     | '/'
@@ -229,6 +241,7 @@ export interface FileRouteTypes {
     | '/legal/'
     | '/projects/'
     | '/projects/$projectId_/chat'
+    | '/api/public/cashfree/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,6 +262,7 @@ export interface RootRouteChildren {
   LegalIndexRoute: typeof LegalIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ProjectsProjectIdChatRoute: typeof ProjectsProjectIdChatRoute
+  ApiPublicCashfreeWebhookRoute: typeof ApiPublicCashfreeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -372,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cashfree/webhook': {
+      id: '/api/public/cashfree/webhook'
+      path: '/api/public/cashfree/webhook'
+      fullPath: '/api/public/cashfree/webhook'
+      preLoaderRoute: typeof ApiPublicCashfreeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -393,6 +414,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalIndexRoute: LegalIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsProjectIdChatRoute: ProjectsProjectIdChatRoute,
+  ApiPublicCashfreeWebhookRoute: ApiPublicCashfreeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
