@@ -47,7 +47,7 @@ export const processSteps: ProcessStep[] = [
   {
     version: "01 — Upload",
     title: "Drop the whole project in",
-    body: "Upload every file you want touched, or write new ones straight in the browser. Structure, names and logic stay exactly as they are.",
+    body: "Upload every file you want touched, or write new ones straight in the browser. Your originals are kept untouched alongside every redesigned version.",
   },
   {
     version: "02 — Pick a style",
@@ -57,7 +57,7 @@ export const processSteps: ProcessStep[] = [
   {
     version: "03 — Download",
     title: "Take the rebuilt files",
-    body: "Presentation-bearing files are reconstructed from scratch in the chosen direction while functionality survives, then returned as one project ZIP.",
+    body: "Presentation-bearing files are rebuilt in the chosen direction, checked, and returned as one ZIP. Review and test before shipping.",
   },
 ];
 

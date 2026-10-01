@@ -14,13 +14,15 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Upload an existing digital product, choose one of 61 directions, and reconstruct its UI/UX from scratch while preserving the functionality, content and logic underneath.",
+          "Upload an existing digital product, choose one of 61 directions, and have AI rebuild its UI/UX while keeping the functionality, content and logic underneath — then review and download.",
       },
       { property: "og:title", content: "Rezyn — Existing product. New gravity." },
       {
         property: "og:description",
         content: "A full-project UI reconstruction system for websites, apps, SaaS products and storefronts.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Index,
@@ -29,7 +31,7 @@ export const Route = createFileRoute("/")({
 const engineSignals = [
   { icon: ScanLine, label: "Source read", value: "01" },
   { icon: Layers3, label: "Visual systems", value: "61" },
-  { icon: Braces, label: "Logic preserved", value: "100%" },
+  { icon: Braces, label: "Behaviour rules / file", value: "QA" },
   { icon: Boxes, label: "Delivery", value: "ZIP" },
 ];
 
@@ -72,7 +74,7 @@ function Index() {
             "commerce",
             "61 directions",
             "from-scratch UI",
-            "logic preserved",
+            "originals kept",
             "project export",
           ]}
           speed={34}
@@ -83,7 +85,7 @@ function Index() {
         <SectionHeading
           label="Reconstruction engine"
           title="We rebuild the layer people feel."
-          description="The existing presentation is discarded. The functionality, data, content and product behavior beneath it survive."
+          description="The existing presentation is replaced. Rezyn is instructed to keep the functionality, data and content beneath it — and checks each file before handing it back."
         />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {engineSignals.map((signal, index) => {
@@ -163,7 +165,8 @@ function Index() {
         <Reveal delay={0.1}>
           <div className="mt-12 flex flex-wrap items-center justify-between gap-6 border-t border-border pt-8">
             <p className="m-0 max-w-[680px] text-[18px] leading-8 text-ink-soft">
-              Your uploaded UI is not the template. Rezyn keeps the product behavior and reconstructs its presentation as if a different design team built it from scratch.
+              Your uploaded UI is not the template. Rezyn aims to keep product behaviour while rebuilding the presentation — and you keep the originals to compare. Wondering why not just ask a chatbot?{" "}
+              <Link to="/why-rezyn" className="underline underline-offset-4">Read the honest comparison</Link>.
             </p>
             <Link to="/projects" className="button-primary">
               Start reconstruction <ArrowUpRight className="h-4 w-4" />

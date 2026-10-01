@@ -8,6 +8,7 @@ const navItems = [
   { to: "/styles", label: "Directions" },
   { to: "/trends", label: "Signals" },
   { to: "/work", label: "Proof" },
+  { to: "/why-rezyn", label: "Why Rezyn" },
 ] as const;
 
 export function Header() {
@@ -33,7 +34,7 @@ export function Header() {
       <div className="archive-header__utility">
         <span>REZYN / INTERFACE TRANSFORMATION ARCHIVE</span>
         <span className="archive-header__utility-center">EST. DIGITAL / REVISION SYSTEM</span>
-        <span>INDEX 00—05</span>
+        <span>INDEX 00—06</span>
       </div>
 
       <div className="archive-header__main">
@@ -75,7 +76,7 @@ export function Header() {
       <div className={`archive-mobile${open ? " is-open" : ""}`} aria-hidden={!open}>
         <div className="archive-mobile__top">
           <span>REZYN / DIRECTORY</span>
-          <span>06 ENTRIES</span>
+          <span>07 ENTRIES</span>
         </div>
         <div className="archive-mobile__links">
           {navItems.map((item, index) => (
@@ -86,7 +87,7 @@ export function Header() {
             </Link>
           ))}
           <Link to="/projects" onClick={() => setOpen(false)} className="archive-mobile__workspace">
-            <span>06</span>
+            <span>07</span>
             <strong>Workspace</strong>
             <ArrowUpRight className="h-5 w-5" />
           </Link>
@@ -107,7 +108,7 @@ export function Footer() {
           <div className="archive-footer__brand">
             <span>RZ / 26</span>
             <Link to="/">REZYN</Link>
-            <p>Existing product. New visual language. Structure and logic remain yours.</p>
+            <p>Existing product. New visual language. AI-generated output — always review and test before shipping.</p>
           </div>
 
           <div className="archive-footer__directory">
@@ -122,9 +123,18 @@ export function Footer() {
 
           <div className="archive-footer__directory">
             <span className="archive-footer__label">System</span>
-            <Link to="/projects"><span>06</span>Workspace</Link>
-            <Link to="/auth"><span>07</span>Account</Link>
-            <a href="mailto:hello@rezyn.co"><span>08</span>Contact</a>
+            <Link to="/projects"><span>07</span>Workspace</Link>
+            <Link to="/auth"><span>08</span>Account</Link>
+            <a href="mailto:hello@rezyn.co"><span>09</span>Contact</a>
+          </div>
+
+          <div className="archive-footer__directory">
+            <span className="archive-footer__label">Legal</span>
+            <Link to="/legal/terms"><span>L1</span>Terms</Link>
+            <Link to="/legal/privacy"><span>L2</span>Privacy</Link>
+            <Link to="/legal/ai-disclosure"><span>L3</span>AI Disclosure</Link>
+            <Link to="/legal/acceptable-use"><span>L4</span>Acceptable Use</Link>
+            <Link to="/legal/cookies"><span>L5</span>Cookies</Link>
           </div>
         </div>
 
