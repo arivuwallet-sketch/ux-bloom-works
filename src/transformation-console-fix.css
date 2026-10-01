@@ -1,0 +1,10 @@
+/* Transformation console spacing: the sticky archive header already occupies normal flow space. */
+.route-stage > main[class~="pb-28"][class~="pt-[128px]"][class~="sm:pt-[148px]"] {
+  padding-top: 2rem !important;
+}
+
+@media (max-width: 639px) {
+  .route-stage > main[class~="pb-28"][class~="pt-[128px]"][class~="sm:pt-[148px]"] {
+    padding-top: 1.5rem !important;
+  }
+}
