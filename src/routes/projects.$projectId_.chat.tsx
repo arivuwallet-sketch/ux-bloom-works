@@ -216,6 +216,7 @@ function ChatRedesignPage() {
     try {
       for (let index = 0; index < targets.length; index += 1) {
         const file = targets[index];
+        if (!file) continue;
         if (confirmedRedesign) setCurrentRunFile(file.name);
 
         try {
@@ -252,7 +253,7 @@ function ChatRedesignPage() {
       if (failures.length > 0) {
         setChatError(
           failures.length === 1
-            ? failures[0]
+            ? (failures[0] ?? null)
             : `${failures.length} files could not be updated. ${failures.join(" · ")}`,
         );
       }
