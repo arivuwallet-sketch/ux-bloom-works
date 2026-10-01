@@ -11,6 +11,25 @@ function isNewSupabaseApiKey(value: string): boolean {
 
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
+    const requestUrl =
+      typeof input === 'string'
+        ? input
+        : typeof URL !== 'undefined' && input instanceof URL
+          ? input.toString()
+          : input.url;
+
+    // Pricing/checkout is intentionally disconnected right now. Keep the
+    // database function and Cashfree integration intact for later re-enable,
+    // but do not consume or require a website credit while transformations are open.
+    if (requestUrl.includes('/rest/v1/rpc/unlock_project')) {
+      return Promise.resolve(
+        new Response('true', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    }
+
     const headers = new Headers(
       typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
     );
