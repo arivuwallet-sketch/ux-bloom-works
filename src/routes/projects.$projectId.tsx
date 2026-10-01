@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { allStyleNames } from "@/data/site";
 import { redesignNextFile, resetRedesign } from "@/lib/redesign.functions";
+import { getProjectAccess } from "@/lib/billing.functions";
 import { uploadFileList } from "@/lib/upload-files";
 import { downloadProjectZip } from "@/lib/download-zip";
 
@@ -64,6 +65,7 @@ function ProjectDetailPage() {
   const [zipping, setZipping] = useState(false);
   const runNext = useServerFn(redesignNextFile);
   const runReset = useServerFn(resetRedesign);
+  const fetchAccess = useServerFn(getProjectAccess);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -96,6 +98,13 @@ function ProjectDetailPage() {
       return data;
     },
   });
+
+  const access = useQuery({
+    queryKey: ["project-access", projectId],
+    enabled: Boolean(user),
+    queryFn: () => fetchAccess({ data: { projectId } }),
+  });
+  const locked = access.data ? !access.data.unlocked && access.data.balance === 0 : false;
 
   const perFile = project.data?.style_mode === "file";
 
@@ -190,6 +199,7 @@ function ProjectDetailPage() {
     } finally {
       setRunning(false);
       await invalidate();
+      await queryClient.invalidateQueries({ queryKey: ["project-access", projectId] });
     }
   };
 
@@ -327,10 +337,29 @@ function ProjectDetailPage() {
               </p>
               <div className="progress-track"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
               {progress ? <p className="mb-0 mt-3 font-mono text-[10px] tracking-[0.06em] text-revision">{progress}</p> : null}
-              {error ? <p className="mb-0 mt-3 text-[13px] text-destructive">{error}</p> : null}
+              {error ? (
+                <p className="mb-0 mt-3 text-[13px] text-destructive">
+                  {error.replace(/^NO_CREDITS:\s*/, "")}{" "}
+                  {error.startsWith("NO_CREDITS") ? <Link to="/pricing" className="underline">See pricing</Link> : null}
+                </p>
+              ) : null}
+
+              {access.data ? (
+                <div className="credit-strip">
+                  {access.data.unlocked ? (
+                    <span>Project unlocked — re-runs and refinements are free.</span>
+                  ) : access.data.balance > 0 ? (
+                    <span>Starting will use 1 of your {access.data.balance} website credit{access.data.balance === 1 ? "" : "s"}.</span>
+                  ) : (
+                    <span>
+                      You need 1 website credit to redesign this project. <Link to="/pricing" className="underline">Buy a pack</Link>
+                    </span>
+                  )}
+                </div>
+              ) : null}
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <button type="button" onClick={() => void startRedesign()} disabled={running || totalCount === 0} className="button-primary disabled:opacity-50">
+                <button type="button" onClick={() => void startRedesign()} disabled={running || totalCount === 0 || locked} className="button-primary disabled:opacity-50">
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                   {running ? "Transforming…" : "Run transformation"}
                 </button>
