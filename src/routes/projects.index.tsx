@@ -10,8 +10,8 @@ import { productTypes, allStyleNames } from "@/data/site";
 export const Route = createFileRoute("/projects/")({
   head: () => ({
     meta: [
-      { title: "Workspace — Rezyn interface transformation" },
-      { name: "description", content: "Create transformation projects, upload product source files and manage visual directions from the Rezyn workspace." },
+      { title: "Workspace — Rezyn AI redesign + SEO intelligence" },
+      { name: "description", content: "Create Rezyn projects, upload complete source, then run UI/UX reconstruction, the M1–M8 SEO Agent, or both from one project-aware transformation console." },
     ],
   }),
   component: ProjectsPage,
@@ -100,7 +100,7 @@ function ProjectsPage() {
             <aside>
               <span>ENGINE STATUS</span>
               <strong>READY</strong>
-              <p>Create a record, attach source files, choose a visual direction and transform.</p>
+              <p>Create a project, attach the real source, then choose Redesign, SEO Agent, or Redesign + SEO inside the transformation console.</p>
             </aside>
           </header>
         </Reveal>
@@ -126,7 +126,7 @@ function ProjectsPage() {
               >
                 <div className="archive-form-field archive-form-field--full">
                   <label htmlFor="pname">Project name</label>
-                  <input id="pname" value={name} onChange={(event) => setName(event.target.value)} className="field" placeholder="Acme product redesign" />
+                  <input id="pname" value={name} onChange={(event) => setName(event.target.value)} className="field" placeholder="Acme website transformation" />
                 </div>
 
                 <div className="archive-project-form__columns">
@@ -138,7 +138,7 @@ function ProjectsPage() {
                   </div>
 
                   <div className="archive-form-field">
-                    <label htmlFor="smode">Direction control</label>
+                    <label htmlFor="smode">Redesign direction control</label>
                     <select id="smode" value={styleMode} onChange={(event) => setStyleMode(event.target.value as "project" | "file")} className="field">
                       <option value="project">One direction for project</option>
                       <option value="file">Direction per file</option>
@@ -148,7 +148,7 @@ function ProjectsPage() {
 
                 {styleMode === "project" ? (
                   <div className="archive-form-field archive-form-field--full">
-                    <label htmlFor="pstyle">Target direction</label>
+                    <label htmlFor="pstyle">Target redesign direction</label>
                     <select id="pstyle" value={targetStyle} onChange={(event) => setTargetStyle(event.target.value)} className="field">
                       {allStyleNames.map((style) => <option key={style} value={style}>{style}</option>)}
                     </select>
@@ -156,8 +156,8 @@ function ProjectsPage() {
                 ) : null}
 
                 <div className="archive-form-field archive-form-field--full">
-                  <label htmlFor="pnotes">Transformation brief / optional</label>
-                  <textarea id="pnotes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} className="field resize-y" placeholder="What currently feels wrong, dated or difficult?" />
+                  <label htmlFor="pnotes">Project brief / optional</label>
+                  <textarea id="pnotes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} className="field resize-y" placeholder="Describe the product, audience, redesign goals, SEO constraints, markets, languages or anything Rezyn should preserve." />
                 </div>
 
                 {error ? <p className="archive-project-form__error">{error}</p> : null}
