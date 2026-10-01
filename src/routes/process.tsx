@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Boxes, ScanLine, WandSparkles } from "lucide-react";
+import { ArrowUpRight, Boxes, Download, ScanLine, Search, WandSparkles } from "lucide-react";
 import { Reveal } from "@/components/studio/motion";
 import { PageHero } from "@/components/site/PageHero";
 import { Section, SectionHeading } from "@/components/site/Section";
@@ -8,17 +8,17 @@ import { processSteps } from "@/data/site";
 export const Route = createFileRoute("/process")({
   head: () => ({
     meta: [
-      { title: "Process — source to transformed interface | Rezyn" },
+      { title: "Process — AI redesign + SEO intelligence workflow | Rezyn" },
       {
         name: "description",
-        content: "Upload a real project, choose a visual direction, and let Rezyn transform its interface while keeping its structure and logic intact.",
+        content: "Upload a real project, choose Redesign, SEO Agent, or both, let Rezyn build project-level plans and M1–M8 analysis, then export the validated result.",
       },
     ],
   }),
   component: ProcessPage,
 });
 
-const stepIcons = [Boxes, ScanLine, WandSparkles];
+const stepIcons = [Boxes, WandSparkles, Search, Download];
 
 function ProcessPage() {
   return (
@@ -26,11 +26,11 @@ function ProcessPage() {
       <PageHero
         index="02"
         eyebrow="Transformation path"
-        title="Three passes."
+        title="Four stages."
         accent="One continuous system."
-        description="The workflow stays simple on purpose: ingest the real product, define the visual direction, then regenerate the presentation layer as a connected whole."
-        stat="03"
-        statLabel="core passes"
+        description="Ingest the real project, choose Redesign, SEO Agent, or both, build project-wide intelligence before edits begin, then export the validated final source as one coherent project."
+        stat="04"
+        statLabel="core stages"
         action={{ to: "/projects", label: "Start with your source" }}
       />
 
@@ -38,10 +38,10 @@ function ProcessPage() {
         <SectionHeading
           label="Sequence"
           title="Complexity stays inside the engine."
-          description="Every step exposes just enough control to move forward without turning the redesign process into another design tool to learn."
+          description="Design planning, dependency awareness, M1–M8 SEO analysis, source-grounded generation and QA happen under the hood while the product keeps a short, understandable workflow."
         />
-        <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="absolute left-[12%] right-[12%] top-[52px] hidden h-px bg-gradient-to-r from-transparent via-revision/25 to-transparent lg:block" />
+        <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="absolute left-[10%] right-[10%] top-[52px] hidden h-px bg-gradient-to-r from-transparent via-revision/25 to-transparent lg:block" />
           {processSteps.map((step, index) => {
             const Icon = stepIcons[index] ?? ScanLine;
             return (
@@ -68,9 +68,9 @@ function ProcessPage() {
         <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_auto]">
           <div>
             <span className="eyebrow">Output principle</span>
-            <h2 className="mt-5 max-w-[13ch] text-[clamp(44px,6vw,84px)] leading-[0.92]">Your product stays yours. The perception changes.</h2>
+            <h2 className="mt-5 max-w-[13ch] text-[clamp(44px,6vw,84px)] leading-[0.92]">Your product stays yours. The system around it gets stronger.</h2>
             <p className="mt-6 max-w-[680px] text-[16px] leading-8 text-ink-soft">
-              The transformation targets layout, visual hierarchy, spacing, typography, surface treatment, responsiveness and interaction states. Product meaning and working behavior remain the anchor.
+              Redesign mode can rebuild the presentation while preserving behavior. SEO mode can improve search-facing structure without redesigning the UI. Combined mode coordinates both, keeps unknown metrics unknown, and exports the best validated version of each file.
             </p>
           </div>
           <Link to="/projects" className="button-primary">
