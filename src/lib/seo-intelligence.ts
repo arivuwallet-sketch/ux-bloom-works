@@ -20,7 +20,7 @@ export type SeoConfidence = "high" | "medium" | "low";
 
 export type SeoAuditIssue = {
   id: string;
-  module?: M1M8Module;
+  module?: M1M8Module | undefined;
   layer: SeoAuditLayer;
   category: SeoCategory;
   severity: SeoSeverity;
