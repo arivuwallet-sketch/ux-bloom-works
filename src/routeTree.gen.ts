@@ -11,17 +11,21 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ProcessRouteImport } from './routes/process'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as StylesRouteImport } from './routes/styles'
 import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as WhyRezynRouteImport } from './routes/why-rezyn'
 import { Route as WorkRouteImport } from './routes/work'
+import { Route as BillingReturnRouteImport } from './routes/billing.return'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as LegalAcceptableUseRouteImport } from './routes/legal.acceptable-use'
 import { Route as LegalAiDisclosureRouteImport } from './routes/legal.ai-disclosure'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalRefundsRouteImport } from './routes/legal.refunds'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
@@ -38,9 +42,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProcessRoute = ProcessRouteImport.update({
   id: '/process',
   path: '/process',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -68,6 +82,11 @@ const WorkRoute = WorkRouteImport.update({
   path: '/work',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BillingReturnRoute = BillingReturnRouteImport.update({
+  id: '/billing/return',
+  path: '/billing/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalIndexRoute = LegalIndexRouteImport.update({
   id: '/legal/',
   path: '/legal/',
@@ -91,6 +110,11 @@ const LegalCookiesRoute = LegalCookiesRouteImport.update({
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalRefundsRoute = LegalRefundsRouteImport.update({
+  id: '/legal/refunds',
+  path: '/legal/refunds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalTermsRoute = LegalTermsRouteImport.update({
@@ -123,16 +147,20 @@ const ApiPublicCashfreeWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pricing': typeof PricingRoute
   '/process': typeof ProcessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
+  '/billing/return': typeof BillingReturnRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refunds': typeof LegalRefundsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/legal/': typeof LegalIndexRoute
@@ -143,16 +171,20 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pricing': typeof PricingRoute
   '/process': typeof ProcessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
+  '/billing/return': typeof BillingReturnRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refunds': typeof LegalRefundsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/legal': typeof LegalIndexRoute
@@ -164,16 +196,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pricing': typeof PricingRoute
   '/process': typeof ProcessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/styles': typeof StylesRoute
   '/trends': typeof TrendsRoute
   '/why-rezyn': typeof WhyRezynRoute
   '/work': typeof WorkRoute
+  '/billing/return': typeof BillingReturnRoute
   '/legal/acceptable-use': typeof LegalAcceptableUseRoute
   '/legal/ai-disclosure': typeof LegalAiDisclosureRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refunds': typeof LegalRefundsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/legal/': typeof LegalIndexRoute
@@ -186,16 +222,20 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/pricing'
     | '/process'
+    | '/reset-password'
     | '/services'
     | '/styles'
     | '/trends'
     | '/why-rezyn'
     | '/work'
+    | '/billing/return'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
     | '/legal/cookies'
     | '/legal/privacy'
+    | '/legal/refunds'
     | '/legal/terms'
     | '/projects/$projectId'
     | '/legal/'
@@ -206,16 +246,20 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/pricing'
     | '/process'
+    | '/reset-password'
     | '/services'
     | '/styles'
     | '/trends'
     | '/why-rezyn'
     | '/work'
+    | '/billing/return'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
     | '/legal/cookies'
     | '/legal/privacy'
+    | '/legal/refunds'
     | '/legal/terms'
     | '/projects/$projectId'
     | '/legal'
@@ -226,16 +270,20 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/pricing'
     | '/process'
+    | '/reset-password'
     | '/services'
     | '/styles'
     | '/trends'
     | '/why-rezyn'
     | '/work'
+    | '/billing/return'
     | '/legal/acceptable-use'
     | '/legal/ai-disclosure'
     | '/legal/cookies'
     | '/legal/privacy'
+    | '/legal/refunds'
     | '/legal/terms'
     | '/projects/$projectId'
     | '/legal/'
@@ -247,16 +295,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  PricingRoute: typeof PricingRoute
   ProcessRoute: typeof ProcessRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ServicesRoute: typeof ServicesRoute
   StylesRoute: typeof StylesRoute
   TrendsRoute: typeof TrendsRoute
   WhyRezynRoute: typeof WhyRezynRoute
   WorkRoute: typeof WorkRoute
+  BillingReturnRoute: typeof BillingReturnRoute
   LegalAcceptableUseRoute: typeof LegalAcceptableUseRoute
   LegalAiDisclosureRoute: typeof LegalAiDisclosureRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalRefundsRoute: typeof LegalRefundsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   LegalIndexRoute: typeof LegalIndexRoute
@@ -281,11 +333,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/process': {
       id: '/process'
       path: '/process'
       fullPath: '/process'
       preLoaderRoute: typeof ProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -323,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/billing/return': {
+      id: '/billing/return'
+      path: '/billing/return'
+      fullPath: '/billing/return'
+      preLoaderRoute: typeof BillingReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/': {
       id: '/legal/'
       path: '/legal'
@@ -356,6 +429,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/privacy'
       fullPath: '/legal/privacy'
       preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/refunds': {
+      id: '/legal/refunds'
+      path: '/legal/refunds'
+      fullPath: '/legal/refunds'
+      preLoaderRoute: typeof LegalRefundsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/terms': {
@@ -399,16 +479,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  PricingRoute: PricingRoute,
   ProcessRoute: ProcessRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ServicesRoute: ServicesRoute,
   StylesRoute: StylesRoute,
   TrendsRoute: TrendsRoute,
   WhyRezynRoute: WhyRezynRoute,
   WorkRoute: WorkRoute,
+  BillingReturnRoute: BillingReturnRoute,
   LegalAcceptableUseRoute: LegalAcceptableUseRoute,
   LegalAiDisclosureRoute: LegalAiDisclosureRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalRefundsRoute: LegalRefundsRoute,
   LegalTermsRoute: LegalTermsRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   LegalIndexRoute: LegalIndexRoute,

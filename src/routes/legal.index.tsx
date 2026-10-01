@@ -22,6 +22,7 @@ const blurbs: Record<string, string> = {
   "/legal/ai-disclosure": "Exactly how AI is used on your files and what it can get wrong.",
   "/legal/acceptable-use": "What you may and may not upload or redesign.",
   "/legal/cookies": "The small amount of browser storage the site uses.",
+  "/legal/refunds": "How credits are delivered and when you can get a refund.",
 };
 
 function LegalIndex() {

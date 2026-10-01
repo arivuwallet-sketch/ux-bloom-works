@@ -10,6 +10,7 @@ export const legalLinks = [
   { to: "/legal/ai-disclosure", label: "AI Disclosure" },
   { to: "/legal/acceptable-use", label: "Acceptable Use" },
   { to: "/legal/cookies", label: "Cookies & Storage" },
+  { to: "/legal/refunds", label: "Refunds & Delivery" },
 ] as const;
 
 export type LegalSection = { heading: string; body: ReactNode };
