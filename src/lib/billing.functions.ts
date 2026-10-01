@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createCfOrder, reconcileOrder } from "@/lib/cashfree.server";
-import { currencyForCountry, findPack, PACKS, priceFor } from "@/lib/pricing";
+import { reconcileOrder } from "@/lib/cashfree.server";
+import { currencyForCountry, PACKS, priceFor } from "@/lib/pricing";
 
 function visitorCurrency() {
   const country = getRequestHeader("cf-ipcountry") ?? getRequestHeader("x-vercel-ip-country") ?? null;
@@ -42,61 +42,26 @@ export const getBilling = createServerFn({ method: "GET" })
     return { balance: credits?.balance ?? 0, purchases: purchases ?? [] };
   });
 
+/**
+ * Checkout is intentionally disconnected.
+ * Keep this server function exported so stale clients fail safely instead of
+ * reaching the payment provider or creating pending purchase records.
+ */
 export const createCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z
       .object({
         packId: z.string(),
-        phone: z
-          .string()
-          .trim()
-          .regex(/^\+?[0-9]{8,15}$/, "Enter a valid phone number (digits only, optional +country code)."),
+        phone: z.string().optional().default(""),
       })
       .parse(data),
   )
-  .handler(async ({ data, context }) => {
-    const pack = findPack(data.packId);
-    if (!pack) throw new Error("Unknown pack");
-
-    const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : null;
-    if (!email) throw new Error("Your account needs an email address to pay.");
-
-    const { currency } = visitorCurrency();
-    const amount = priceFor(pack, currency);
-
-    const origin = getRequestHeader("origin");
-    if (!origin || !/^https?:\/\//.test(origin)) throw new Error("Could not determine return address.");
-    const isHttps = origin.startsWith("https://");
-
-    const orderId = `rz_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error: insertError } = await supabaseAdmin.from("credit_purchases").insert({
-      user_id: context.userId,
-      order_id: orderId,
-      pack_id: pack.id,
-      credits: pack.websites,
-      amount,
-      currency,
-      status: "pending",
-    });
-    if (insertError) throw new Error(insertError.message);
-
-    const order = await createCfOrder({
-      orderId,
-      amount,
-      currency,
-      customerId: context.userId.replace(/-/g, ""),
-      email,
-      phone: data.phone.replace(/^\+91/, ""),
-      returnUrl: `${origin}/billing/return?order_id={order_id}`,
-      ...(isHttps ? { notifyUrl: `${origin}/api/public/cashfree/webhook` } : {}),
-      note: `Rezyn ${pack.websites} website redesign${pack.websites > 1 ? "s" : ""}`,
-    });
-    if (!order.payment_session_id) throw new Error("Payment provider did not return a session.");
-    return { orderId, paymentSessionId: order.payment_session_id };
+  .handler(async () => {
+    throw new Error("Payments are currently disabled.");
   });
 
+/** Existing orders can still be reconciled safely if a user returns from an older checkout. */
 export const verifyOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ orderId: z.string().regex(/^rz_[0-9]+_[a-f0-9]{8}$/) }).parse(data))
