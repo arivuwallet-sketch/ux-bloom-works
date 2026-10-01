@@ -1,4 +1,4 @@
-/** Builds a zip of the latest transformed version of every project file. */
+/** Builds a zip of the latest transformed version of every available project file. */
 export async function downloadProjectZip(opts: {
   projectName: string;
   files: {
@@ -10,12 +10,17 @@ export async function downloadProjectZip(opts: {
 }): Promise<void> {
   const JSZip = (await import("jszip")).default;
   const zip = new JSZip();
-  const ready = opts.files.filter((file) => file.seo_content || file.redesigned_content);
-  if (ready.length === 0) throw new Error("Nothing transformed yet.");
+  const hasTransformation = opts.files.some((file) => file.seo_content || file.redesigned_content);
+  if (!hasTransformation) throw new Error("Nothing transformed yet.");
 
-  for (const file of ready) {
-    zip.file(file.name, file.seo_content ?? file.redesigned_content ?? file.content ?? "");
+  let included = 0;
+  for (const file of opts.files) {
+    const content = file.seo_content ?? file.redesigned_content ?? file.content;
+    if (content === null || content === undefined) continue;
+    zip.file(file.name, content);
+    included += 1;
   }
+  if (included === 0) throw new Error("No exportable text files are available.");
 
   const blob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(blob);
