@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowUpRight, Check, FileStack, GitCompare, Layers3, MessageSquare, ScanSearch, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Check, FileStack, GitCompare, Layers3, MessageSquare, ScanSearch, Search, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/studio/motion";
 import { PageHero } from "@/components/site/PageHero";
 import { Section, SectionHeading } from "@/components/site/Section";
@@ -7,16 +7,16 @@ import { Section, SectionHeading } from "@/components/site/Section";
 export const Route = createFileRoute("/why-rezyn")({
   head: () => ({
     meta: [
-      { title: "Rezyn vs. a chatbot prompt — an honest comparison | Rezyn" },
+      { title: "Rezyn vs. a chatbot prompt — redesign + SEO comparison | Rezyn" },
       {
         name: "description",
         content:
-          "You can ask ChatGPT, Claude, Gemini or Lovable to redesign a page. Here's honestly where that works, where it breaks down on a whole project, and what Rezyn adds.",
+          "A chatbot can redesign or suggest SEO changes from a prompt. Rezyn adds project-wide source analysis, design planning, M1–M8 SEO intelligence, deterministic checks, coordinated transformation and export.",
       },
       { property: "og:title", content: "Rezyn vs. a chatbot prompt — an honest comparison" },
       {
         property: "og:description",
-        content: "Where single-prompt redesigns work, where they break, and what a dedicated project pipeline adds.",
+        content: "Where single-prompt redesign and SEO advice work, where whole-project consistency breaks down, and what Rezyn adds around the model.",
       },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
@@ -28,58 +28,64 @@ export const Route = createFileRoute("/why-rezyn")({
 const rows: { topic: string; chat: string; rezyn: string }[] = [
   {
     topic: "Getting files in",
-    chat: "Paste files into the conversation. Large projects hit message and context limits, so files get dropped or summarised.",
-    rezyn: "Upload the whole project or a ZIP. Every supported file is stored and processed individually.",
+    chat: "Paste files into the conversation. Large projects can hit message/context limits, so the model may not see the complete system at once.",
+    rezyn: "Upload the whole project or a ZIP. Supported source files are stored, hydrated and analyzed as one project before transformation.",
   },
   {
     topic: "Consistency",
-    chat: "Each reply is generated fresh. Page five can drift from page one unless you keep re-explaining the style.",
-    rezyn: "Every file gets the same style blueprint plus the project's file list, so the direction stays the same.",
+    chat: "Each reply is generated fresh. Page five can drift from page one unless you keep re-explaining the project rules.",
+    rezyn: "Project-level design and SEO plans create shared constraints before file-by-file work begins.",
+  },
+  {
+    topic: "SEO / GEO / AEO",
+    chat: "A good prompt can produce useful SEO ideas, but measurements, route context and cross-file consistency depend on what you supplied in that conversation.",
+    rezyn: "The SEO Agent runs deterministic project analysis plus M1–M8 intelligence across crawl/indexing, on-page SEO, E-E-A-T, keyword mapping, structured data, AEO and GEO. Unknown metrics remain null instead of being invented.",
   },
   {
     topic: "Checking the result",
-    chat: "You review everything yourself. A reply that looks confident may have quietly changed behaviour.",
-    rezyn: "A similarity check and a second AI review pass run on every file. Failures retry, then show a visible reason.",
+    chat: "You usually review the response yourself. Confident output can still contain invalid code, unsupported schema or unintended changes.",
+    rezyn: "Rezyn combines deterministic guards with separate AI QA and post-transformation audits. Rejected output retries or surfaces a visible error.",
   },
   {
     topic: "Keeping behaviour",
     chat: "Depends on how carefully you prompt each time.",
-    rezyn: "Built-in rules on every file: keep routes, handlers, data bindings, forms, IDs and content meaning.",
+    rezyn: "Built-in preservation rules cover routes, handlers, data bindings, forms, IDs, content meaning and existing project behavior.",
   },
   {
     topic: "Per-file control",
-    chat: "Possible, but you manage it by hand across many messages.",
-    rezyn: "Set one direction for the project, or override it on any single file.",
+    chat: "Possible, but you manage it manually across many messages.",
+    rezyn: "Set one redesign direction for the project or override individual files; SEO can run independently without restyling the UI.",
   },
   {
     topic: "Getting files out",
-    chat: "Copy and paste each file back, one by one.",
-    rezyn: "One ZIP download of the redesigned files. Originals stay in the workspace to compare.",
+    chat: "You often copy files back one by one or rely on whatever artifact workflow is available in that chat.",
+    rezyn: "One project ZIP prioritizes SEO-updated source when present, then redesigned source, while retaining untouched source for files that did not need transformation.",
   },
 ];
 
 const chatWins = [
-  "Redesigning a single page or component quickly.",
+  "Redesigning or reviewing a single page/component quickly.",
   "Open-ended brainstorming and back-and-forth.",
-  "You already have a paid subscription you're happy with.",
-  "Non-code tasks: copy, ideas, mood boards.",
+  "One-off SEO questions where you do not need a project-wide execution pipeline.",
+  "Non-code tasks: copy, ideas, outlines and mood boards.",
 ];
 
 const pipeline = [
-  { icon: FileStack, title: "File-by-file", body: "No giant paste. Each file is redesigned on its own, with knowledge of the rest of the project." },
-  { icon: Layers3, title: "61 style blueprints", body: "Each direction is a written system — type, spacing, surfaces, motion — not a one-line adjective." },
-  { icon: ScanSearch, title: "Similarity guard", body: "If the result looks too much like the original, it's rejected and regenerated." },
-  { icon: ShieldCheck, title: "Second-pass review", body: "A separate review step checks behaviour, accessibility and style fit, then requests fixes." },
-  { icon: GitCompare, title: "Originals kept", body: "Your uploaded files are never overwritten. Compare, start over, or download again." },
-  { icon: MessageSquare, title: "Project chat", body: "Refine results in a chat that's tied to your project's files, not a blank conversation." },
+  { icon: FileStack, title: "Whole-project source", body: "No giant paste. Rezyn hydrates the actual project and preserves file relationships instead of treating every file as an isolated prompt." },
+  { icon: Layers3, title: "61 style blueprints", body: "Each redesign direction is a connected visual system — type, spacing, surfaces, motion and hierarchy — rather than a one-line adjective." },
+  { icon: Search, title: "M1–M8 SEO intelligence", body: "Technical SEO, on-page, E-E-A-T, keyword mapping, structured data, AEO and GEO share one source-grounded project context." },
+  { icon: ScanSearch, title: "Deterministic analysis", body: "Rezyn checks measurable source conditions first and keeps unavailable search volume, difficulty, rankings and traffic explicitly unknown." },
+  { icon: ShieldCheck, title: "Independent review", body: "Separate QA checks behavior, accessibility, design-system fit and SEO safety before accepting generated output." },
+  { icon: GitCompare, title: "Originals kept", body: "Uploaded files remain available for comparison and reset while transformed outputs are stored separately." },
+  { icon: MessageSquare, title: "Project chat", body: "Refine project results in a conversation tied to your files and existing transformations rather than starting from an empty chat." },
 ];
 
 const limits = [
-  "It's AI. Output can contain bugs or behave differently — always test before shipping.",
-  "Only text and code files are redesigned. Images, fonts and binaries are skipped and not in the ZIP.",
-  "The ZIP contains redesigned files only. You merge them back into your project.",
-  "The review pass is also AI. It catches a lot, not everything.",
-  "Very large single files may be rejected for size.",
+  "It's AI. Generated code can still contain bugs or unintended behavior — test before shipping.",
+  "Search rankings, traffic, search volume, keyword difficulty and AI citations require real external data; Rezyn must not invent them.",
+  "Some SEO checks require live deployment, Search Console, analytics, logs or external validators and are marked partial/not-run when that evidence is unavailable.",
+  "Structured data can improve machine understanding but does not guarantee rankings, rich results or AI citations.",
+  "Very large single files may be rejected or clipped for safe AI context handling.",
 ];
 
 function WhyRezyn() {
@@ -90,9 +96,9 @@ function WhyRezyn() {
         eyebrow="Honest comparison"
         title="Can't a chatbot"
         accent="do this?"
-        description="Partly — and we'll say so. ChatGPT, Claude, Gemini and Lovable can all redesign a page from one good prompt. Rezyn is for the moment that stops working: a whole project, dozens of files, one consistent result you can check."
-        stat="1:1"
-        statLabel="same AI family / different workflow"
+        description="Partly — and we'll say so. General AI tools can redesign a page or suggest SEO changes from a strong prompt. Rezyn is the project workflow around that intelligence: complete source context, coordinated plans, M1–M8 analysis, controlled transformation, QA and export."
+        stat="PROJECT"
+        statLabel="context before generation"
         action={{ to: "/projects", label: "Try it on your project" }}
       />
 
@@ -100,7 +106,7 @@ function WhyRezyn() {
         <SectionHeading
           label="Where chatbots win"
           title="Credit where it's due."
-          description="If any of these describe you, a general chatbot may be all you need."
+          description="If any of these describe the job, a general chatbot may be all you need."
         />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {chatWins.map((item, i) => (
@@ -118,7 +124,7 @@ function WhyRezyn() {
         <SectionHeading
           label="Side by side"
           title="A whole project is a different job."
-          description="Same underlying technology. The difference is everything built around it."
+          description="The model matters, but so do source coverage, state, deterministic analysis, orchestration and QA around it."
         />
         <Reveal>
           <div className="compare-table glass" role="table" aria-label="Chatbot prompt compared with Rezyn">
@@ -141,8 +147,8 @@ function WhyRezyn() {
       <Section tone="signal">
         <SectionHeading
           label="What's actually inside"
-          title="Six things a prompt box doesn't do for you."
-          description="Each of these runs automatically on every file — you don't have to remember to ask."
+          title="Seven things a prompt box doesn't coordinate for you."
+          description="These are project-level systems around generation, so you do not have to restate them file by file."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {pipeline.map((item, i) => {
@@ -164,7 +170,7 @@ function WhyRezyn() {
         <SectionHeading
           label="Limits, in plain sight"
           title="What we won't pretend."
-          description="Trust starts with saying what a tool can't do."
+          description="Trust starts with distinguishing measured evidence from generated recommendations."
         />
         <ul className="grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
           {limits.map((item) => (
@@ -176,7 +182,7 @@ function WhyRezyn() {
         </ul>
         <div className="mt-12 flex flex-wrap items-center justify-between gap-6 border-t border-border pt-8">
           <p className="m-0 max-w-[640px] text-[18px] leading-8 text-ink-soft">
-            The fairest test: run the same project through your favourite chatbot and through Rezyn, then compare. Read the{" "}
+            The fairest test is still the same: use the same real project and compare the outputs, implementation safety and context retention. Read the{" "}
             <Link to="/legal/ai-disclosure" className="underline underline-offset-4">AI Disclosure</Link> for the details.
           </p>
           <Link to="/projects" className="button-primary">
