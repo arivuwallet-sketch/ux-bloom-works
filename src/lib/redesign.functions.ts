@@ -15,6 +15,7 @@ import {
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { isSupportFile } from "@/lib/project-file-kinds";
 import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
+import { applyCompiledDirectionFoundation, buildDirectionCompilerContext, detectsTailwindV4, isCompilerStyleEntrypoint } from "@/lib/design-direction-compiler";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -37,6 +38,7 @@ type ProjectVisualContext = {
   manifest: string[];
   designPlan: ProjectDesignPlan;
   dependencyGraph: ProjectDependencyGraph;
+  tailwindV4: boolean;
 };
 
 type DesignAuditResult = {
@@ -95,8 +97,17 @@ function presentationCarryoverRatio(source: string, output: string) {
   return unchanged / before.length;
 }
 
-function validateFullReconstruction(name: string, source: string, candidate: string, style?: string | null) {
+function validateFullReconstruction(
+  name: string,
+  source: string,
+  candidate: string,
+  style?: string | null,
+  compiler?: { applyFoundation: boolean; tailwindV4: boolean },
+) {
   let output = stripOuterFence(candidate);
+  if (style && compiler?.applyFoundation) {
+    output = applyCompiledDirectionFoundation(output, style, compiler.tailwindV4);
+  }
   output = repairRedesignCssCompatibility({ name, source, output, style });
   if (!output) throw new Error("AI returned an empty file");
   if (output === source.trim()) throw new Error("AI returned the original UI unchanged");
@@ -261,18 +272,23 @@ async function generateProjectDesignPlan(opts: {
   const styleAssignments = opts.files
     .map((file) => `${file.name}: ${opts.project.styleMode === "file" ? (file.targetStyle ?? "unset") : (opts.project.targetStyle ?? "unset")}`)
     .join("\n");
-  const styleBlueprints = Array.from(new Set(opts.files.map((file) =>
+  const uniqueStyles = Array.from(new Set(opts.files.map((file) =>
     opts.project.styleMode === "file" ? file.targetStyle : opts.project.targetStyle,
-  ).filter((style): style is string => Boolean(style))))
+  ).filter((style): style is string => Boolean(style))));
+  const styleBlueprints = uniqueStyles
     .map((style) => `${style}: ${getStyleBlueprint(style)}`)
     .join("\n\n");
+  const projectTailwindV4 = opts.files.some((file) => detectsTailwindV4(file.content));
+  const compilerContracts = uniqueStyles
+    .map((style) => buildDirectionCompilerContext(style, projectTailwindV4))
+    .join("\n\n---\n\n");
   const snapshot = buildPlanningSnapshot(opts.files, opts.graph);
 
   const systemPrompt =
     "You are Rezyn Project Architect. Before any file is transformed, create one authoritative project-level dependency and design plan for the entire uploaded product. " +
     "Base dependency decisions on the supplied static dependency graph and source excerpts; do not invent imports, routes, APIs, components or files. " +
     "Preserve the existing runtime architecture, behavior, routes, state, APIs and data contracts, while defining a coherent NEW presentation architecture for the selected design direction(s). " +
-    "Plan shared tokens, layout primitives, typography, color, surfaces, component conventions, navigation treatment, motion, accessibility and responsive behavior once at project scope so individual file transformations cannot drift. " +
+    "Plan layout primitives, typography, surfaces, component conventions, navigation treatment and responsive composition once at project scope so individual file transformations cannot drift. The supplied Rezyn Design Compiler contract is authoritative for core semantic tokens, color-pair safety, borders, shadows, motion primitives, reduced-motion and Tailwind/CSS infrastructure; do not invent a competing core token system. " +
     "Identify shared files/components and explicit coordination rules. Put shared foundations before dependent screens in transformationOrder when practical. " +
     "Do not reveal chain-of-thought. Return ONLY valid JSON and no markdown fences.";
 
@@ -315,6 +331,9 @@ async function generateProjectDesignPlan(opts: {
     "",
     "STYLE BLUEPRINTS:",
     styleBlueprints || "No style selected",
+    "",
+    "DIRECTION COMPILER CONTRACTS:",
+    compilerContracts || "No compiler contract available.",
     "",
     "STATIC DEPENDENCY GRAPH:",
     JSON.stringify(opts.graph, null, 2),
@@ -395,6 +414,12 @@ async function redesignSource(opts: {
   }
 
   const styleBlueprint = getStyleBlueprint(opts.style);
+  const directionCompiler = buildDirectionCompilerContext(opts.style, opts.project.tailwindV4);
+  const compilerOwnsFoundation = isCompilerStyleEntrypoint({
+    name: opts.name,
+    source: opts.source,
+    sharedStyleEntryPoints: opts.project.designPlan.architecture.sharedStyleEntryPoints,
+  });
   const projectManifest = opts.project.manifest.slice(0, 160).join("\n- ");
   const designIntelligence = buildDesignIntelligenceContext({
     fileName: opts.name,
@@ -416,7 +441,7 @@ async function redesignSource(opts: {
     "You ARE allowed and expected to reorganize presentation markup, replace visual wrappers, rebuild grids/flex layouts, rewrite Tailwind/className styling, replace CSS declarations, introduce the planned token system inside the appropriate file, change visual ordering where behavior is unaffected, and remove obsolete presentational markup. " +
     "You MUST preserve application behavior: routes, state, props, event handlers, API/data bindings, forms and submission behavior, business logic, content meaning, asset references, accessibility semantics, test/data hooks, IDs or selectors used functionally, and the source file's framework/language. " +
     "If a class/selector may be referenced across files or by JavaScript, keeping its identifier is acceptable for compatibility, but its PRESENTATION must be rebuilt rather than inherited. " +
-    "For CSS/SCSS/LESS files, replace the visual system instead of appending override patches after the old rules. For JSX/TSX/Vue/Svelte/templates, recompose the rendered interface rather than retaining the same DOM hierarchy with new colors. " +
+    "For CSS/SCSS/LESS files, replace the visual system instead of appending arbitrary override patches after the old rules. Core tokens, theme mappings, borders, shadows, press behavior and reduced-motion infrastructure are owned by the Rezyn Design Compiler; do not invent a second core theme system. For JSX/TSX/Vue/Svelte/templates, recompose the rendered interface rather than retaining the same DOM hierarchy with new colors, and consume the compiler semantic tokens/utilities rather than hard-coding a parallel visual foundation. " +
     "Use the supplied Design Intelligence Operating System as mandatory expert guidance. Apply all relevant skills, but never fabricate research findings, analytics, experiments, tool runs, user studies, eye tracking, biometric results, or performance measurements. " +
     "Do not create fake functionality, do not remove real functionality, do not contradict shared project decisions without a proven source constraint, and do not return explanations. Return ONLY the complete rewritten file contents, with no markdown fence.";
 
@@ -426,6 +451,7 @@ async function redesignSource(opts: {
     `Project notes: ${opts.project.notes?.trim() || "None"}\n` +
     `Chosen direction: ${opts.style}\n` +
     `Direction blueprint: ${styleBlueprint}\n\n` +
+    `${directionCompiler}\n\n` +
     `${projectPlan}\n\n` +
     `${designIntelligence}\n\n` +
     `Project file manifest:\n- ${projectManifest || opts.name}\n\n` +
@@ -457,7 +483,10 @@ async function redesignSource(opts: {
 
     try {
       const raw = await callGateway(messages);
-      const candidate = validateFullReconstruction(opts.name, opts.source, raw, opts.style);
+      const candidate = validateFullReconstruction(opts.name, opts.source, raw, opts.style, {
+        applyFoundation: compilerOwnsFoundation,
+        tailwindV4: opts.project.tailwindV4,
+      });
       const audit = await auditReconstruction({
         name: opts.name,
         style: opts.style,
@@ -739,6 +768,7 @@ export const redesignNextFile = createServerFn({ method: "POST" })
             manifest: files.map((entry) => entry.name.replace(/\\/g, "/")),
             designPlan,
             dependencyGraph: activeGraph,
+            tailwindV4: planningFiles.some((entry) => detectsTailwindV4(entry.content)),
           },
         });
 
