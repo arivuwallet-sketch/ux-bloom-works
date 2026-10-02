@@ -638,7 +638,7 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       .filter((entry): entry is (typeof pending)[number] => Boolean(entry));
     const orderedIds = new Set(orderedQueue.map((entry) => entry.id));
     orderedQueue.push(...pending.filter((entry) => !orderedIds.has(entry.id)));
-    let file = orderedQueue[0];
+    let file: (typeof orderedQueue)[number] | undefined = orderedQueue[0];
     let fastForwarded = 0;
 
     // Fast-forward consecutive files that provably need no AI reconstruction.
