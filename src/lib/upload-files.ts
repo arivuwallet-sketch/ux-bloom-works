@@ -8,7 +8,7 @@ export const UNSUPPORTED_ARCHIVE_EXT = /\.(7z|rar)$/i;
 export const REDESIGNABLE_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
 // Extra text files kept for the SEO Agent and project context (never redesigned).
-const SUPPORT_EXT = /\.(ya?ml|toml|webmanifest|mjs|cjs|mts|cts)$/i;
+const SUPPORT_EXT = /\.(ya?ml|toml|webmanifest)$/i;
 const SUPPORT_BASENAMES = new Set([".htaccess", "_redirects", "_headers"]);
 
 const JUNK_PATH_SEGMENTS = [
@@ -53,7 +53,7 @@ function isJunkArchivePath(path: string) {
 
 function isWantedArchivePath(path: string) {
   const base = (path.split("/").pop() ?? path).toLowerCase();
-  return REDESIGNABLE_EXT.test(path) || SUPPORT_EXT.test(path) || SUPPORT_BASENAMES.has(base);
+  return REDESIGNABLE_EXT.test(path) || SUPPORT_EXT.test(path) || SUPPORT_BASENAMES.has(base) || isSupportFile(path);
 }
 
 export type UploadResult = {

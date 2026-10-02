@@ -13,6 +13,7 @@ import {
   type ProjectDesignPlan,
 } from "@/lib/project-design-plan";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
+import { isSupportFile } from "@/lib/project-file-kinds";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -633,6 +634,20 @@ export const redesignNextFile = createServerFn({ method: "POST" })
     if (!file) {
       await supabase.from("projects").update({ status: "done" }).eq("id", data.projectId);
       return { done: true as const, remaining: 0, total: files.length, current: null, planCreated };
+    }
+
+    if (isSupportFile(file.name)) {
+      await supabase
+        .from("project_files")
+        .update({ status: "skipped", redesign_error: "Config/SEO support file — kept unchanged, not restyled" })
+        .eq("id", file.id);
+      return {
+        done: false as const,
+        remaining: orderedQueue.length - 1,
+        total: files.length,
+        current: file.name,
+        planCreated,
+      };
     }
 
     await supabase.from("projects").update({ status: "redesigning" }).eq("id", data.projectId);
