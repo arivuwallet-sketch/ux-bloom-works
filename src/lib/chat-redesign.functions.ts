@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
+import { validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -30,7 +31,7 @@ function stripOuterFence(value: string) {
   return value.replace(/^```[a-zA-Z0-9_-]*\n?/, "").replace(/\n?```$/, "").trim();
 }
 
-function validateGeneratedFile(fileName: string, original: string, candidate: string) {
+function validateGeneratedFile(fileName: string, original: string, candidate: string, style?: string | null) {
   const output = candidate.trim();
   if (!output) throw new Error("AI returned an empty file");
 
@@ -55,17 +56,19 @@ function validateGeneratedFile(fileName: string, original: string, candidate: st
     throw new Error("AI returned commentary instead of a complete source file");
   }
 
+  validateRedesignCssCompatibility({ name: fileName, source: original, output, style });
+
   return output;
 }
 
-function parseStructuredResult(rawValue: string, fileName: string, original: string) {
+function parseStructuredResult(rawValue: string, fileName: string, original: string, style?: string | null) {
   const raw = stripOuterFence(rawValue);
 
   const parse = (text: string) => {
     try {
       const parsed = JSON.parse(text) as { reply?: unknown; file?: unknown };
       if (typeof parsed.file !== "string") return null;
-      const file = validateGeneratedFile(fileName, original, parsed.file);
+      const file = validateGeneratedFile(fileName, original, parsed.file, style);
       const reply =
         typeof parsed.reply === "string" && parsed.reply.trim()
           ? parsed.reply.trim().slice(0, 500)
@@ -339,7 +342,7 @@ async function chatRedesignSource(opts: {
           ];
 
     const response = await callGateway(messages);
-    const parsed = parseStructuredResult(response.content, opts.fileName, opts.currentContent);
+    const parsed = parseStructuredResult(response.content, opts.fileName, opts.currentContent, opts.style);
     if (parsed) return { ...parsed, model: response.model };
     lastValidationError = "AI response failed source validation";
   }
