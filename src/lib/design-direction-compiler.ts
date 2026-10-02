@@ -1,4 +1,4 @@
-import { STYLE_NAMES, getStyleBlueprint } from "@/lib/style-blueprints";
+import { STYLE_NAMES, getStyleBlueprint } from "./style-blueprints";
 
 export type DesignFamily =
   | "morphic-material"
