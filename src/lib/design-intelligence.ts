@@ -296,6 +296,10 @@ const UNIVERSAL_QUALITY_GATES = [
   "Treat forms as task flows: persistent labels, useful defaults, input modes, autocomplete, field grouping, inline validation, explicit required/optional status, recoverable errors, and efficient keyboard/mobile entry.",
   "Design mobile-first, then tablet and desktop. Verify small-phone, large-phone, tablet, laptop, desktop, wide-desktop and high-density data cases; use fluid typography and liquid/adaptive layouts without horizontal overflow.",
   "Use design tokens and component architecture consistently. Avoid one-off magic values when a token or reusable component/state can express the decision. Preserve compatibility with the project's existing component framework when it is functional.",
+  "When Tailwind CSS v4 is present, use valid CSS-first architecture: keep @import statements before normal rules; use @import \"tailwindcss\" or decomposed Tailwind imports where each layer(...) contains exactly one layer name; define regular runtime variables in :root/.dark; keep @theme/@theme inline top-level for variables that should generate utilities; and define custom utility classes with @utility when variant support is required. Never place naked declarations directly inside @layer base.",
+  "Preserve an existing semantic CSS-variable API even while replacing its visual values. If the project already exposes tokens such as --background, --foreground, --card, --primary, --secondary, --muted, --accent, --destructive, --border, --input, --ring, --chart-* or --radius, keep those names resolved for direct consumers and map new art-direction tokens behind them instead of deleting the API.",
+  "Token aliases must stay semantically correct in every theme. In dark mode, body/heading/sidebar foreground tokens must remain light enough against dark surfaces; bright secondary/accent fills need dark readable foregrounds; muted foregrounds must remain readable on muted surfaces; and focus indicators must reach at least 3:1 against adjacent colors. Target WCAG AA 4.5:1 for ordinary text pairs, including primary/destructive button labels and default links.",
+  "Keep input/control boundary tokens visually distinct from surface/fill tokens. Do not map --input/--color-input to the same resolved color as --background, --card or a generic surface fill when that token is used by border-input or control outlines.",
   "Use motion only to communicate hierarchy, causality, continuity, feedback, orientation or delight. Prefer transform/opacity, sensible easing, short durations, interruption safety, and prefers-reduced-motion fallbacks. Never gate essential information behind animation.",
   "Apply Gestalt, affordance/signifier, ergonomic and human-factors principles. Interactive elements must look interactive; hierarchy must remain understandable without relying on novelty.",
   "For data-heavy interfaces, optimize scan paths, density, alignment, comparison, labeling, chart readability, colorblind safety, table responsiveness, and progressive detail instead of decorating data.",
@@ -336,6 +340,9 @@ function detectSpecialisms(fileName: string, source: string, instruction = "") {
   }
   if (/chat|assistant|agent|generative|ai-|llm|copilot|prompt|conversation/.test(haystack)) {
     matches.push("AI-native, conversational, agentic, algorithmic-transparency and multimodal UX");
+  }
+  if (/tailwindcss|@theme\b|@utility\b|@custom-variant|@source\b/.test(haystack)) {
+    matches.push("Tailwind v4 CSS-first architecture, theme-variable namespaces, custom utilities, variants, semantic token compatibility and cascade/layer correctness");
   }
   if (/aria-|role=|tabindex|focus|keyboard|screenreader|sr-only/.test(haystack)) {
     matches.push("accessibility auditing, keyboard/focus systems and semantic interaction design");
