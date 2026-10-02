@@ -387,7 +387,7 @@ function ProjectDetailPage() {
                 </div>
                 <div className="mt-9 flex items-end gap-3">
                   <strong className="font-serif text-[52px] leading-none tracking-[-0.07em]">{progressPct}%</strong>
-                  <span className="pb-1 text-[12px] text-ink-soft">{completedUnits}/{totalUnits} files</span>
+                  <span className="pb-1 text-[12px] text-ink-soft">{completedUnits}/{totalUnits} units</span>
                 </div>
                 <div className="progress-track mt-4"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
               </div>
