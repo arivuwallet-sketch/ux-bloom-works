@@ -14,7 +14,7 @@ import {
 } from "@/lib/project-design-plan";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { isSupportFile } from "@/lib/project-file-kinds";
-import { validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
+import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -96,7 +96,8 @@ function presentationCarryoverRatio(source: string, output: string) {
 }
 
 function validateFullReconstruction(name: string, source: string, candidate: string, style?: string | null) {
-  const output = stripOuterFence(candidate);
+  let output = stripOuterFence(candidate);
+  output = repairRedesignCssCompatibility({ name, source, output, style });
   if (!output) throw new Error("AI returned an empty file");
   if (output === source.trim()) throw new Error("AI returned the original UI unchanged");
 
