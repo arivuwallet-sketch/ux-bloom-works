@@ -9,6 +9,7 @@ import {
   type SeoAuditFile,
 } from "@/lib/seo-intelligence";
 import { validateSeoTemplateArtifact, type SeoTemplateId, type SeoT1T16CoverageStatus } from "@/lib/seo-output-templates-t1-t16";
+import { isArticleLikePath } from "@/lib/seo-blog-writer";
 
 const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|ya?ml|toml|webmanifest)$/i;
 const MAX_PLAN_CONTEXT_CHARS = 140_000;
@@ -463,8 +464,7 @@ async function optimizeSeoFile(opts: {
   const fileName = normalizeName(opts.file.name);
   const filePlan = opts.plan.filePlans.find((entry) => entry.file === fileName);
   const relevantIssues = opts.audit.issues.filter((issue) => issue.file === fileName || issue.file === null);
-  const system =
-    "You are Rezyn SEO Updater. Modify this ONE file according to the authoritative project SEO plan and measured audit. This is not a redesign. Preserve visual design, classes, CSS, layout, spacing, typography, colors, motion, component geometry, behavior, routes, APIs, state, forms, event handlers, IDs/test hooks and existing valid links. Make only source-grounded SEO/AEO/GEO improvements that belong in this file. Never invent facts, URLs, keyword metrics, rankings, reviews, ratings, prices, authors, FAQ answers or schema data. Do not add structured data unless this source contains the real facts needed for it. If an absolute canonical or sitemap URL cannot be known from source, do not fabricate one. Return the COMPLETE updated source file only, with no markdown fences or commentary.\n\n" + buildSeoIntelligenceContext();
+  const articleDirective = isArticleLikePath(fileName)\n    ? "\\n\\nARTICLE CONTENT DIRECTIVE: This is an article/blog/guide-like file. Apply the full SEO/GEO/AEO Blog Writer Sections 1-16 from the shared intelligence context: answer-first structure, information gain, claims-ledger discipline, entity clarity, AEO patterns, source-grounded JSON-LD/metadata, internal linking, YMYL safeguards and editorial QA. Preserve the existing page/component visual system and do not invent research or facts."\n    : "";\n  const system =\n    "You are Rezyn SEO Updater. Modify this ONE file according to the authoritative project SEO plan and measured audit. This is not a redesign. Preserve visual design, classes, CSS, layout, spacing, typography, colors, motion, component geometry, behavior, routes, APIs, state, forms, event handlers, IDs/test hooks and existing valid links. Make only source-grounded SEO/AEO/GEO improvements that belong in this file. Never invent facts, URLs, keyword metrics, rankings, reviews, ratings, prices, authors, FAQ answers or schema data. Do not add structured data unless this source contains the real facts needed for it. If an absolute canonical or sitemap URL cannot be known from source, do not fabricate one. Return the COMPLETE updated source file only, with no markdown fences or commentary.\\n\\n" + buildSeoIntelligenceContext() + articleDirective;
   const context = [
     `PROJECT: ${opts.project.name}`,
     `PRODUCT TYPE: ${opts.project.productType ?? "Unknown"}`,
