@@ -1,5 +1,6 @@
 import { ensureProjectArtifacts as ensureSeoArtifacts } from "@/lib/project-artifact-bootstrap";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
+import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
 
 const MODELS = ["openai/gpt-6-astra", "google/gemini-2.5-flash"] as const;
 const TRANSIENT = new Set([408, 429, 500, 502, 503, 504]);
@@ -222,7 +223,7 @@ async function proposeRedesignFiles(project: ProjectRow, files: SourceFile[]) {
     {
       role: "system",
       content:
-        "You are Rezyn's pre-planning artifact architect. Decide whether a full UI/UX reconstruction genuinely requires NEW shared support files that do not already exist. Create files only when editing existing files alone would produce a fragmented or invalid architecture. Allowed new files: shared visual tokens/theme/design-system styles, reusable PRESENTATIONAL primitives, or shared visual layout/shell support. Forbidden: routes/pages/screens, API/server files, state/stores, business logic, data fetching, authentication, analytics, fake content, fake features, package/config changes, new dependencies, generated images/binaries, or copies of files that already exist. Respect the project's current framework, language, aliases, folder conventions and dependencies. In per-file direction mode, shared files must remain neutral enough to support different page directions and must not impose one file's style globally. Return ONLY JSON: {\"files\":[{\"path\":\"existing-convention/path.ext\",\"purpose\":\"why this new file is required\",\"content\":\"complete production-valid source\"}]}. Maximum 3 files. If no new file is truly required, return {\"files\":[]}.",
+        "You are Rezyn's pre-planning artifact architect. Decide whether a full UI/UX reconstruction genuinely requires NEW shared support files that do not already exist. Create files only when editing existing files alone would produce a fragmented or invalid architecture. Allowed new files: shared visual tokens/theme/design-system styles, reusable PRESENTATIONAL primitives, or shared visual layout/shell support. Forbidden: routes/pages/screens, API/server files, state/stores, business logic, data fetching, authentication, analytics, fake content, fake features, package/config changes, new dependencies, generated images/binaries, or copies of files that already exist. Respect the project's current framework, language, aliases, folder conventions and dependencies. In Tailwind v4 projects, use valid CSS-first imports, keep runtime variables inside selectors, use @theme/@utility for variant-capable design primitives, preserve existing semantic variable APIs when applicable, keep --input visibly distinct from surfaces, and maintain accessible light/dark contrast. In per-file direction mode, shared files must remain neutral enough to support different page directions and must not impose one file's style globally. Return ONLY JSON: {\"files\":[{\"path\":\"existing-convention/path.ext\",\"purpose\":\"why this new file is required\",\"content\":\"complete production-valid source\"}]}. Maximum 3 files. If no new file is truly required, return {\"files\":[]}.",
     },
     {
       role: "user",
@@ -305,6 +306,18 @@ async function ensureRedesignArtifacts(opts: {
       const fallbackStyle = project.style_mode === "file"
         ? null
         : project.target_style ?? files.find((file) => file.targetStyle)?.targetStyle ?? null;
+      let proposalContent = repairRedesignCssCompatibility({
+        name: proposal.path,
+        source: "",
+        output: proposal.content,
+        style: fallbackStyle,
+      });
+      validateRedesignCssCompatibility({
+        name: proposal.path,
+        source: "",
+        output: proposalContent,
+        style: fallbackStyle,
+      });
       const { data: inserted, error: insertError } = await opts.supabase
         .from("project_files")
         .insert({
@@ -312,8 +325,8 @@ async function ensureRedesignArtifacts(opts: {
           user_id: opts.userId,
           name: proposal.path,
           source: "generated-redesign",
-          content: proposal.content,
-          size_bytes: byteLength(proposal.content),
+          content: proposalContent,
+          size_bytes: byteLength(proposalContent),
           target_style: fallbackStyle,
           status: project.style_mode === "file" ? "done" : "queued",
           storage_path: null,
