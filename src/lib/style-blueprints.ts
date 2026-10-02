@@ -1,4 +1,4 @@
-const STYLE_BLUEPRINTS: Record<string, string> = {
+export const STYLE_BLUEPRINTS: Record<string, string> = {
   "Glassmorphism": "Rebuild with layered translucent planes, believable backdrop blur, luminous depth, hairline borders, selective glass surfaces, high legibility, and spatial overlap. Glass must shape the composition rather than merely skin old cards.",
   "Neumorphism (Soft UI)": "Rebuild from one soft material field using paired highlight/shadow extrusion, inset controls, restrained rounded geometry, tactile states, and accessibility-safe contrast. Components should feel pressed from the same surface.",
   "Claymorphism": "Recompose with inflated rounded forms, pastel dimensional surfaces, pillowy cards, soft inner and outer shadows, chunky friendly controls, and toy-like tactile hierarchy without sacrificing clarity.",
@@ -69,6 +69,8 @@ const STYLE_BLUEPRINTS: Record<string, string> = {
   "Predictive / Anticipatory UX": "Rebuild around probable next actions, smart defaults, prefilled context, proactive panels and ranked options while clearly labeling predictions and preserving user control and reversibility.",
   "Intentional Imperfection (Anti-Perfect UI)": "Reject generic AI polish using irregular spacing, asymmetric hand-tuned composition, human texture, unexpected but coherent typography, uneven geometry and crafted inconsistencies while maintaining strong usability.",
 };
+
+export const STYLE_NAMES = Object.freeze(Object.keys(STYLE_BLUEPRINTS));
 
 export function getStyleBlueprint(style: string): string {
   return (
