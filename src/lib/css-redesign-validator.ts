@@ -468,7 +468,7 @@ function validateTailwindCss(source: string, output: string, style: string | nul
 
 
   for (const [name, value] of darkOverrides) {
-    if (!/(?:text-light|text-primary|body-text|heading-text|foreground)$/i.test(name)) continue;
+    if (!/^(?:foreground|sidebar-foreground|neo-color-text-light|neo-color-text-primary|body-text|heading-text)$/i.test(name)) continue;
     const varMatch = value.match(/^var\(\s*--([\w-]+)\s*\)$/);
     const resolved = varMatch?.[1] ? resolveVar(varMatch[1], darkVars) : value;
     const lum = colorLuminance(resolved);
