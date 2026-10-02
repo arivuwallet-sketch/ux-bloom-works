@@ -407,7 +407,7 @@ async function seoQa(opts: { name: string; source: string; candidate: string; pl
     {
       role: "system",
       content:
-        "You are an independent SEO release reviewer. Reject if the candidate changes visual design, layout, styling, business logic, routes, working links, factual claims or user-facing meaning unnecessarily; invents SEO facts/schema data; keyword-stuffs; adds unsupported canonicals/hreflang/URLs; or violates the project SEO plan. Approve safe semantic HTML, metadata, accurate alt/accessibility improvements, framework-native SEO configuration and structured data strictly grounded in source. Return ONLY JSON: {\"pass\":true|false,\"issues\":[\"release blocker\"]}. Do not reveal chain-of-thought.",
+        "You are an independent SEO release reviewer. Reject if the candidate changes visual design, layout, styling, business logic, routes, working links, factual claims or user-facing meaning unnecessarily; invents SEO facts/schema data; keyword-stuffs; adds unsupported canonicals/hreflang/URLs; leaves unresolved template placeholders; or violates the project SEO plan or T1-T16 output contracts. Approve safe semantic HTML, metadata, accurate alt/accessibility improvements, framework-native SEO configuration and structured data strictly grounded in source. Return ONLY JSON: {\"pass\":true|false,\"issues\":[\"release blocker\"]}. Do not reveal chain-of-thought.\n\n" + buildSeoIntelligenceContext(),
     },
     {
       role: "user",
