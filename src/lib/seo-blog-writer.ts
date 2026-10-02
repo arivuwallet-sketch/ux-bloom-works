@@ -86,7 +86,7 @@ export type SeoBlogClusterResult = {
 
 export type SeoBlogWriterResult = {
   version: 1;
-  mode: SeoBlogMode;
+  mode: "write" | "refresh";
   plan: {
     intent: SeoBlogIntent;
     funnelStage: SeoBlogFunnelStage;
