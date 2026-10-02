@@ -250,6 +250,115 @@ function hasUsableBorderToken(vars: Map<string, string>) {
   return ["background", "card"].every((surface) => !vars.has(surface) || border !== normalizedResolved(surface, vars));
 }
 
+function insertAfterImports(source: string, block: string) {
+  let cursor = 0;
+  const importRegex = /@import\s+[^;]+;\s*/gy;
+  importRegex.lastIndex = 0;
+  while (true) {
+    const match = importRegex.exec(source);
+    if (!match || match.index !== cursor) break;
+    cursor = importRegex.lastIndex;
+  }
+  return source.slice(0, cursor) + block.trim() + "\n\n" + source.slice(cursor);
+}
+
+function pullCustomVariantsTopLevel(source: string) {
+  const found: string[] = [];
+  let stripped = source.replace(/@custom-variant\s+[\w-]+\s+[^;{}]+;/gi, (match) => {
+    found.push(match.trim());
+    return "";
+  });
+  if (found.length === 0) return stripped;
+  const unique = Array.from(new Set(found));
+  stripped = stripped.replace(/^\s+/, "");
+  return insertAfterImports(stripped, unique.join("\n"));
+}
+
+function moveSimpleThemeDarkOverrides(source: string) {
+  let cursor = 0;
+  let output = "";
+  const extracted: string[] = [];
+
+  while (cursor < source.length) {
+    const match = /@theme(?:\s+inline)?\s*\{/gi;
+    match.lastIndex = cursor;
+    const found = match.exec(source);
+    if (!found || found.index === undefined) {
+      output += source.slice(cursor);
+      break;
+    }
+
+    const openBrace = source.indexOf("{", found.index);
+    if (openBrace < 0) {
+      output += source.slice(cursor);
+      break;
+    }
+    const body = findBalancedBlock(source, openBrace);
+    if (body === null) {
+      output += source.slice(cursor);
+      break;
+    }
+    const closeBrace = openBrace + body.length + 1;
+    const cleanedBody = body.replace(/\bdark\s*:\s*\{([^{}]*)\}/gi, (_full, declarations: string) => {
+      if (/^[\s\n\r;:\w().,%#/+*-]*--[\w-]+\s*:/m.test(declarations)) {
+        extracted.push(declarations.trim());
+        return "";
+      }
+      return _full;
+    });
+
+    output += source.slice(cursor, openBrace + 1) + cleanedBody + "}";
+    cursor = closeBrace + 1;
+  }
+
+  if (extracted.length > 0) {
+    output += "\n\n.dark {\n" + extracted.join("\n") + "\n}\n";
+  }
+  return output;
+}
+
+function repairInvalidVarMath(source: string) {
+  return source.replace(/var\(\s*(--[\w-]+)\s*\)\s*\*\s*(-?\d+(?:\.\d+)?)/g, "calc(var($1) * $2)");
+}
+
+function repairNeoBorderUtility(source: string) {
+  return source.replace(
+    /(\.border-neo\s*\{|@utility\s+border-neo\s*\{)([^{}]*)(\})/gi,
+    (full, start: string, body: string, end: string) => {
+      if (/\bborder-style\s*:/i.test(body) || /\bborder\s*:[^;]*(?:solid|dashed|dotted|double)\b/i.test(body)) return full;
+      return start + body.trimEnd() + "\n  border-style: solid;\n" + end;
+    },
+  );
+}
+
+function repairInvisibleNeoInsetShadow(source: string) {
+  return source.replace(
+    /\binset\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?(\s+(?:var\([^)]*\)|#[0-9a-f]{3,8}|(?:rgb|hsl|oklch)\([^)]*\)|currentColor))/gi,
+    "inset 2px 2px 0 0$1",
+  );
+}
+
+function ensureReducedMotion(source: string) {
+  const usesMotion = /scroll-behavior\s*:\s*smooth|\btransition(?:-[\w-]+)?\s*:|\banimation(?:-[\w-]+)?\s*:|\btransform\s*:/i.test(source);
+  const hasReduced = /@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(source);
+  if (!usesMotion || hasReduced) return source;
+  return source.trimEnd() + `
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto !important;
+  }
+
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+`;
+}
+
 export function repairRedesignCssCompatibility(opts: {
   name: string;
   source: string;
@@ -265,18 +374,29 @@ export function repairRedesignCssCompatibility(opts: {
     '@import "tailwindcss";',
   );
 
+  repaired = pullCustomVariantsTopLevel(repaired);
+  repaired = moveSimpleThemeDarkOverrides(repaired);
+  repaired = repairInvalidVarMath(repaired);
+
+  const isNeo = /neo\s*[- ]?brut|neubrut/i.test(opts.style ?? "");
+  if (isNeo) {
+    repaired = repairNeoBorderUtility(repaired);
+    repaired = repairInvisibleNeoInsetShadow(repaired);
+    repaired = ensureReducedMotion(repaired);
+  }
+
   const rootBlock = findBlocks(repaired, /:root\s*/i)[0] ?? "";
   const rootVars = parseVars(rootBlock);
   const darkBlocks = findBlocks(repaired, /\.dark\s*/i);
   const darkOverrides = darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
   const darkVars = mergeVars(rootVars, darkOverrides);
 
-  const repairInput =
-    (hasInputSurfaceConflict(rootVars) && hasUsableBorderToken(rootVars)) ||
-    (darkOverrides.size > 0 && hasInputSurfaceConflict(darkVars) && hasUsableBorderToken(darkVars));
-
-  if (repairInput) {
-    repaired = repaired.replace(/--input\s*:\s*[^;{}]+;/gi, "--input: var(--border);");
+  const rootConflict = hasInputSurfaceConflict(rootVars);
+  const darkConflict = darkOverrides.size > 0 && hasInputSurfaceConflict(darkVars);
+  if (rootConflict || darkConflict) {
+    const canUseBorder = hasUsableBorderToken(rootVars) && (darkOverrides.size === 0 || hasUsableBorderToken(darkVars));
+    const boundary = canUseBorder ? "var(--border)" : "var(--foreground)";
+    repaired = repaired.replace(/--input\s*:\s*[^;{}]+;/gi, "--input: " + boundary + ";");
     if (/--color-input\s*:/i.test(repaired)) {
       repaired = repaired.replace(/--color-input\s*:\s*[^;{}]+;/gi, "--color-input: var(--input);");
     }
