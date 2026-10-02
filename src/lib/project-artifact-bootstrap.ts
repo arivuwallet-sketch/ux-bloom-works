@@ -1,6 +1,6 @@
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { buildSeoT1T16Context, validateSeoTemplateArtifact } from "@/lib/seo-output-templates-t1-t16";
-import { validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
+import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
 import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
 
 const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py|yaml|yml)$/i;
@@ -516,7 +516,8 @@ async function generateDesignFoundation(opts: {
       ].join("\n"),
     },
   ]);
-  const output = validateGeneratedContent(opts.path, raw);
+  let output = validateGeneratedContent(opts.path, raw);
+  output = repairRedesignCssCompatibility({ name: opts.path, source: "", output, style });
   validateRedesignCssCompatibility({ name: opts.path, source: "", output, style });
   return output;
 }
