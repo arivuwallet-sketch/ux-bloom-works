@@ -597,7 +597,7 @@ function ProjectDetailPage() {
             ) : (
               <div className="flex flex-col gap-2">
                 {files.data?.map((file, index) => {
-                  const status = statusBadge[file.status] ?? statusBadge.queued!;
+                  const status = statusBadge[file.status] ?? statusBadge["queued"]!;
                   const StatusIcon = status.icon;
                   const seoRow = seoResultsAreCurrent ? seoByFile.get(file.id) : undefined;
                   return (

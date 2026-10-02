@@ -178,7 +178,7 @@ function keywordCandidates(files: M1M8File[]) {
 function staticJsonLd(source: string) {
   return [...source.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
     .map((m) => m[1]?.trim())
-    .filter((v): v is string => Boolean(v) && !/\$\{|\{\{|JSON\.stringify|dangerouslySetInnerHTML/i.test(v));
+    .filter((v): v is string => typeof v === "string" && !/\$\{|\{\{|JSON\.stringify|dangerouslySetInnerHTML/i.test(v));
 }
 
 function coverage(findings: M1M8Finding[], keywordCount: number, files: M1M8File[]): M1M8ModuleCoverage {
