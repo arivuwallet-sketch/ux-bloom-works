@@ -225,7 +225,7 @@ function articleResultSchema() {
     "refreshDate":null
   }
 }
-Rules: preserve [NEED: specific fact] and [VERIFY: specific claim/source] markers when evidence is missing. jsonLd must be null rather than fabricated when absolute URLs/authors/dates/entities are unavailable. Never use URLs that do not exist in supplied site context/source/task.`;
+Rules: preserve [NEED: specific fact] and [VERIFY: specific claim/source] markers when evidence is missing. jsonLd must be either null or a VALID JSON-LD DOCUMENT SERIALIZED AS A JSON STRING; use null rather than fabricating when absolute URLs/authors/dates/entities are unavailable. Never use URLs that do not exist in supplied site context/source/task.`;
 }
 
 function clusterResultSchema() {
