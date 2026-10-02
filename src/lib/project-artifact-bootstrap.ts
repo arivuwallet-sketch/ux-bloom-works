@@ -1,5 +1,4 @@
 import { getStyleBlueprint } from "@/lib/style-blueprints";
-import { generateAiText } from "@/lib/ai-provider";
 import { buildSeoT1T16Context, validateSeoTemplateArtifact } from "@/lib/seo-output-templates-t1-t16";
 import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
 import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
@@ -403,12 +402,50 @@ async function sleep(ms: number) {
 }
 
 async function callGateway(messages: GatewayMessage[]) {
-  const response = await generateAiText(messages, {
-    task: "artifact-generation",
-    timeoutMs: 240_000,
-    temperature: 0.1,
-  });
-  return response.content;
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  if (!apiKey) throw new Error("AI is not configured");
+  let lastError = "Artifact generation failed";
+  for (const model of AI_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 120_000);
+      try {
+        const body: Record<string, unknown> = { model, messages };
+        if (model.startsWith("openai/")) body["reasoning_effort"] = "high";
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        if (response.status === 402) throw new Error("AI credits exhausted.");
+        if (!response.ok) {
+          lastError = `Artifact AI request failed (${response.status})`;
+          if (TRANSIENT_STATUS.has(response.status) && attempt === 0) {
+            await sleep(600);
+            continue;
+          }
+          break;
+        }
+        const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+        const content = json.choices?.[0]?.message?.content?.trim() ?? "";
+        if (!content) throw new Error("Artifact AI returned an empty response");
+        return content;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") lastError = "Artifact AI request timed out";
+        else if (error instanceof Error) lastError = error.message;
+        if (lastError === "AI credits exhausted.") throw new Error(lastError);
+        if (attempt === 0) {
+          await sleep(450);
+          continue;
+        }
+        break;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+  }
+  throw new Error(lastError);
 }
 
 function validateGeneratedContent(path: string, content: string) {

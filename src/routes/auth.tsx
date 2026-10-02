@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
+import { lovable } from "@/integrations/lovable";
 import { useEffect, useState } from "react";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/studio/motion";
@@ -91,11 +92,8 @@ function AuthPage() {
     setGoogleBusy(true);
     try {
       if (next) sessionStorage.setItem("rezyn.auth.next", destination);
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth` },
-      });
-      if (oauthError) throw oauthError;
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/auth` });
+      if (result.error) throw result.error;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed. Please try again.");
     } finally {

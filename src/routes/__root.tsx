@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import archiveCss from "../archive-global.css?url";
 import archiveWorkspaceCss from "../archive-workspace.css?url";
 import transformationConsoleFixCss from "../transformation-console-fix.css?url";
-import { reportRuntimeError } from "../lib/runtime-error-reporting";
+import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header, Footer } from "@/components/site/Header";
 import { ImmersiveBackground } from "@/components/site/ImmersiveBackground";
 
@@ -34,7 +34,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void; inf
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportRuntimeError(error, { boundary: "tanstack_root_error_component" });
+    reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (

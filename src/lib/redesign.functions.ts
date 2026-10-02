@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateAiText } from "@/lib/ai-provider";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
@@ -191,12 +190,72 @@ async function sleep(ms: number) {
 }
 
 async function callGateway(messages: GatewayMessage[]) {
-  const response = await generateAiText(messages, {
-    task: "redesign",
-    timeoutMs: 240_000,
-    temperature: 0.15,
-  });
-  return response.content;
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  if (!apiKey) throw new Error("AI is not configured");
+
+  let lastError = "AI request failed";
+
+  for (const model of REDESIGN_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 120_000);
+
+      try {
+        const body: Record<string, unknown> = { model, messages };
+        if (model.startsWith("openai/")) body["reasoning_effort"] = REASONING_EFFORT;
+
+        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+
+        if (res.status === 402) throw new Error("AI credits exhausted.");
+        if (!res.ok) {
+          lastError = res.status === 429 ? "Rate limit reached — retrying." : `AI request failed (${res.status})`;
+
+          if (TRANSIENT_STATUS.has(res.status) && attempt === 0) {
+            await sleep(700);
+            continue;
+          }
+
+          if ([400, 404, 422, 429, 500, 502, 503, 504].includes(res.status)) break;
+          throw new Error(lastError);
+        }
+
+        const json = (await res.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        const content = json.choices?.[0]?.message?.content?.trim() ?? "";
+        if (!content) throw new Error("AI returned an empty response");
+        return content;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          lastError = "AI request timed out";
+          if (attempt === 0) {
+            await sleep(500);
+            continue;
+          }
+          break;
+        }
+        if (error instanceof Error && error.message === "AI credits exhausted.") throw error;
+        lastError = error instanceof Error ? error.message : lastError;
+        if (attempt === 0) {
+          await sleep(500);
+          continue;
+        }
+        break;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+  }
+
+  throw new Error(lastError);
 }
 
 async function generateProjectDesignPlan(opts: {
