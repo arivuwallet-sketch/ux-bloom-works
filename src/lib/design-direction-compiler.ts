@@ -575,3 +575,23 @@ export function certifyAllDesignDirections() {
 
   return { version: DESIGN_DIRECTION_COMPILER_VERSION, directions: STYLE_NAMES.length, families: 9, passed: true as const };
 }
+
+
+export function detectsTailwindV4(source: string) {
+  return /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/i.test(source);
+}
+
+export function isCompilerStyleEntrypoint(opts: {
+  name: string;
+  source: string;
+  sharedStyleEntryPoints?: string[];
+}) {
+  if (!/\.(?:css|scss|sass|less)$/i.test(opts.name)) return false;
+  const normalized = opts.name.replace(/\\/g, "/");
+  const shared = new Set((opts.sharedStyleEntryPoints ?? []).map((value) => value.replace(/\\/g, "/")));
+  if (shared.has(normalized)) return true;
+  if (detectsTailwindV4(opts.source)) return true;
+  if (/(^|\/)(?:globals?|index|main|app|theme|tokens?|design[-_]?system|styles?)\.(?:css|scss|sass|less)$/i.test(normalized)) return true;
+  const semanticCount = (opts.source.match(/--(?:background|foreground|primary|secondary|muted|accent|border|input|ring|radius)\s*:/g) ?? []).length;
+  return semanticCount >= 4;
+}
