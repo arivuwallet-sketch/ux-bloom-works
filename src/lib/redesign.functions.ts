@@ -294,7 +294,7 @@ async function generateProjectDesignPlan(opts: {
 
   const schemaInstruction = `Return exactly this JSON shape:
 {
-  "version": 1,
+  "version": 2,
   "summary": "short architecture/design summary",
   "architecture": {
     "framework": "observed framework/runtime and constraints",
@@ -587,7 +587,7 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       try {
         designPlan = storedPlan.plan as unknown as ProjectDesignPlan;
         activeGraph = storedPlan.dependency_graph as unknown as ProjectDependencyGraph;
-        if (designPlan.version !== 1 || activeGraph.version !== 1) throw new Error("stale plan version");
+        if (designPlan.version !== 2 || activeGraph.version !== 1) throw new Error("stale plan version");
       } catch {
         planCreated = true;
         designPlan = await generateProjectDesignPlan({
