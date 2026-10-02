@@ -237,6 +237,54 @@ function normalizedResolved(name: string, vars: Map<string, string>) {
   return resolveVar(name, vars)?.replace(/\s+/g, " ").trim().toLowerCase() ?? null;
 }
 
+
+function hasInputSurfaceConflict(vars: Map<string, string>) {
+  const input = normalizedResolved("input", vars);
+  if (!input) return false;
+  return ["background", "card"].some((surface) => vars.has(surface) && input === normalizedResolved(surface, vars));
+}
+
+function hasUsableBorderToken(vars: Map<string, string>) {
+  const border = normalizedResolved("border", vars);
+  if (!border) return false;
+  return ["background", "card"].every((surface) => !vars.has(surface) || border !== normalizedResolved(surface, vars));
+}
+
+export function repairRedesignCssCompatibility(opts: {
+  name: string;
+  source: string;
+  output: string;
+  style?: string | null | undefined;
+}) {
+  if (!CSS_EXT.test(opts.name)) return opts.output;
+  const tailwindV4 = /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/.test(opts.source + "\n" + opts.output);
+  if (!tailwindV4) return opts.output;
+
+  let repaired = opts.output.replace(
+    /@import\s+(["'])tailwindcss(?:\/[^"']*)?\1[^;]*\blayer\(\s*[^)]*,[^)]*\)[^;]*;/gi,
+    '@import "tailwindcss";',
+  );
+
+  const rootBlock = findBlocks(repaired, /:root\s*/i)[0] ?? "";
+  const rootVars = parseVars(rootBlock);
+  const darkBlocks = findBlocks(repaired, /\.dark\s*/i);
+  const darkOverrides = darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
+  const darkVars = mergeVars(rootVars, darkOverrides);
+
+  const repairInput =
+    (hasInputSurfaceConflict(rootVars) && hasUsableBorderToken(rootVars)) ||
+    (darkOverrides.size > 0 && hasInputSurfaceConflict(darkVars) && hasUsableBorderToken(darkVars));
+
+  if (repairInput) {
+    repaired = repaired.replace(/--input\s*:\s*[^;{}]+;/gi, "--input: var(--border);");
+    if (/--color-input\s*:/i.test(repaired)) {
+      repaired = repaired.replace(/--color-input\s*:\s*[^;{}]+;/gi, "--color-input: var(--input);");
+    }
+  }
+
+  return repaired;
+}
+
 function validateTailwindCss(source: string, output: string, style: string | null | undefined) {
   const errors: string[] = [];
   const tailwindV4 = /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/.test(source + "\n" + output);
