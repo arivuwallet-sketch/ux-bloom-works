@@ -43,6 +43,13 @@
       "when": 1790827515867,
       "tag": "0005_create_billing_credits",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790906025940,
+      "tag": "0006_create_project_design_plans",
+      "breakpoints": true
     }
   ]
 }

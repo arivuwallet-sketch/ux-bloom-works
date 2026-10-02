@@ -92,6 +92,53 @@ export type Database = {
         }
         Relationships: []
       }
+      project_design_plans: {
+        Row: {
+          created_at: string
+          dependency_graph: Json
+          error: string | null
+          plan: Json
+          project_id: string
+          source_signature: string
+          status: string
+          style_signature: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dependency_graph?: Json
+          error?: string | null
+          plan?: Json
+          project_id: string
+          source_signature: string
+          status?: string
+          style_signature: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dependency_graph?: Json
+          error?: string | null
+          plan?: Json
+          project_id?: string
+          source_signature?: string
+          status?: string
+          style_signature?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_design_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           content: string | null
