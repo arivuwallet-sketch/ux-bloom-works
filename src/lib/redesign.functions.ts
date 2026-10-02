@@ -638,23 +638,51 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       .filter((entry): entry is (typeof pending)[number] => Boolean(entry));
     const orderedIds = new Set(orderedQueue.map((entry) => entry.id));
     orderedQueue.push(...pending.filter((entry) => !orderedIds.has(entry.id)));
-    const file = orderedQueue[0];
+    let file = orderedQueue[0];
+    let fastForwarded = 0;
 
-    if (!file) {
-      await supabase.from("projects").update({ status: "done" }).eq("id", data.projectId);
-      return { done: true as const, remaining: 0, total: files.length, current: null, planCreated };
+    // Fast-forward consecutive files that provably need no AI reconstruction.
+    // This preserves dependency order while avoiding one network round-trip per
+    // config/support/non-presentation file in large projects.
+    for (const candidate of orderedQueue) {
+      const planningFile = planningFiles.find((entry) => entry.id === candidate.id);
+      const candidateSource = planningFile?.content ?? candidate.content ?? "";
+
+      if (isSupportFile(candidate.name)) {
+        await supabase
+          .from("project_files")
+          .update({ status: "skipped", redesign_error: "Config/SEO support file — kept unchanged, not restyled" })
+          .eq("id", candidate.id);
+        fastForwarded += 1;
+        file = undefined;
+        continue;
+      }
+
+      if (candidateSource.trim() && !isPresentationBearingFile(candidate.name, candidateSource)) {
+        await supabase
+          .from("project_files")
+          .update({ status: "done", redesigned_content: candidateSource, redesign_error: null })
+          .eq("id", candidate.id);
+        fastForwarded += 1;
+        file = undefined;
+        continue;
+      }
+
+      file = candidate;
+      break;
     }
 
-    if (isSupportFile(file.name)) {
-      await supabase
-        .from("project_files")
-        .update({ status: "skipped", redesign_error: "Config/SEO support file — kept unchanged, not restyled" })
-        .eq("id", file.id);
+    if (!file) {
+      const remainingAfterFastForward = Math.max(0, orderedQueue.length - fastForwarded);
+      if (remainingAfterFastForward === 0) {
+        await supabase.from("projects").update({ status: "done" }).eq("id", data.projectId);
+        return { done: true as const, remaining: 0, total: files.length, current: null, planCreated };
+      }
       return {
         done: false as const,
-        remaining: orderedQueue.length - 1,
+        remaining: remainingAfterFastForward,
         total: files.length,
-        current: file.name,
+        current: null,
         planCreated,
       };
     }
@@ -730,7 +758,7 @@ export const redesignNextFile = createServerFn({ method: "POST" })
 
     return {
       done: false as const,
-      remaining: orderedQueue.length - 1,
+      remaining: Math.max(0, orderedQueue.length - fastForwarded - 1),
       total: files.length,
       current: file.name,
       planCreated,
