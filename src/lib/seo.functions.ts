@@ -8,7 +8,7 @@ import {
   type SeoAudit,
   type SeoAuditFile,
 } from "@/lib/seo-intelligence";
-import { validateSeoTemplateArtifact } from "@/lib/seo-output-templates-t1-t16";
+import { validateSeoTemplateArtifact, type SeoTemplateId, type SeoT1T16CoverageStatus } from "@/lib/seo-output-templates-t1-t16";
 
 const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig)$/i;
 const MAX_PLAN_CONTEXT_CHARS = 140_000;
@@ -45,7 +45,7 @@ export type SeoResultRow = {
 };
 
 export type SeoProjectPlan = {
-  version: 1;
+  version: 2;
   summary: string;
   siteIdentity: {
     product: string;
@@ -69,6 +69,12 @@ export type SeoProjectPlan = {
     intent: string;
     actions: string[];
     preserve: string[];
+  }>;
+  templateExecution: Array<{
+    id: SeoTemplateId;
+    status: SeoT1T16CoverageStatus;
+    target: string | null;
+    reason: string;
   }>;
   transformationOrder: string[];
   risks: string[];
@@ -279,7 +285,7 @@ async function callGateway(messages: GatewayMessage[]) {
   throw new Error(lastError);
 }
 
-function normalizeSeoPlan(raw: string, files: HydratedSeoFile[]): SeoProjectPlan {
+function normalizeSeoPlan(raw: string, files: HydratedSeoFile[], audit: SeoAudit): SeoProjectPlan {
   const known = new Set(files.map((file) => normalizeName(file.name)));
   let parsed: Record<string, unknown>;
   try {
@@ -305,9 +311,33 @@ function normalizeSeoPlan(raw: string, files: HydratedSeoFile[]): SeoProjectPlan
     });
   }
 
+  const templateIds: SeoTemplateId[] = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15","T16"];
+  const allowedStatuses = new Set<SeoT1T16CoverageStatus>(["required", "applicable", "optional", "not-applicable", "verify-current-spec"]);
+  const rawTemplateRows = Array.isArray(parsed.templateExecution) ? parsed.templateExecution : [];
+  const templateRows = new Map<SeoTemplateId, Record<string, unknown>>();
+  for (const entry of rawTemplateRows) {
+    if (!entry || typeof entry !== "object") continue;
+    const row = entry as Record<string, unknown>;
+    const id = safeString(row.id) as SeoTemplateId;
+    if (templateIds.includes(id)) templateRows.set(id, row);
+  }
+  const templateExecution: SeoProjectPlan["templateExecution"] = templateIds.map((id) => {
+    const row = templateRows.get(id);
+    const fallback = audit.summary.templateCoverage[id];
+    const requestedStatus = safeString(row?.status) as SeoT1T16CoverageStatus;
+    const status = allowedStatuses.has(requestedStatus) ? requestedStatus : fallback.status;
+    const target = safeString(row?.target);
+    return {
+      id,
+      status,
+      target: target && !target.includes("<<") ? target : null,
+      reason: safeString(row?.reason, fallback.note),
+    };
+  });
+
   const requestedOrder = stringArray(parsed.transformationOrder).map(normalizeName).filter((file) => known.has(file));
   return {
-    version: 1,
+    version: 2,
     summary: safeString(parsed.summary, "Project-wide SEO plan grounded in the uploaded source and deterministic audit."),
     siteIdentity: {
       product: safeString(identity.product, "Unknown product"),
@@ -327,6 +357,7 @@ function normalizeSeoPlan(raw: string, files: HydratedSeoFile[]): SeoProjectPlan
       performance: stringArray(strategy.performance),
     },
     filePlans,
+    templateExecution,
     transformationOrder: Array.from(new Set([...requestedOrder, ...files.map((file) => normalizeName(file.name))])),
     risks: stringArray(parsed.risks),
   };
@@ -354,7 +385,7 @@ async function generateSeoPlan(opts: {
 }) {
   const schema = `Return ONLY JSON in this shape:
 {
-  "version": 1,
+  "version": 2,
   "summary": "short project SEO strategy",
   "siteIdentity": {"product":"source-grounded product identity","audience":"source-grounded audience or unknown","primaryTopics":["real topic"]},
   "protectedInvariants": ["existing routes/URLs/functional or visual SEO invariants"],
@@ -364,6 +395,7 @@ async function generateSeoPlan(opts: {
     "social": ["rule"], "accessibility": ["rule"], "performance": ["rule"]
   },
   "filePlans": [{"file":"known/file","intent":"real page/search intent inferred only from source","actions":["specific safe SEO action"],"preserve":["specific invariant"]}],
+  "templateExecution": [{"id":"T1","status":"required","target":"project-plan or exact real/generated path or null","reason":"why this T1-T16 contract applies"}],
   "transformationOrder": ["known/file"],
   "risks": ["risk"]
 }`;
@@ -394,7 +426,7 @@ async function generateSeoPlan(opts: {
       const messages = attempt === 0
         ? baseMessages
         : [...baseMessages, { role: "system" as const, content: `Previous output was invalid: ${lastError}. Return complete valid JSON using only known file paths.` }];
-      return normalizeSeoPlan(await callGateway(messages), opts.files);
+      return normalizeSeoPlan(await callGateway(messages), opts.files, opts.audit);
     } catch (error) {
       lastError = error instanceof Error ? error.message : lastError;
     }
@@ -573,7 +605,7 @@ export const seoNextFile = createServerFn({ method: "POST" })
 
     if (canReuse) {
       plan = storedPlan.plan as SeoProjectPlan;
-      if (plan.version !== 1 || !Array.isArray(plan.transformationOrder)) {
+      if (plan.version !== 2 || !Array.isArray(plan.transformationOrder) || !Array.isArray(plan.templateExecution)) {
         planCreated = true;
         plan = await generateSeoPlan({ project: { name: project.name, productType: project.product_type, notes: project.notes }, files: hydrated, audit: beforeAudit, sourceMode: data.sourceMode });
       }
