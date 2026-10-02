@@ -1,4 +1,5 @@
 import { getStyleBlueprint } from "@/lib/style-blueprints";
+import { buildSeoT1T16Context, validateSeoTemplateArtifact } from "@/lib/seo-output-templates-t1-t16";
 
 const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py|yaml|yml)$/i;
 const PUBLIC_PAGE_EXT = /\.(html?|jsx|tsx|vue|svelte|astro|php|hbs|ejs|twig|mdx)$/i;
@@ -337,11 +338,12 @@ function sitemapXml(origin: string, routes: string[]) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`;
 }
 
-function llmsText(project: ProjectRow, routes: string[], description: string | null) {
+function llmsText(project: ProjectRow, routes: string[], description: string | null, origin: string | null) {
   const intro = description ?? `${project.name} project index generated from the source routes available to Rezyn.`;
   const routeLines = routes.slice(0, 80).map((route) => {
     const label = route === "/" ? "Home" : route.split("/").filter(Boolean).map((part) => part.replace(/[-_]+/g, " ")).join(" / ");
-    return `- [${label}](${route})`;
+    const href = origin ? `${origin}${route === "/" ? "/" : route}` : route;
+    return `- [${label}](${href})`;
   });
   return [`# ${project.name}`, `> ${intro}`, "", "## Important pages", ...(routeLines.length ? routeLines : ["- No public route list could be derived safely from source."]), "", "<!-- llms.txt is an optional curated index; it does not guarantee ranking or AI citation. -->", ""].join("\n");
 }
@@ -470,14 +472,14 @@ async function generateOpenApi(files: SourceFile[], origin: string | null) {
     {
       role: "system",
       content:
-        "Generate a valid OpenAPI 3.1 JSON document from the supplied REAL API route source only. Document only endpoints, methods, parameters, request bodies, responses and auth that are explicitly supported by the code. Never invent an endpoint, host, secret, rate limit, schema field or example fact. Use concise operationIds. If a server URL is not verified, omit servers. Return JSON only, no markdown.",
+        "Generate a valid OpenAPI 3.1 JSON document from the supplied REAL API route source only. Document only endpoints, methods, parameters, request bodies, responses and auth that are explicitly supported by the code. Never invent an endpoint, host, secret, rate limit, schema field or example fact. Use concise operationIds and tool-selection-friendly descriptions. If a server URL is not verified, omit servers. Return JSON only, no markdown.\n\n" + buildSeoT1T16Context(),
     },
     {
       role: "user",
       content: `Verified site origin: ${origin ?? "UNKNOWN — omit servers"}\n\nAPI SOURCE:\n${snapshot}`,
     },
   ]);
-  const output = validateGeneratedContent("openapi.json", raw);
+  const output = validateSeoTemplateArtifact("openapi.json", validateGeneratedContent("openapi.json", raw));
   const parsed = JSON.parse(output) as { openapi?: unknown; paths?: unknown };
   if (typeof parsed.openapi !== "string" || !parsed.openapi.startsWith("3.1")) throw new Error("Generated OpenAPI document is not 3.1");
   if (!parsed.paths || typeof parsed.paths !== "object") throw new Error("Generated OpenAPI document has no paths object");
@@ -570,7 +572,7 @@ function planSeoArtifacts(project: ProjectRow, files: SourceFile[], runtime: Run
       path: publicPath(root, "llms.txt"),
       kind: "llms",
       reason: "Optional curated AI-readable project index is missing; Rezyn can generate it without claiming ranking/citation impact.",
-      content: llmsText(project, routes, pageDescription(files)),
+      content: llmsText(project, routes, pageDescription(files), origin),
       required: false,
     });
   }
@@ -623,7 +625,8 @@ async function materializeArtifact(opts: {
     content = await generateDesignFoundation({ project: opts.project, files: opts.files, runtime: opts.runtime, path });
   }
   if (!content) throw new Error(`No generated content for ${path}`);
-  const validated = validateGeneratedContent(path, content);
+  const baseValidated = validateGeneratedContent(path, content);
+  const validated = opts.engine === "seo" ? validateSeoTemplateArtifact(path, baseValidated) : baseValidated;
 
   // Re-check immediately before insert so concurrent requests cannot intentionally create duplicate names.
   const { data: duplicate, error: duplicateError } = await opts.supabase
