@@ -374,3 +374,52 @@ export function validateSeoTemplateArtifact(name: string, source: string) {
 
   return source;
 }
+
+
+export type SeoT1T16CoverageStatus =
+  | "required"
+  | "applicable"
+  | "optional"
+  | "not-applicable"
+  | "verify-current-spec";
+
+export type SeoT1T16Coverage = Record<SeoTemplateId, {
+  status: SeoT1T16CoverageStatus;
+  note: string;
+}>;
+
+export function buildSeoT1T16Coverage(input: {
+  pageCount: number;
+  canonicalHost: string | null;
+  hasPublicWebsite: boolean;
+  hasRobots: boolean;
+  hasSitemap: boolean;
+  hasLlmsTxt: boolean;
+  hasOpenApi: boolean;
+  apiRouteCount: number;
+  hasStructuredData: boolean;
+  hasQuestionAnswerContent: boolean;
+  hasVoiceSurface: boolean;
+  hasConversionSurface: boolean;
+}): SeoT1T16Coverage {
+  const pages = input.pageCount > 0;
+  const publicSite = input.hasPublicWebsite || pages;
+  return {
+    T1: { status: "required", note: "Site profile is the grounding object for every project." },
+    T2: { status: "required", note: "Keyword/page mapping is required; metrics stay null without real data." },
+    T3: { status: pages ? "required" : "not-applicable", note: pages ? "Create/update per-URL briefs for public target pages." : "No public page templates were detected." },
+    T4: { status: pages ? "applicable" : "not-applicable", note: pages ? "Apply framework-native head/metadata baseline to public pages." : "No page head surface detected." },
+    T5: { status: publicSite ? "applicable" : "not-applicable", note: input.hasRobots ? "Existing robots policy should be audited/updated rather than duplicated." : "Public website has no detected robots policy." },
+    T6: { status: publicSite && input.canonicalHost ? "applicable" : publicSite ? "optional" : "not-applicable", note: input.hasSitemap ? "Existing sitemap should be audited/updated." : input.canonicalHost ? "A real canonical host is available for safe sitemap generation." : "Do not fabricate absolute sitemap URLs until canonical host is verified." },
+    T7: { status: publicSite ? "optional" : "not-applicable", note: input.hasLlmsTxt ? "Existing llms.txt should be curated, not duplicated." : "Optional curated machine-readable index; no ranking/citation claims." },
+    T8: { status: pages ? "applicable" : "not-applicable", note: input.hasStructuredData ? "Existing structured data should be validated and normalized." : "Generate schema only where verified page/entity facts support it." },
+    T9: { status: input.hasQuestionAnswerContent ? "applicable" : pages ? "optional" : "not-applicable", note: input.hasQuestionAnswerContent ? "Existing question/answer content can use answer-first structures." : "Use only when real question intent is supported." },
+    T10: { status: input.hasVoiceSurface ? "applicable" : "not-applicable", note: input.hasVoiceSurface ? "Voice surface detected; target speech engine still must be known." : "No voice/SSML surface detected." },
+    T11: { status: input.apiRouteCount > 0 ? "applicable" : "not-applicable", note: input.hasOpenApi ? "Existing API description should be validated against real routes." : input.apiRouteCount > 0 ? "Real API routes detected; document only verified operations." : "No real API routes detected." },
+    T12: { status: input.apiRouteCount > 0 || input.hasOpenApi ? "verify-current-spec" : "optional", note: "A2A/MCP/WebMCP/UCP/ACP formats are volatile; verify current official specs before code." },
+    T13: { status: "optional", note: "Digital PR requires a real newsworthy asset, recipient and evidence; never fabricate outreach facts." },
+    T14: { status: input.hasConversionSurface ? "applicable" : "optional", note: input.hasConversionSurface ? "Conversion surfaces detected; map intent to real CTAs/offers/forms." : "Use only when real funnel/conversion surfaces exist." },
+    T15: { status: "required", note: "Every release records deterministic/external checks as pass, fail or not-run." },
+    T16: { status: "required", note: "Every completed SEO project needs an evidence-based final report and 30/60/90 roadmap." },
+  };
+}
