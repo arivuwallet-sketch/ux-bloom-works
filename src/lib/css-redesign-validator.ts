@@ -311,7 +311,7 @@ export function validateRedesignCssCompatibility(opts: {
   name: string;
   source: string;
   output: string;
-  style?: string | null;
+  style?: string | null | undefined;
 }) {
   if (!CSS_EXT.test(opts.name)) return;
   const errors = validateTailwindCss(opts.source, opts.output, opts.style);
