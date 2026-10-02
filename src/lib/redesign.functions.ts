@@ -14,6 +14,7 @@ import {
 } from "@/lib/project-design-plan";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { isSupportFile } from "@/lib/project-file-kinds";
+import { validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -94,7 +95,7 @@ function presentationCarryoverRatio(source: string, output: string) {
   return unchanged / before.length;
 }
 
-function validateFullReconstruction(name: string, source: string, candidate: string) {
+function validateFullReconstruction(name: string, source: string, candidate: string, style?: string | null) {
   const output = stripOuterFence(candidate);
   if (!output) throw new Error("AI returned an empty file");
   if (output === source.trim()) throw new Error("AI returned the original UI unchanged");
@@ -119,6 +120,8 @@ function validateFullReconstruction(name: string, source: string, candidate: str
   if (/^(here(?:'s| is)|sure[,!]|i(?:'ve| have) (?:redesigned|updated|rewritten))/i.test(output)) {
     throw new Error("AI returned commentary instead of a complete source file");
   }
+
+  validateRedesignCssCompatibility({ name, source, output, style });
 
   const carryover = presentationCarryoverRatio(source, output);
   if (carryover > 0.78) {
@@ -448,7 +451,7 @@ async function redesignSource(opts: {
 
     try {
       const raw = await callGateway(messages);
-      const candidate = validateFullReconstruction(opts.name, opts.source, raw);
+      const candidate = validateFullReconstruction(opts.name, opts.source, raw, opts.style);
       const audit = await auditReconstruction({
         name: opts.name,
         style: opts.style,
