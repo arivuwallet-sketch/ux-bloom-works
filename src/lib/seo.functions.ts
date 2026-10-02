@@ -8,6 +8,7 @@ import {
   type SeoAudit,
   type SeoAuditFile,
 } from "@/lib/seo-intelligence";
+import { validateSeoTemplateArtifact } from "@/lib/seo-output-templates-t1-t16";
 
 const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig)$/i;
 const MAX_PLAN_CONTEXT_CHARS = 140_000;
@@ -208,6 +209,8 @@ function validateSeoOutput(name: string, source: string, candidate: string) {
   if (!["md", "mdx", "txt"].includes(ext) && /^```/.test(output)) {
     throw new Error("SEO agent returned markdown instead of source code");
   }
+
+  validateSeoTemplateArtifact(name, output);
 
   const carryover = visualCarryoverRatio(source, output);
   if (carryover < 0.88) {
