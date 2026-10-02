@@ -1,9 +1,10 @@
 import { buildSeoM1M8Context } from "@/lib/seo-modules-m1-m8";
 import { buildSeoT1T16Context } from "@/lib/seo-output-templates-t1-t16";
+import { buildSeoBlogWriterContext } from "@/lib/seo-blog-writer";
 
 export type SeoProvenance = "VERIFIED" | "DERIVED" | "ASSUMED" | "UNKNOWN";
 
-export const SEO_KNOWLEDGE_VERSION = "2026-10+m1-m8+t1-t16";
+export const SEO_KNOWLEDGE_VERSION = "2026-10+m1-m8+t1-t16+blog-1-16";
 
 export const SEO_QA_GATE = [
   "No invented numbers, quotes, reviews, URLs, endpoints, rankings, traffic, authority metrics, search volume or keyword difficulty; unknowns stay null/UNKNOWN.",
@@ -214,5 +215,7 @@ ${SEO_COMMON_FAILURES.map((item, index) => `${index + 1}. ${item}`).join("\n")}
 
 ${buildSeoM1M8Context()}
 
-${buildSeoT1T16Context()}`;
+${buildSeoT1T16Context()}
+
+${buildSeoBlogWriterContext()}`;
 }
