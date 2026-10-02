@@ -1,6 +1,7 @@
 import { buildSeoKnowledgeContext, type SeoProvenance } from "@/lib/seo-knowledge";
 import { analyzeM1M8, type M1M8Analysis, type M1M8Module, type M1M8ModuleCoverage } from "@/lib/seo-m1-m8-analysis";
 import type { SeoKeywordCandidate } from "@/lib/seo-modules-m1-m8";
+import { buildSeoT1T16Coverage, type SeoT1T16Coverage } from "@/lib/seo-output-templates-t1-t16";
 
 export type SeoCategory =
   | "crawlability"
@@ -70,6 +71,7 @@ export type SeoAudit = {
     siteModel: SeoSiteModel;
     auditLayers: Record<SeoAuditLayer, number>;
     moduleCoverage: M1M8ModuleCoverage;
+    templateCoverage: SeoT1T16Coverage;
     keywordCandidates: SeoKeywordCandidate[];
     moduleSignals: M1M8Analysis["signals"];
   };
@@ -781,6 +783,21 @@ export function auditSeoProject(files: SeoAuditFile[]): SeoAudit {
     });
   }
 
+  const templateCoverage = buildSeoT1T16Coverage({
+    pageCount: pageFiles.length,
+    canonicalHost: siteModel.canonicalHost,
+    hasPublicWebsite: pageFiles.length > 0,
+    hasRobots: siteModel.hasRobots,
+    hasSitemap: siteModel.hasSitemap,
+    hasLlmsTxt: siteModel.hasLlmsTxt,
+    hasOpenApi: siteModel.hasOpenApi,
+    apiRouteCount: siteModel.apiRoutes.length,
+    hasStructuredData: normalized.some((file) => hasJsonLd(file.content)),
+    hasQuestionAnswerContent: m1m8.signals.questionAnswerFiles.length > 0,
+    hasVoiceSurface: normalized.some((file) => /speechSynthesis|SpeechSynthesis|text[-_ ]?to[-_ ]?speech|\bTTS\b|<speak\b|\bSSML\b/i.test(file.content)),
+    hasConversionSurface: normalized.some((file) => /<form\b|type=["']submit["']|\b(?:pricing|checkout|purchase|book demo|request demo|start free|sign up|signup|lead)\b/i.test(file.content)),
+  });
+
   const categories = Object.keys(categoryWeights).reduce((acc, category) => {
     const key = category as SeoCategory;
     const penalty = issues.filter((issue) => issue.category === key).reduce((sum, issue) => sum + severityPenalty[issue.severity], 0);
@@ -811,6 +828,7 @@ export function auditSeoProject(files: SeoAuditFile[]): SeoAudit {
       siteModel,
       auditLayers,
       moduleCoverage: m1m8.moduleCoverage,
+      templateCoverage,
       keywordCandidates: m1m8.keywordCandidates,
       moduleSignals: m1m8.signals,
     },
@@ -828,6 +846,7 @@ export function buildSeoIntelligenceContext() {
     "- Prefer framework-native metadata/SSR/schema patterns already present in the project; do not add large client-only SEO dependencies or duplicate head managers.",
     "- Improve internal linking only with known real routes/anchors. If a domain, canonical, hreflang alternate, sitemap URL, endpoint, price, rating or author is unknown, preserve/omit it rather than inventing it.",
     "- For page copy, improve extractability and direct-answer structure only when it preserves the page's real meaning and visible design. Do not manufacture demand, expertise or claims.",
-    "- M1-M8 is mandatory coverage. If a module cannot execute because required external data is absent, mark it partial/not-run rather than fabricating measurements.",
+    "- M1-M8 is mandatory knowledge coverage. If a module cannot execute because required external data is absent, mark it partial/not-run rather than fabricating measurements.",
+    "- T1-T16 is the mandatory output-contract system. Use audit.summary.templateCoverage to decide required/applicable/optional/not-applicable/verify-current-spec outputs; never generate a template merely to tick a box.",
   ].join("\n");
 }
