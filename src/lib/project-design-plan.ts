@@ -1,3 +1,5 @@
+import { DESIGN_DIRECTION_COMPILER_VERSION } from "@/lib/design-direction-compiler";
+
 export type PlanningFile = {
   id: string;
   name: string;
@@ -24,7 +26,7 @@ export type ProjectDependencyGraph = {
 };
 
 export type ProjectDesignPlan = {
-  version: 1;
+  version: 2;
   summary: string;
   architecture: {
     framework: string;
@@ -193,6 +195,7 @@ export function buildProjectPlanSignatures(opts: {
 
   const styleMaterial = [
     opts.projectId,
+    DESIGN_DIRECTION_COMPILER_VERSION,
     opts.styleMode,
     opts.targetStyle ?? "",
     ...opts.files.map((file) => `${normalizePath(file.name)}=${file.targetStyle ?? ""}`).sort(),
@@ -266,7 +269,7 @@ export function parseProjectDesignPlan(rawValue: string, files: PlanningFile[]):
   const transformationOrder = [...requestedOrder, ...files.map((file) => normalizePath(file.name)).filter((file) => !seen.has(file))];
 
   return {
-    version: 1,
+    version: 2,
     summary: stringValue(parsed["summary"], "Project-wide reconstruction plan."),
     architecture: {
       framework: stringValue(architecture["framework"], "Use the project's existing framework and runtime."),
