@@ -32,7 +32,8 @@ function stripOuterFence(value: string) {
 }
 
 function validateGeneratedFile(fileName: string, original: string, candidate: string, style?: string | null) {
-  const output = candidate.trim();
+  let output = candidate.trim();
+  output = repairRedesignCssCompatibility({ name: fileName, source: original, output, style });
   if (!output) throw new Error("AI returned an empty file");
 
   if (original.length > 4_000 && output.length < original.length * 0.15) {
