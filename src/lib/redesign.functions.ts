@@ -798,17 +798,26 @@ export const redesignNextFile = createServerFn({ method: "POST" })
 /** Requeues only previously failed redesign files, preserving completed work. */
 export const requeueFailedRedesign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
+  .inputValidator((data) =>
+    z.object({
+      projectId: z.string().uuid(),
+      legacyCompilerOnly: z.boolean().optional().default(false),
+    }).parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { data: failedFiles, error: readError } = await context.supabase
       .from("project_files")
-      .select("id")
+      .select("id, redesign_error")
       .eq("project_id", data.projectId)
       .eq("status", "failed");
     if (readError) throw new Error(readError.message);
     if (!failedFiles || failedFiles.length === 0) return { ok: true, requeued: 0 };
 
-    const ids = failedFiles.map((file) => file.id);
+    const legacyCompilerError = /(Fix Tailwind v4 syntax|nested dark: block inside @theme|Register reusable Neo effects|--input resolves to the same color|prefers-reduced-motion override)/i;
+    const ids = failedFiles
+      .filter((file) => !data.legacyCompilerOnly || legacyCompilerError.test(file.redesign_error ?? ""))
+      .map((file) => file.id);
+    if (ids.length === 0) return { ok: true, requeued: 0 };
     const { error } = await context.supabase
       .from("project_files")
       .update({ status: "queued", redesign_error: null })
