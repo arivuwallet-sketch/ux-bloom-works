@@ -315,9 +315,22 @@ function ProjectDetailPage() {
   const redesignDoneCount = (files.data ?? []).filter((file) => file.status === "done" || file.status === "skipped").length;
   const totalCount = files.data?.length ?? 0;
   const seoDoneCount = seoResultsAreCurrent ? (seoState.data?.completed ?? 0) : 0;
-  const completedUnits = engineMode === "redesign" ? redesignDoneCount : engineMode === "seo" ? seoDoneCount : redesignDoneCount + seoDoneCount;
-  const totalUnits = engineMode === "combined" ? totalCount * 2 : totalCount;
-  const progressPct = totalUnits === 0 ? 0 : Math.round((completedUnits / totalUnits) * 100);
+  // Combined mode has two passes over the same project files. Keep the user-facing
+  // denominator equal to the real project file count instead of misleadingly doubling it.
+  const combinedWork = redesignDoneCount + seoDoneCount;
+  const completedUnits =
+    engineMode === "redesign"
+      ? redesignDoneCount
+      : engineMode === "seo"
+        ? seoDoneCount
+        : Math.floor(combinedWork / 2);
+  const totalUnits = totalCount;
+  const progressPct =
+    totalCount === 0
+      ? 0
+      : engineMode === "combined"
+        ? Math.round((combinedWork / (totalCount * 2)) * 100)
+        : Math.round((completedUnits / totalCount) * 100);
   const canExport = engineMode === "redesign" ? redesignDoneCount > 0 : seoDoneCount > 0;
   const activeAudit = (seoPlanState?.audit_after ?? seoPlanState?.audit_before ?? null) as SeoAudit | null;
   const scoreBefore = seoPlanState?.score_before ?? null;
@@ -374,7 +387,7 @@ function ProjectDetailPage() {
                 </div>
                 <div className="mt-9 flex items-end gap-3">
                   <strong className="font-serif text-[52px] leading-none tracking-[-0.07em]">{progressPct}%</strong>
-                  <span className="pb-1 text-[12px] text-ink-soft">{completedUnits}/{totalUnits} units</span>
+                  <span className="pb-1 text-[12px] text-ink-soft">{completedUnits}/{totalUnits} files</span>
                 </div>
                 <div className="progress-track mt-4"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
               </div>
