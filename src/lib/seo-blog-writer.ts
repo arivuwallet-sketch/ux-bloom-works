@@ -57,6 +57,33 @@ export type SeoBlogTask = {
 
 export type SeoBlogQaStatus = "pass" | "fail" | "not-run";
 
+export type SeoBlogClusterResult = {
+  version: 1;
+  mode: "cluster";
+  pillarTopic: string;
+  pillar: {
+    title: string;
+    primaryKeyword: string;
+    intent: SeoBlogIntent;
+    uniqueAngle: string;
+    targetSlug: string;
+  };
+  supportingArticles: Array<{
+    title: string;
+    primaryKeyword: string;
+    intent: SeoBlogIntent;
+    funnelStage: SeoBlogFunnelStage;
+    uniqueAngle: string;
+    targetSlug: string;
+    linksTo: string[];
+    cannibalizationRisk: string | null;
+    publishingPriority: number | null;
+  }>;
+  internalLinkDesign: Array<{ from: string; to: string; anchor: string }>;
+  needs: string[];
+  qa: Array<{ check: string; status: SeoBlogQaStatus; note: string | null }>;
+};
+
 export type SeoBlogWriterResult = {
   version: 1;
   mode: SeoBlogMode;
@@ -283,6 +310,8 @@ export const SEO_BLOG_WRITER_SECTIONS = {
   ],
 } as const;
 
+export type SeoBlogWriterResponse = SeoBlogWriterResult | SeoBlogClusterResult;
+
 export function buildSeoBlogWriterContext() {
   const sections: Array<[string, readonly string[]]> = [
     ["ROLE", SEO_BLOG_WRITER_SECTIONS.role],
@@ -331,4 +360,32 @@ export function validateSeoBlogWriterResult(result: SeoBlogWriterResult) {
   const failed = result.qa.filter((row) => row.status === "fail");
   if (failed.length > 0) throw new Error(`Blog writer QA has ${failed.length} unresolved failure(s)`);
   return result;
+}
+
+
+export function validateSeoBlogClusterResult(result: SeoBlogClusterResult) {
+  if (result.version !== 1 || result.mode !== "cluster") throw new Error("Blog cluster result version/mode is invalid");
+  if (!result.pillarTopic.trim() || !result.pillar?.title?.trim() || !result.pillar?.primaryKeyword?.trim()) {
+    throw new Error("Blog cluster pillar is incomplete");
+  }
+  if (!Array.isArray(result.supportingArticles) || result.supportingArticles.length === 0) {
+    throw new Error("Blog cluster returned no supporting articles");
+  }
+  const seen = new Set<string>();
+  for (const article of result.supportingArticles) {
+    const slug = article.targetSlug.trim().toLowerCase();
+    if (!slug) throw new Error("Blog cluster contains an article without a target slug");
+    if (seen.has(slug)) throw new Error(`Blog cluster contains duplicate target slug: ${slug}`);
+    seen.add(slug);
+    if (!article.uniqueAngle.trim()) throw new Error(`Blog cluster article ${article.title} has no unique angle`);
+  }
+  const failed = result.qa.filter((row) => row.status === "fail");
+  if (failed.length > 0) throw new Error(`Blog cluster QA has ${failed.length} unresolved failure(s)`);
+  return result;
+}
+
+export function validateSeoBlogWriterResponse(result: SeoBlogWriterResponse) {
+  return result.mode === "cluster"
+    ? validateSeoBlogClusterResult(result)
+    : validateSeoBlogWriterResult(result);
 }
