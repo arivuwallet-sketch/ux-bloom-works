@@ -219,7 +219,7 @@ function ProjectDetailPage() {
   const runRedesignPhase = async () => {
     for (let i = 0; i < 250; i += 1) {
       const res = await runNext({ data: { projectId } });
-      await invalidate();
+      void invalidate();
       if (res.done) return;
       const complete = res.total - res.remaining;
       setProgress(`Redesigning ${Math.min(complete, res.total)} of ${res.total} — ${res.current}`);
@@ -231,7 +231,7 @@ function ProjectDetailPage() {
   const runSeoPhase = async (sourceMode: "original" | "redesigned") => {
     for (let i = 0; i < 250; i += 1) {
       const res = await runSeoNext({ data: { projectId, sourceMode } });
-      await invalidateSeo();
+      void invalidateSeo();
       if (res.done) {
         setProgress(`SEO optimization complete — measured score ${res.score}/100.`);
         return;
