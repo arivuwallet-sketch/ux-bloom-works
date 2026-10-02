@@ -200,9 +200,9 @@ function parseProposals(raw: string, existing: Set<string>): ProposedFile[] {
   for (const item of parsed.files.slice(0, 3)) {
     if (!item || typeof item !== "object") continue;
     const row = item as Record<string, unknown>;
-    const path = safePath(typeof row.path === "string" ? row.path : "");
-    const purpose = typeof row.purpose === "string" ? row.purpose.trim().slice(0, 500) : "Shared redesign support";
-    const rawContent = typeof row.content === "string" ? row.content : "";
+    const path = safePath(typeof row["path"] === "string" ? row["path"] : "");
+    const purpose = typeof row["purpose"] === "string" ? row["purpose"].trim().slice(0, 500) : "Shared redesign support";
+    const rawContent = typeof row["content"] === "string" ? row["content"] : "";
     if (!path || existing.has(path.toLowerCase()) || seen.has(path.toLowerCase())) continue;
     const content = validateContent(path, rawContent);
     seen.add(path.toLowerCase());

@@ -294,72 +294,72 @@ function normalizeSeoPlan(raw: string, files: HydratedSeoFile[], audit: SeoAudit
     throw new Error("SEO planner returned invalid JSON");
   }
 
-  const identity = (parsed.siteIdentity && typeof parsed.siteIdentity === "object" ? parsed.siteIdentity : {}) as Record<string, unknown>;
-  const strategy = (parsed.technicalStrategy && typeof parsed.technicalStrategy === "object" ? parsed.technicalStrategy : {}) as Record<string, unknown>;
-  const rawPlans = Array.isArray(parsed.filePlans) ? parsed.filePlans : [];
+  const identity = (parsed["siteIdentity"] && typeof parsed["siteIdentity"] === "object" ? parsed["siteIdentity"] : {}) as Record<string, unknown>;
+  const strategy = (parsed["technicalStrategy"] && typeof parsed["technicalStrategy"] === "object" ? parsed["technicalStrategy"] : {}) as Record<string, unknown>;
+  const rawPlans = Array.isArray(parsed["filePlans"]) ? parsed["filePlans"] : [];
   const filePlans: SeoProjectPlan["filePlans"] = [];
   for (const entry of rawPlans) {
     if (!entry || typeof entry !== "object") continue;
     const row = entry as Record<string, unknown>;
-    const file = normalizeName(safeString(row.file));
+    const file = normalizeName(safeString(row["file"]));
     if (!file || !known.has(file)) continue;
     filePlans.push({
       file,
-      intent: safeString(row.intent, "Preserve the page purpose while improving evidence-backed technical SEO."),
-      actions: stringArray(row.actions),
-      preserve: stringArray(row.preserve),
+      intent: safeString(row["intent"], "Preserve the page purpose while improving evidence-backed technical SEO."),
+      actions: stringArray(row["actions"]),
+      preserve: stringArray(row["preserve"]),
     });
   }
 
   const templateIds: SeoTemplateId[] = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15","T16"];
   const allowedStatuses = new Set<SeoT1T16CoverageStatus>(["required", "applicable", "optional", "not-applicable", "verify-current-spec"]);
-  const rawTemplateRows = Array.isArray(parsed.templateExecution) ? parsed.templateExecution : [];
+  const rawTemplateRows = Array.isArray(parsed["templateExecution"]) ? parsed["templateExecution"] : [];
   const templateRows = new Map<SeoTemplateId, Record<string, unknown>>();
   for (const entry of rawTemplateRows) {
     if (!entry || typeof entry !== "object") continue;
     const row = entry as Record<string, unknown>;
-    const id = safeString(row.id) as SeoTemplateId;
+    const id = safeString(row["id"]) as SeoTemplateId;
     if (templateIds.includes(id)) templateRows.set(id, row);
   }
   const templateExecution: SeoProjectPlan["templateExecution"] = templateIds.map((id) => {
     const row = templateRows.get(id);
     const fallback = audit.summary.templateCoverage[id];
-    const requestedStatus = safeString(row?.status) as SeoT1T16CoverageStatus;
+    const requestedStatus = safeString(row?.["status"]) as SeoT1T16CoverageStatus;
     const status = allowedStatuses.has(requestedStatus) ? requestedStatus : fallback.status;
-    const target = safeString(row?.target);
+    const target = safeString(row?.["target"]);
     return {
       id,
       status,
       target: target && !target.includes("<<") ? target : null,
-      reason: safeString(row?.reason, fallback.note),
+      reason: safeString(row?.["reason"], fallback.note),
     };
   });
 
-  const requestedOrder = stringArray(parsed.transformationOrder).map(normalizeName).filter((file) => known.has(file));
+  const requestedOrder = stringArray(parsed["transformationOrder"]).map(normalizeName).filter((file) => known.has(file));
   return {
     version: 2,
-    summary: safeString(parsed.summary, "Project-wide SEO plan grounded in the uploaded source and deterministic audit."),
+    summary: safeString(parsed["summary"], "Project-wide SEO plan grounded in the uploaded source and deterministic audit."),
     siteIdentity: {
-      product: safeString(identity.product, "Unknown product"),
-      audience: safeString(identity.audience, "Not safely inferable from source"),
-      primaryTopics: stringArray(identity.primaryTopics),
+      product: safeString(identity["product"], "Unknown product"),
+      audience: safeString(identity["audience"], "Not safely inferable from source"),
+      primaryTopics: stringArray(identity["primaryTopics"]),
     },
-    protectedInvariants: stringArray(parsed.protectedInvariants),
+    protectedInvariants: stringArray(parsed["protectedInvariants"]),
     technicalStrategy: {
-      metadata: stringArray(strategy.metadata),
-      crawlability: stringArray(strategy.crawlability),
-      indexability: stringArray(strategy.indexability),
-      structuredData: stringArray(strategy.structuredData),
-      internalLinking: stringArray(strategy.internalLinking),
-      semantics: stringArray(strategy.semantics),
-      social: stringArray(strategy.social),
-      accessibility: stringArray(strategy.accessibility),
-      performance: stringArray(strategy.performance),
+      metadata: stringArray(strategy["metadata"]),
+      crawlability: stringArray(strategy["crawlability"]),
+      indexability: stringArray(strategy["indexability"]),
+      structuredData: stringArray(strategy["structuredData"]),
+      internalLinking: stringArray(strategy["internalLinking"]),
+      semantics: stringArray(strategy["semantics"]),
+      social: stringArray(strategy["social"]),
+      accessibility: stringArray(strategy["accessibility"]),
+      performance: stringArray(strategy["performance"]),
     },
     filePlans,
     templateExecution,
     transformationOrder: Array.from(new Set([...requestedOrder, ...files.map((file) => normalizeName(file.name))])),
-    risks: stringArray(parsed.risks),
+    risks: stringArray(parsed["risks"]),
   };
 }
 
