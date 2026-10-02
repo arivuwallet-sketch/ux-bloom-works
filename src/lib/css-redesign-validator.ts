@@ -388,8 +388,8 @@ export function repairRedesignCssCompatibility(opts: {
     repaired = ensureReducedMotion(repaired);
   }
 
-  const rootBlock = findBlocks(repaired, /:root\s*/i)[0] ?? "";
-  const rootVars = parseVars(rootBlock);
+  const rootBlocks = findBlocks(repaired, /:root\s*/i);
+  const rootVars = parseVars(rootBlocks.join("\n"));
   const darkBlocks = findBlocks(repaired, /\.dark\s*/i);
   const darkOverrides = darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
   const darkVars = mergeVars(rootVars, darkOverrides);
@@ -450,8 +450,8 @@ function validateTailwindCss(source: string, output: string, style: string | nul
     }
   }
 
-  const rootBlock = findBlocks(output, /:root\s*/i)[0] ?? "";
-  const rootVars = parseVars(rootBlock);
+  const rootBlocks = findBlocks(output, /:root\s*/i);
+  const rootVars = parseVars(rootBlocks.join("\n"));
   const darkBlocks = findBlocks(output, /\.dark\s*/i);
   const darkOverrides = darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
   const darkVars = mergeVars(rootVars, darkOverrides);
