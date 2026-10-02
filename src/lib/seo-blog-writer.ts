@@ -115,7 +115,7 @@ export type SeoBlogWriterResult = {
     schemaTypes: string[];
   };
   articleMarkdown: string;
-  jsonLd: Record<string, unknown> | null;
+  jsonLd: string | null;
   internalLinkPlan: {
     insideArticle: Array<{ anchor: string; url: string }>;
     backlinksToArticle: Array<{ url: string; suggestedAnchor: string; location: string }>;
@@ -356,7 +356,13 @@ export function validateSeoBlogWriterResult(result: SeoBlogWriterResult) {
   if (/\{\{|\}\}|\[NEED:\s*\]|\[VERIFY:\s*\]/.test(result.articleMarkdown)) {
     throw new Error("Blog writer output contains unresolved empty template markers");
   }
-  if (result.jsonLd) JSON.stringify(result.jsonLd);
+  if (result.jsonLd) {
+    try {
+      JSON.parse(result.jsonLd);
+    } catch {
+      throw new Error("Blog writer JSON-LD is not valid JSON");
+    }
+  }
   const failed = result.qa.filter((row) => row.status === "fail");
   if (failed.length > 0) throw new Error(`Blog writer QA has ${failed.length} unresolved failure(s)`);
   return result;
