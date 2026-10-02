@@ -330,7 +330,7 @@ async function ensureRedesignArtifacts(opts: {
           target_style: fallbackStyle,
           status: project.style_mode === "file" ? "done" : "queued",
           storage_path: null,
-          redesigned_content: project.style_mode === "file" ? proposal.content : null,
+          redesigned_content: project.style_mode === "file" ? proposalContent : null,
           redesign_error: null,
           updated_at: new Date().toISOString(),
         })
