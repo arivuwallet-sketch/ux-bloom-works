@@ -50,6 +50,13 @@
       "when": 1790906025940,
       "tag": "0006_create_project_design_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790906059574,
+      "tag": "0007_create_seo_agent",
+      "breakpoints": true
     }
   ]
 }

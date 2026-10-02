@@ -198,6 +198,113 @@ export type Database = {
           },
         ]
       }
+      project_seo_files: {
+        Row: {
+          created_at: string
+          error: string | null
+          project_file_id: string
+          project_id: string
+          seo_content: string | null
+          source_signature: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          project_file_id: string
+          project_id: string
+          seo_content?: string | null
+          source_signature: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          project_file_id?: string
+          project_id?: string
+          seo_content?: string | null
+          source_signature?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_seo_files_project_file_id_fkey"
+            columns: ["project_file_id"]
+            isOneToOne: true
+            referencedRelation: "project_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_seo_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_seo_plans: {
+        Row: {
+          audit_after: Json | null
+          audit_before: Json
+          created_at: string
+          error: string | null
+          plan: Json
+          project_id: string
+          score_after: number | null
+          score_before: number | null
+          source_mode: string
+          source_signature: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audit_after?: Json | null
+          audit_before?: Json
+          created_at?: string
+          error?: string | null
+          plan?: Json
+          project_id: string
+          score_after?: number | null
+          score_before?: number | null
+          source_mode?: string
+          source_signature: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audit_after?: Json | null
+          audit_before?: Json
+          created_at?: string
+          error?: string | null
+          plan?: Json
+          project_id?: string
+          score_after?: number | null
+          score_before?: number | null
+          source_mode?: string
+          source_signature?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_seo_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_unlocks: {
         Row: {
           created_at: string
