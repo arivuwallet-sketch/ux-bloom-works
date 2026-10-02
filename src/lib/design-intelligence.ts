@@ -376,3 +376,23 @@ export function buildDesignIntelligenceContext(opts: {
     "FINAL INTERNAL REVIEW BEFORE OUTPUT: verify task flow, IA, visual hierarchy, responsive behavior, typography, spacing rhythm, color/contrast, component/state completeness, affordances, forms, keyboard/focus behavior, motion/reduced-motion, performance, content clarity, ethical UX, design-system consistency, and any relevant 2D/3D rendering constraints. Fix defects before returning code.",
   ].join("\n\n");
 }
+
+
+export function buildDesignQaContext(opts: {
+  fileName: string;
+  source: string;
+  style?: string | null;
+  instruction?: string;
+}) {
+  const specialisms = detectSpecialisms(opts.fileName, opts.source, opts.instruction ?? "");
+  return [
+    "REZYN DESIGN RELEASE QA CONTEXT",
+    opts.style
+      ? `Target direction: ${opts.style}. Verify that the direction is unmistakable without compromising correctness.`
+      : "Verify the requested visual direction while preserving product coherence.",
+    `Priority disciplines: ${specialisms.join("; ")}.`,
+    "UNIVERSAL RELEASE GATES:\n- " + UNIVERSAL_QUALITY_GATES.join("\n- "),
+    "2D / 3D / MOTION RELEASE GATES WHEN RELEVANT:\n- " + VISUAL_2D_3D_GATES.join("\n- "),
+    "QA must stay evidence-based: do not invent test results, analytics, research, performance measurements or requirements absent from source/project plan.",
+  ].join("\n\n");
+}
