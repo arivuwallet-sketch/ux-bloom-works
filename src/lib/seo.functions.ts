@@ -10,7 +10,7 @@ import {
 } from "@/lib/seo-intelligence";
 import { validateSeoTemplateArtifact, type SeoTemplateId, type SeoT1T16CoverageStatus } from "@/lib/seo-output-templates-t1-t16";
 
-const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig)$/i;
+const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|ya?ml|toml|webmanifest)$/i;
 const MAX_PLAN_CONTEXT_CHARS = 140_000;
 const MAX_FILE_CONTEXT_CHARS = 120_000;
 const SEO_MODELS = ["openai/gpt-6-astra", "google/gemini-2.5-flash"] as const;
