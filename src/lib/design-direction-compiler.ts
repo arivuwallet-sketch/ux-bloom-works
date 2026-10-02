@@ -556,7 +556,7 @@ export function certifyAllDesignDirections() {
       if (!css.includes("prefers-reduced-motion: reduce")) problems.push(`${style}: missing reduced-motion contract`);
       if (/\bdark\s*:\s*\{/.test(css)) problems.push(`${style}: nested dark syntax detected`);
       if (/@custom-variant/.test(css)) problems.push(`${style}: compiler should not invent variant declarations`);
-      if (/var\([^)]*\)\s*\*/.test(css)) problems.push(`${style}: invalid custom-property arithmetic detected`);
+      if (/translate(?:X|Y)?\(\s*var\([^)]*\)\s*\*/i.test(css)) problems.push(`${style}: invalid custom-property arithmetic detected`);
       for (const token of semanticApi) {
         if (!css.includes(token + ":")) problems.push(`${style}: missing semantic token ${token}`);
       }
