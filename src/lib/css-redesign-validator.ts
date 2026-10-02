@@ -515,7 +515,7 @@ function validateTailwindCss(source: string, output: string, style: string | nul
       }
     }
 
-    if (/var\(\s*--[\w-]+\s*\)\s*\*\s*-?\d/i.test(output)) {
+    if (/translate(?:X|Y)?\(\s*var\(\s*--[\w-]+\s*\)\s*\*\s*-?\d/i.test(output)) {
       errors.push("CSS transform math must wrap var(...) multiplication in calc(), for example calc(var(--neo-offset) * -1)");
     }
 
