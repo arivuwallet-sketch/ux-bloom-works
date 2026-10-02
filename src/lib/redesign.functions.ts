@@ -795,6 +795,34 @@ export const redesignNextFile = createServerFn({ method: "POST" })
     };
   });
 
+/** Requeues only previously failed redesign files, preserving completed work. */
+export const requeueFailedRedesign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { data: failedFiles, error: readError } = await context.supabase
+      .from("project_files")
+      .select("id")
+      .eq("project_id", data.projectId)
+      .eq("status", "failed");
+    if (readError) throw new Error(readError.message);
+    if (!failedFiles || failedFiles.length === 0) return { ok: true, requeued: 0 };
+
+    const ids = failedFiles.map((file) => file.id);
+    const { error } = await context.supabase
+      .from("project_files")
+      .update({ status: "queued", redesign_error: null })
+      .in("id", ids);
+    if (error) throw new Error(error.message);
+
+    await context.supabase
+      .from("projects")
+      .update({ status: "queued" })
+      .eq("id", data.projectId);
+
+    return { ok: true, requeued: ids.length };
+  });
+
 /** Puts every file back in the queue so the whole project is redesigned again. */
 export const resetRedesign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
