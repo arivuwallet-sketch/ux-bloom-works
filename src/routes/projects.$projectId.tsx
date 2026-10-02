@@ -81,6 +81,7 @@ function ProjectDetailPage() {
   const navigate = Route.useNavigate();
   const queryClient = useQueryClient();
   const fileInput = useRef<HTMLInputElement>(null);
+  const staleFailureCleanup = useRef(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -136,6 +137,28 @@ function ProjectDetailPage() {
     enabled: Boolean(user),
     queryFn: () => fetchSeoState({ data: { projectId } }),
   });
+
+  useEffect(() => {
+    if (!user || !files.isFetched || staleFailureCleanup.current) return;
+    staleFailureCleanup.current = true;
+
+    const legacyCompilerError = /(Fix Tailwind v4 syntax|nested dark: block inside @theme|Register reusable Neo effects|--input resolves to the same color|prefers-reduced-motion override)/i;
+    const hasLegacyFailure = (files.data ?? []).some(
+      (file) => file.status === "failed" && legacyCompilerError.test(file.redesign_error ?? ""),
+    );
+    if (!hasLegacyFailure) return;
+
+    void requeueFailed({ data: { projectId, legacyCompilerOnly: true } })
+      .then((result) => {
+        if (result.requeued > 0) {
+          return queryClient.invalidateQueries({ queryKey: ["project-files", projectId] });
+        }
+        return undefined;
+      })
+      .catch(() => {
+        staleFailureCleanup.current = false;
+      });
+  }, [files.data, files.isFetched, projectId, queryClient, requeueFailed, user]);
 
   const perFile = project.data?.style_mode === "file";
 
