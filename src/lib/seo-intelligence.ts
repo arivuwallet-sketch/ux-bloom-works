@@ -662,7 +662,7 @@ export function auditSeoProject(files: SeoAuditFile[]): SeoAudit {
         layer: "page-content", category: "accessibility", severity: "medium", file: file.name,
         message: `${missingAlt.length} image element${missingAlt.length === 1 ? "" : "s"} appear to be missing alt attributes.`,
         recommendation: "Add source-grounded meaningful alt text for informative images and empty alt for genuinely decorative images; never invent visual details.",
-        evidence: missingAlt[0], impact: "Reduces accessibility and image/context understanding.", effort: "low",
+        evidence: missingAlt[0] ?? null, impact: "Reduces accessibility and image/context understanding.", effort: "low",
       });
     }
 
