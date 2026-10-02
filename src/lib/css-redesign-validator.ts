@@ -220,6 +220,9 @@ function checkSemanticContrast(vars: Map<string, string>, mode: string) {
     ["muted", "muted-foreground", 4.5],
     ["accent", "accent-foreground", 4.5],
     ["destructive", "destructive-foreground", 4.5],
+    ["sidebar", "sidebar-foreground", 4.5],
+    ["sidebar-primary", "sidebar-primary-foreground", 4.5],
+    ["sidebar-accent", "sidebar-accent-foreground", 4.5],
     ["background", "ring", 3],
   ];
 
@@ -420,6 +423,24 @@ function validateTailwindCss(source: string, output: string, style: string | nul
       break;
     }
   }
+  for (const block of findBlocks(output, /@theme(?:\s+inline)?\s*/i)) {
+    if (/\bdark\s*:\s*\{/i.test(block)) {
+      errors.push("Tailwind v4 @theme cannot contain nested dark: blocks; keep top-level theme mappings and place runtime overrides in a separate .dark selector");
+      break;
+    }
+    if (/@custom-variant\b/i.test(block)) {
+      errors.push("@custom-variant must be top-level, not nested inside @theme");
+      break;
+    }
+  }
+
+  for (const block of findBlocks(output, /:root\s*/i)) {
+    if (/@custom-variant\b/i.test(block)) {
+      errors.push("@custom-variant must be top-level, not nested inside :root");
+      break;
+    }
+  }
+
 
   const sourceSemantic = [...customPropertyNames(source)].filter((name) => SEMANTIC_TOKEN.test(name));
   if (sourceSemantic.length >= 3) {
@@ -437,6 +458,14 @@ function validateTailwindCss(source: string, output: string, style: string | nul
 
   errors.push(...checkSemanticContrast(rootVars, "Light/base mode"));
   if (darkOverrides.size > 0) errors.push(...checkSemanticContrast(darkVars, "Dark mode"));
+  const primaryOnBackground = contrastRatio(resolveVar("primary", rootVars), resolveVar("background", rootVars));
+  const primaryUsedAsLink =
+    /(?:^|[}\s])a(?:\s|:|\{|,)[^{]*\{[^}]*\bcolor\s*:\s*var\(\s*--(?:color-)?primary\s*\)/ims.test(output) ||
+    /<a\b[^>]*class[^>]*\btext-primary\b/i.test(output);
+  if (primaryUsedAsLink && primaryOnBackground !== null && primaryOnBackground + 0.01 < 4.5) {
+    errors.push("Primary is used for link text but has only " + primaryOnBackground.toFixed(2) + ":1 contrast against the background; links require at least 4.5:1 or a separate accessible link token");
+  }
+
 
   for (const [name, value] of darkOverrides) {
     if (!/(?:text-light|text-primary|body-text|heading-text|foreground)$/i.test(name)) continue;
@@ -465,10 +494,38 @@ function validateTailwindCss(source: string, output: string, style: string | nul
 
   const isNeo = /neo\s*[- ]?brut|neubrut/i.test(style ?? "");
   if (isNeo) {
-    const plainNeoUtility = /@layer\s+base\s*\{[\s\S]*?\.neo-(?:border|shadow|font)(?:\b|[-_])/i.test(output);
-    const variantAwareNeo = /@utility\s+neo-(?:border|shadow|font)|--(?:shadow|font)-neo(?:\b|[-_])/i.test(output);
+    const plainNeoUtility = /@layer\s+base\s*\{[\s\S]*?\.(?:neo-(?:border|shadow|font)|border-neo|shadow-neo|font-neo)(?:\b|[-_])/i.test(output);
+    const variantAwareNeo = /@utility\s+(?:neo-(?:border|shadow|font)|border-neo|shadow-neo|font-neo)|--(?:shadow|font)-neo(?:\b|[-_])/i.test(output);
     if (plainNeoUtility && !variantAwareNeo) {
       errors.push("Neo border/shadow/font primitives must use Tailwind v4 @utility and/or @theme namespaces so hover/focus/responsive variants work and utility-layer precedence is correct");
+    }
+
+    if (/\.(?:hover|active|focus(?:-visible)?)\\:/i.test(output)) {
+      errors.push("Do not hard-code escaped Tailwind interaction variants for Neo effects; register the reusable effect with @utility and let Tailwind compose hover/focus/active/responsive variants");
+    }
+
+    const borderNeoBodies = [
+      ...findBlocks(output, /\.border-neo\s*/i),
+      ...findBlocks(output, /@utility\s+border-neo\s*/i),
+    ];
+    for (const body of borderNeoBodies) {
+      if (!/\bborder-style\s*:\s*solid\b/i.test(body) && !/\bborder\s*:[^;]*\bsolid\b/i.test(body)) {
+        errors.push(".border-neo must set border-style: solid so width/color still work after global button border resets");
+        break;
+      }
+    }
+
+    if (/var\(\s*--[\w-]+\s*\)\s*\*\s*-?\d/i.test(output)) {
+      errors.push("CSS transform math must wrap var(...) multiplication in calc(), for example calc(var(--neo-offset) * -1)");
+    }
+
+    if (/\binset\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?(?:\s|;|,|$)/i.test(output)) {
+      errors.push("Neo pressed-state inset shadow is all zero and invisible; use a visibly distinct non-zero inset shadow");
+    }
+
+    const usesMotion = /scroll-behavior\s*:\s*smooth|\btransition(?:-[\w-]+)?\s*:|\banimation(?:-[\w-]+)?\s*:|\btransform\s*:/i.test(output);
+    if (usesMotion && !/@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(output)) {
+      errors.push("Neo motion requires a prefers-reduced-motion: reduce override that disables smooth scrolling and transition/animation duration while preserving immediate state feedback");
     }
   }
 
