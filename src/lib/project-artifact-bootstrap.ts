@@ -1,5 +1,7 @@
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { buildSeoT1T16Context, validateSeoTemplateArtifact } from "@/lib/seo-output-templates-t1-t16";
+import { validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
+import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
 
 const TEXT_EXT = /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py|yaml|yml)$/i;
 const PUBLIC_PAGE_EXT = /\.(html?|jsx|tsx|vue|svelte|astro|php|hbs|ejs|twig|mdx)$/i;
@@ -498,7 +500,7 @@ async function generateDesignFoundation(opts: {
     {
       role: "system",
       content:
-        "Create ONE new shared design-foundation source file for an existing project before Rezyn's full redesign planner runs. The file must be production-valid for the supplied runtime and exact path, contain only reusable visual tokens/theme primitives/reduced-motion/accessibility-safe foundations, and introduce NO routes, API calls, business logic, fake components, fake content, analytics, dependencies or secrets. It is a support file that later redesign passes can import/wire into existing presentation files. Return the complete raw file only, no markdown or explanation.",
+        "Create ONE new shared design-foundation source file for an existing project before Rezyn's full redesign planner runs. The file must be production-valid for the supplied runtime and exact path, contain only reusable visual tokens/theme primitives/reduced-motion/accessibility-safe foundations, and introduce NO routes, API calls, business logic, fake components, fake content, analytics, dependencies or secrets. It is a support file that later redesign passes can import/wire into existing presentation files. For Tailwind v4, obey CSS-first @import/@theme/@utility/layer rules, preserve any semantic variable API visible in the source evidence, and keep light/dark contrast accessible. Return the complete raw file only, no markdown or explanation.\n\n" + buildDesignIntelligenceContext({ fileName: opts.path, source: projectSnapshot(opts.files, 35_000), style }),
     },
     {
       role: "user",
@@ -514,7 +516,9 @@ async function generateDesignFoundation(opts: {
       ].join("\n"),
     },
   ]);
-  return validateGeneratedContent(opts.path, raw);
+  const output = validateGeneratedContent(opts.path, raw);
+  validateRedesignCssCompatibility({ name: opts.path, source: "", output, style });
+  return output;
 }
 
 async function hydrateSourceFiles(supabase: any, rows: ProjectFileRow[], sourceMode: SourceMode): Promise<SourceFile[]> {
