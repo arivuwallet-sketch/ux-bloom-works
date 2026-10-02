@@ -6,6 +6,23 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { readFileSync } from "node:fs";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { STYLE_NAMES } from "./src/lib/style-blueprints";
+import { certifyAllDesignDirections, compileDirectionCss } from "./src/lib/design-direction-compiler";
+import { validateRedesignCssCompatibility } from "./src/lib/css-redesign-validator";
+
+const certification = certifyAllDesignDirections();
+for (const style of STYLE_NAMES) {
+  const css = compileDirectionCss(style, true);
+  validateRedesignCssCompatibility({
+    name: "styles.css",
+    source: '@import "tailwindcss";',
+    output: css,
+    style,
+  });
+}
+if (!certification.passed || certification.directions !== 61) {
+  throw new Error("Rezyn direction compiler certification did not cover all 61 directions.");
+}
 
 const creditGateBlock = /const\s+\{\s*data:\s*unlocked,\s*error:\s*unlockError\s*\}\s*=\s*await\s+supabase\.rpc\(\s*["']unlock_project["']\s*,\s*\{\s*_project_id:\s*data\.projectId\s*\}\s*\);\s*if\s*\(unlockError\)\s*throw\s+new\s+Error\(unlockError\.message\);\s*if\s*\(!unlocked\)\s*throw\s+new\s+Error\(\s*["']NO_CREDITS: You need a website credit to redesign this project\. Buy a pack on the Pricing page\.["']\s*\);?/g;
 const projectFoundGuard = /if\s*\(!project\)\s*throw\s+new\s+Error\(\s*["']Project not found["']\s*\);?/;
