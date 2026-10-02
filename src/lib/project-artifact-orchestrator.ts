@@ -1,6 +1,7 @@
 import { ensureProjectArtifacts as ensureSeoArtifacts } from "@/lib/project-artifact-bootstrap";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
+import { applyCompiledDirectionFoundation, buildDirectionCompilerContext, compileDirectionCss, detectsTailwindV4, isCompilerStyleEntrypoint } from "@/lib/design-direction-compiler";
 
 const MODELS = ["openai/gpt-6-astra", "google/gemini-2.5-flash"] as const;
 const TRANSIENT = new Set([408, 429, 500, 502, 503, 504]);
@@ -175,6 +176,26 @@ async function hydrate(supabase: any, rows: FileRow[], sourceMode: SourceMode): 
   return result;
 }
 
+function projectUsesTailwindV4(files: SourceFile[]) {
+  return files.some((file) =>
+    detectsTailwindV4(file.content) ||
+    (/(^|\/)package\.json$/i.test(file.name) && /"tailwindcss"\s*:\s*"[^"]*\b4\./i.test(file.content)),
+  );
+}
+
+function compilerFoundationPath(files: SourceFile[]) {
+  const names = files.map((file) => file.name);
+  if (names.some((name) => name.startsWith("src/styles/"))) return "src/styles/rezyn-direction.css";
+  if (names.some((name) => name.startsWith("src/"))) return "src/rezyn-direction.css";
+  if (names.some((name) => name.startsWith("app/"))) return "app/rezyn-direction.css";
+  if (names.some((name) => name.startsWith("styles/"))) return "styles/rezyn-direction.css";
+  return "rezyn-direction.css";
+}
+
+function existingCompilerStyleEntrypoint(files: SourceFile[]) {
+  return files.find((file) => isCompilerStyleEntrypoint({ name: file.name, source: file.content })) ?? null;
+}
+
 function snapshot(files: SourceFile[]) {
   const prioritized = [...files].sort((a, b) => {
     const score = (file: SourceFile) => /(^|\/)(?:package\.json|app|root|layout|index|main|globals?|theme|tokens?|components?)/i.test(file.name) ? 0 : 1;
@@ -217,6 +238,8 @@ async function proposeRedesignFiles(project: ProjectRow, files: SourceFile[]) {
     ? Array.from(new Set(files.map((file) => file.targetStyle).filter((value): value is string => Boolean(value))))
     : project.target_style ? [project.target_style] : [];
   const blueprints = styles.map((style) => `${style}: ${getStyleBlueprint(style)}`).join("\n\n");
+  const tailwindV4 = projectUsesTailwindV4(files);
+  const compilerContracts = styles.map((style) => buildDirectionCompilerContext(style, tailwindV4)).join("\n\n---\n\n");
   const manifest = files.map((file) => file.name).join("\n");
 
   const raw = await callGateway([
@@ -235,6 +258,9 @@ async function proposeRedesignFiles(project: ProjectRow, files: SourceFile[]) {
         "",
         "DIRECTION BLUEPRINTS:",
         blueprints || "No fixed global direction; preserve compatibility with assigned per-file directions.",
+        "",
+        "REZYN DESIGN COMPILER CONTRACTS — CORE TOKENS/THEME/PRIMITIVES ARE ALREADY DEFINED BY THIS CONTRACT:",
+        compilerContracts || "No compiler contract available.",
         "",
         "CURRENT MANIFEST — DO NOT DUPLICATE THESE PATHS:",
         manifest,
@@ -283,6 +309,50 @@ async function ensureRedesignArtifacts(opts: {
   if (rows.length === 0) return { version: "2026-10-artifact-orchestrator-v1", created, skipped, warnings };
 
   const files = await hydrate(opts.supabase, rows, opts.sourceMode);
+  const tailwindV4 = projectUsesTailwindV4(files);
+  const compilerOwnedFoundation =
+    project.style_mode !== "file" && project.target_style && !existingCompilerStyleEntrypoint(files)
+      ? {
+          path: compilerFoundationPath(files),
+          style: project.target_style,
+          content: compileDirectionCss(project.target_style, tailwindV4),
+        }
+      : null;
+
+  if (compilerOwnedFoundation) {
+    const duplicate = rows.some((row) => normalizePath(row.name).toLowerCase() === compilerOwnedFoundation.path.toLowerCase());
+    if (!duplicate) {
+      const { data: inserted, error: insertError } = await opts.supabase
+        .from("project_files")
+        .insert({
+          project_id: opts.projectId,
+          user_id: opts.userId,
+          name: compilerOwnedFoundation.path,
+          source: "generated-redesign-compiler",
+          content: compilerOwnedFoundation.content,
+          size_bytes: byteLength(compilerOwnedFoundation.content),
+          target_style: compilerOwnedFoundation.style,
+          status: "done",
+          storage_path: null,
+          redesigned_content: compilerOwnedFoundation.content,
+          redesign_error: null,
+          updated_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (insertError) warnings.push(`${compilerOwnedFoundation.path}: ${insertError.message}`);
+      else if (inserted?.id) {
+        created.push(compilerOwnedFoundation.path);
+        files.push({
+          name: compilerOwnedFoundation.path,
+          source: "generated-redesign-compiler",
+          content: compilerOwnedFoundation.content,
+          targetStyle: compilerOwnedFoundation.style,
+        });
+      }
+    }
+  }
+
   let proposals: ProposedFile[] = [];
   try {
     proposals = await proposeRedesignFiles(project, files);
@@ -306,10 +376,14 @@ async function ensureRedesignArtifacts(opts: {
       const fallbackStyle = project.style_mode === "file"
         ? null
         : project.target_style ?? files.find((file) => file.targetStyle)?.targetStyle ?? null;
-      let proposalContent = repairRedesignCssCompatibility({
+      let proposalContent = proposal.content;
+      if (fallbackStyle && /\.(?:css|scss|sass|less)$/i.test(proposal.path)) {
+        proposalContent = applyCompiledDirectionFoundation(proposalContent, fallbackStyle, tailwindV4);
+      }
+      proposalContent = repairRedesignCssCompatibility({
         name: proposal.path,
         source: "",
-        output: proposal.content,
+        output: proposalContent,
         style: fallbackStyle,
       });
       validateRedesignCssCompatibility({
