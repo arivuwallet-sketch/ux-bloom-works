@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
-import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
+import { buildDesignIntelligenceContext, buildDesignQaContext } from "@/lib/design-intelligence";
 import {
   buildProjectDependencyGraph,
   buildProjectPlanSignatures,
@@ -349,7 +349,7 @@ async function auditReconstruction(opts: {
   style: string;
   source: string;
   candidate: string;
-  designIntelligence: string;
+  qaContext: string;
   projectPlan: string;
 }) : Promise<DesignAuditResult> {
   const raw = await callGateway([
@@ -363,7 +363,7 @@ async function auditReconstruction(opts: {
       content:
         `File: ${opts.name}\nTarget direction: ${opts.style}\n\n` +
         `${opts.projectPlan}\n\n` +
-        `${opts.designIntelligence}\n\n` +
+        `${opts.qaContext}\n\n` +
         `ORIGINAL FUNCTIONAL SOURCE (may be clipped):\n${clipForAudit(opts.source)}\n\n` +
         `RECONSTRUCTED CANDIDATE (may be clipped):\n${clipForAudit(opts.candidate)}`,
     },
@@ -397,6 +397,11 @@ async function redesignSource(opts: {
   const styleBlueprint = getStyleBlueprint(opts.style);
   const projectManifest = opts.project.manifest.slice(0, 160).join("\n- ");
   const designIntelligence = buildDesignIntelligenceContext({
+    fileName: opts.name,
+    source: opts.source,
+    style: opts.style,
+  });
+  const qaContext = buildDesignQaContext({
     fileName: opts.name,
     source: opts.source,
     style: opts.style,
@@ -458,7 +463,7 @@ async function redesignSource(opts: {
         style: opts.style,
         source: opts.source,
         candidate,
-        designIntelligence,
+        qaContext,
         projectPlan,
       });
       if (!audit.pass) {
