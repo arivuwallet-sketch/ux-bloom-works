@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
 import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
+import { applyCompiledDirectionFoundation, buildDirectionCompilerContext, detectsTailwindV4, isCompilerStyleEntrypoint } from "@/lib/design-direction-compiler";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -33,6 +34,10 @@ function stripOuterFence(value: string) {
 
 function validateGeneratedFile(fileName: string, original: string, candidate: string, style?: string | null) {
   let output = candidate.trim();
+  const tailwindV4 = detectsTailwindV4(original) || detectsTailwindV4(output);
+  if (style && isCompilerStyleEntrypoint({ name: fileName, source: original })) {
+    output = applyCompiledDirectionFoundation(output, style, tailwindV4);
+  }
   output = repairRedesignCssCompatibility({ name: fileName, source: original, output, style });
   if (!output) throw new Error("AI returned an empty file");
 
@@ -298,6 +303,9 @@ async function chatRedesignSource(opts: {
     style: opts.style ?? null,
     instruction: opts.instruction,
   });
+  const directionCompiler = opts.style
+    ? buildDirectionCompilerContext(opts.style, detectsTailwindV4(opts.currentContent))
+    : "";
 
   const systemPrompt =
     "You are Rezyn Chat, an elite product designer, UX architect, accessibility specialist, motion/visual designer, 2D/3D art director, and senior front-end engineer editing an existing product through conversation. " +
@@ -307,7 +315,7 @@ async function chatRedesignSource(opts: {
     "You may change presentation: layout markup, UI composition, classes, CSS, design tokens, typography, spacing, color, visual hierarchy, interaction states, responsive behavior, motion, rendering presentation, and accessibility improvements. " +
     "If the user asks for a redesign, new style, new look, rebuild, reimagine, or from-scratch treatment, treat the current presentation only as a functional specification and reconstruct its visual system rather than patching the old UI. " +
     "Honor previous edits already present in CURRENT content. Never silently revert them. Resolve an ambiguous visual detail with the safest reasonable interpretation. " +
-    "Use the supplied Design Intelligence Operating System as mandatory expert guidance. Apply every relevant capability and never fabricate research findings, experiments, analytics, tool executions, eye-tracking, biometric results, A/B outcomes, or performance measurements. " +
+    "Use the supplied Design Intelligence Operating System as mandatory expert guidance. When a direction is selected, the Rezyn Design Compiler contract is authoritative for core semantic tokens, Tailwind/CSS theme structure, reusable border/shadow/press primitives, contrast-safe pairings and reduced-motion; do not invent a competing core theme system. Apply every relevant capability and never fabricate research findings, experiments, analytics, tool executions, eye-tracking, biometric results, A/B outcomes, or performance measurements. " +
     "Before answering, internally verify that the rewritten file is complete, important functional identifiers remain intact, and the result passes the relevant accessibility, responsive, state, hierarchy, motion, performance, visual-system, and 2D/3D quality gates. Fix defects before output. " +
     "Do not reveal private chain-of-thought. " +
     'Return ONLY one JSON object shaped exactly as {"reply":"...","file":"..."}. ' +
@@ -316,6 +324,7 @@ async function chatRedesignSource(opts: {
 
   const baseMessages: GatewayMessage[] = [
     { role: "system", content: systemPrompt },
+    ...(directionCompiler ? [{ role: "system" as const, content: directionCompiler }] : []),
     { role: "system", content: designIntelligence },
     ...opts.history.map((turn) => ({ role: turn.role, content: turn.content })),
     {
