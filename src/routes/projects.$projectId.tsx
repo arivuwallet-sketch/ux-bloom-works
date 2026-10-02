@@ -22,7 +22,7 @@ import { Reveal } from "@/components/studio/motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { allStyleNames } from "@/data/site";
-import { redesignNextFile, resetRedesign } from "@/lib/redesign.functions";
+import { redesignNextFile, requeueFailedRedesign, resetRedesign } from "@/lib/redesign.functions";
 import { getSeoProjectState, resetSeoAgent, seoNextFile } from "@/lib/seo.functions";
 import type { SeoAudit, SeoCategory } from "@/lib/seo-intelligence";
 import { uploadFileList } from "@/lib/upload-files";
@@ -93,6 +93,7 @@ function ProjectDetailPage() {
   const [progress, setProgress] = useState<string | null>(null);
   const [zipping, setZipping] = useState(false);
   const runNext = useServerFn(redesignNextFile);
+  const requeueFailed = useServerFn(requeueFailedRedesign);
   const runReset = useServerFn(resetRedesign);
   const runSeoNext = useServerFn(seoNextFile);
   const runSeoReset = useServerFn(resetSeoAgent);
@@ -249,12 +250,22 @@ function ProjectDetailPage() {
     setRunning(true);
     try {
       if (engineMode === "redesign") {
+        const retry = await requeueFailed({ data: { projectId } });
+        if (retry.requeued > 0) {
+          setProgress(`Retrying ${retry.requeued} previously failed redesign file${retry.requeued === 1 ? "" : "s"} with the current compiler.`);
+          await invalidate();
+        }
         await runRedesignPhase();
         setProgress("Redesign complete.");
       } else if (engineMode === "seo") {
         await runSeoPhase("original");
       } else {
         setProgress("Stage 1/2 — reconstructing the interface from the project design plan.");
+        const retry = await requeueFailed({ data: { projectId } });
+        if (retry.requeued > 0) {
+          setProgress(`Stage 1/2 — retrying ${retry.requeued} previously failed redesign file${retry.requeued === 1 ? "" : "s"} with the current compiler.`);
+          await invalidate();
+        }
         await runRedesignPhase();
         setProgress("Stage 2/2 — auditing and optimizing the redesigned project for SEO.");
         await runSeoPhase("redesigned");
@@ -621,7 +632,22 @@ function ProjectDetailPage() {
                         <div className="mt-1 font-mono text-[9px] tracking-[0.06em] text-muted-foreground uppercase">
                           {file.source === "upload" ? "Uploaded" : "Created"}{file.size_bytes ? ` / ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
                         </div>
-                        {file.redesign_error ? <div className="mt-1 text-[11px] text-destructive">{file.redesign_error}</div> : null}
+                        {file.redesign_error ? (
+                          <div className="mt-1 text-[11px] text-destructive">
+                            {file.status === "failed" ? (
+                              <details>
+                                <summary className="cursor-pointer">
+                                  Previous redesign attempt failed — it will retry on the next run.
+                                </summary>
+                                <div className="mt-1 max-w-3xl whitespace-pre-wrap text-[10px] opacity-75">
+                                  {file.redesign_error}
+                                </div>
+                              </details>
+                            ) : (
+                              file.redesign_error
+                            )}
+                          </div>
+                        ) : null}
                         {seoRow?.error ? <div className="mt-1 text-[11px] text-destructive">SEO: {seoRow.error}</div> : null}
                         {seoRow ? <div className="mt-1 font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">SEO / {seoRow.status}</div> : null}
                       </div>
