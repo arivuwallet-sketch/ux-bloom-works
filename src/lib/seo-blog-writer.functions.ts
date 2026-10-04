@@ -32,18 +32,18 @@ type FileRow = {
 
 function stripFence(value: string) {
   return value
-    .replace(/^\`\`\`[a-zA-Z0-9_-]*\n?/, "")
-    .replace(/\n?\`\`\`$/, "")
+    .replace(/^```[a-zA-Z0-9_-]*\n?/, "")
+    .replace(/\n?```$/, "")
     .trim();
 }
 
 function redact(value: string) {
   return value
     .replace(
-      /((?:api[_-]?key|secret|token|password|private[_-]?key|service[_-]?role)[\w-]*\s*[:=]\s*["'\`])([^"'\`\n]+)(["'\`])/gi,
+      /((?:api[_-]?key|secret|token|password|private[_-]?key|service[_-]?role)[\w-]*\s*[:=]\s*["'`])([^"'`\n]+)(["'`])/gi,
       "$1[REDACTED]$3",
     )
-    .replace(/(Authorization\s*:\s*["'\`]Bearer\s+)([^"'\`\n]+)(["'\`])/gi, "$1[REDACTED]$3");
+    .replace(/(Authorization\s*:\s*["'`]Bearer\s+)([^"'`\n]+)(["'`])/gi, "$1[REDACTED]$3");
 }
 
 function clip(value: string, max = 6_000) {

@@ -215,7 +215,7 @@ function publicPath(root: string, file: string) {
 
 function findSiteOrigin(files: SourceFile[]) {
   const patterns = [
-    /<link\b[^>]*rel=["']canonical["'][^>]*href=["'](https?:\/\/[^"'\/]+(?:\:\d+)?)[^"']*["']/i,
+    /<link\b[^>]*rel=["']canonical["'][^>]*href=["'](https?://[^"'/]+(?::\d+)?)[^"']*["']/i,
     /metadataBase\s*:\s*new\s+URL\(\s*["'](https?:\/\/[^"']+)["']/i,
     /\b(?:siteUrl|siteURL|SITE_URL|PUBLIC_SITE_URL|NEXT_PUBLIC_SITE_URL|VITE_SITE_URL)\b\s*[:=]\s*["'](https?:\/\/[^"']+)["']/i,
   ];
