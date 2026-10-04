@@ -255,7 +255,7 @@ async function callGateway(messages: GatewayMessage[]) {
           body: JSON.stringify(body),
           signal: controller.signal,
         });
-        if (response.status === 402) throw new Error("AI credits exhausted.");
+        if (response.status === 402) throw new Error("The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.");
         if (!response.ok) {
           lastError = response.status === 429 ? "SEO AI rate limit reached" : `SEO AI request failed (${response.status})`;
           if (TRANSIENT_STATUS.has(response.status) && attempt === 0) {
@@ -272,7 +272,7 @@ async function callGateway(messages: GatewayMessage[]) {
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") lastError = "SEO AI request timed out";
         else if (error instanceof Error) lastError = error.message;
-        if (lastError === "AI credits exhausted.") throw new Error(lastError);
+        if (lastError === "The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.") throw new Error(lastError);
         if (attempt === 0) {
           await sleep(500);
           continue;
