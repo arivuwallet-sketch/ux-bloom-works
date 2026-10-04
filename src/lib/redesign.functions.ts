@@ -481,6 +481,7 @@ async function redesignSource(opts: {
     "The uploaded source is a FUNCTIONAL SPECIFICATION, not a visual reference. Before writing code, mentally discard the existing UI/UX presentation and reconstruct the interface from a blank visual canvas. " +
     "The chosen design direction and the supplied PROJECT-LEVEL DESIGN PLAN must control the NEW information architecture, visual hierarchy, composition, navigation treatment, section structure, component geometry, typography, spacing system, color system, surfaces, states, responsive behavior, and interaction character. " +
     "A theme swap, CSS patch, wrapper around the old UI, token substitution, local one-off design system, or light restyle is a FAILURE. Do not preserve the old layout merely because it already exists. " +
+    "The user explicitly asked for a redesign. Even when the existing design is already polished, modern, award-quality, or close to the chosen direction, you MUST still deliver a clearly new and visibly different interface. \"It already looks good\" is never a reason to keep the old presentation. " +
     "You ARE allowed and expected to reorganize presentation markup, replace visual wrappers, rebuild grids/flex layouts, rewrite Tailwind/className styling, replace CSS declarations, introduce the planned token system inside the appropriate file, change visual ordering where behavior is unaffected, and remove obsolete presentational markup. " +
     "You MUST preserve application behavior: routes, state, props, event handlers, API/data bindings, forms and submission behavior, business logic, content meaning, asset references, accessibility semantics, test/data hooks, IDs or selectors used functionally, and the source file's framework/language. " +
     "If a class/selector may be referenced across files or by JavaScript, keeping its identifier is acceptable for compatibility, but its PRESENTATION must be rebuilt rather than inherited. " +
@@ -521,7 +522,7 @@ async function redesignSource(opts: {
             ...baseMessages,
             {
               role: "system" as const,
-              content: `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}. Reconstruct the presentation from a blank canvas while preserving behavior and following the shared project plan exactly. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
+              content: `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}.${/unchanged|preserved too much/i.test(lastError) ? " The previous attempt kept the existing design. The current design being good does NOT matter — the user paid for a redesign. Produce a visibly different composition, typography, color, spacing and component styling in the chosen direction." : ""} Reconstruct the presentation from a blank canvas while preserving behavior and following the shared project plan exactly. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
             },
           ];
 
@@ -642,6 +643,22 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       storedPlan?.status === "ready" &&
       storedPlan.source_signature === signatures.sourceSignature &&
       storedPlan.style_signature === signatures.styleSignature;
+
+    // A new design direction means a new redesign: requeue files finished under the old one.
+    if (storedPlan && storedPlan.style_signature !== signatures.styleSignature) {
+      const finished = files.filter((entry) => entry.status === "done");
+      if (finished.length > 0) {
+        const { error: requeueError } = await supabase
+          .from("project_files")
+          .update({ status: "queued", redesigned_content: null, redesign_error: null })
+          .in(
+            "id",
+            finished.map((entry) => entry.id),
+          );
+        if (requeueError) throw new Error(requeueError.message);
+        for (const entry of finished) entry.status = "queued";
+      }
+    }
 
     if (canReuse) {
       try {
