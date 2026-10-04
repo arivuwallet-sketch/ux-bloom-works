@@ -53,7 +53,12 @@ function isJunkArchivePath(path: string) {
 
 function isWantedArchivePath(path: string) {
   const base = (path.split("/").pop() ?? path).toLowerCase();
-  return REDESIGNABLE_EXT.test(path) || SUPPORT_EXT.test(path) || SUPPORT_BASENAMES.has(base) || isSupportFile(path);
+  return (
+    REDESIGNABLE_EXT.test(path) ||
+    SUPPORT_EXT.test(path) ||
+    SUPPORT_BASENAMES.has(base) ||
+    isSupportFile(path)
+  );
 }
 
 export type UploadResult = {
@@ -88,7 +93,10 @@ async function loadExistingFiles(projectId: string) {
   if (duplicates.length > 0) {
     const ids = duplicates.map((row) => row.id);
     for (let i = 0; i < ids.length; i += 100) {
-      const { error: delErr } = await supabase.from("project_files").delete().in("id", ids.slice(i, i + 100));
+      const { error: delErr } = await supabase
+        .from("project_files")
+        .delete()
+        .in("id", ids.slice(i, i + 100));
       if (delErr) throw delErr;
     }
     const paths = duplicates.map((row) => row.storage_path).filter((p): p is string => Boolean(p));
@@ -136,7 +144,8 @@ async function uploadPlainFile(opts: {
       })
       .eq("id", match.id);
     if (rowErr) throw rowErr;
-    if (match.storage_path) await supabase.storage.from("project-files").remove([match.storage_path]);
+    if (match.storage_path)
+      await supabase.storage.from("project-files").remove([match.storage_path]);
     existing.set(key, { ...match, storage_path: path });
     return "updated";
   }
@@ -187,7 +196,9 @@ async function uploadArchive(opts: {
 
   for (const entry of entries) {
     const cleanPath = normalizeProjectPath(
-      stripPrefix && entry.name.startsWith(stripPrefix) ? entry.name.slice(stripPrefix.length) : entry.name,
+      stripPrefix && entry.name.startsWith(stripPrefix)
+        ? entry.name.slice(stripPrefix.length)
+        : entry.name,
     );
     if (!cleanPath || isJunkArchivePath(entry.name) || !isWantedArchivePath(cleanPath)) {
       skipped += 1;
@@ -203,7 +214,11 @@ async function uploadArchive(opts: {
       skipped += 1;
       continue;
     }
-    extracted.set(cleanPath.toLowerCase(), { name: cleanPath, content: text, size: new Blob([text]).size });
+    extracted.set(cleanPath.toLowerCase(), {
+      name: cleanPath,
+      content: text,
+      size: new Blob([text]).size,
+    });
   }
 
   const toInsert: Extracted[] = [];
@@ -218,11 +233,19 @@ async function uploadArchive(opts: {
   await runInChunks(toUpdate, 10, async ({ row, file }) => {
     const { error } = await supabase
       .from("project_files")
-      .update({ ...RESET_TRANSFORM, content: file.content, size_bytes: file.size, storage_path: null, updated_at: now })
+      .update({
+        ...RESET_TRANSFORM,
+        content: file.content,
+        size_bytes: file.size,
+        storage_path: null,
+        updated_at: now,
+      })
       .eq("id", row.id);
     if (error) throw error;
   });
-  const oldStorage = toUpdate.map(({ row }) => row.storage_path).filter((p): p is string => Boolean(p));
+  const oldStorage = toUpdate
+    .map(({ row }) => row.storage_path)
+    .filter((p): p is string => Boolean(p));
   if (oldStorage.length > 0) await supabase.storage.from("project-files").remove(oldStorage);
 
   for (let i = 0; i < toInsert.length; i += 100) {
@@ -235,16 +258,29 @@ async function uploadArchive(opts: {
       size_bytes: file.size,
       target_style: targetStyle,
     }));
-    const { data, error } = await supabase.from("project_files").insert(batch).select("id, name, storage_path, created_at");
+    const { data, error } = await supabase
+      .from("project_files")
+      .insert(batch)
+      .select("id, name, storage_path, created_at");
     if (error) throw error;
-    for (const row of (data ?? []) as ExistingRow[]) existing.set(normalizeProjectPath(row.name).toLowerCase(), row);
+    for (const row of (data ?? []) as ExistingRow[])
+      existing.set(normalizeProjectPath(row.name).toLowerCase(), row);
   }
 
   const supportCount = [...extracted.values()].filter((file) => isSupportFile(file.name)).length;
-  const parts = [`${archive.name}: ${toInsert.length} new file${toInsert.length === 1 ? "" : "s"} added`];
-  if (toUpdate.length > 0) parts.push(`${toUpdate.length} existing file${toUpdate.length === 1 ? "" : "s"} replaced (no duplicates)`);
-  if (supportCount > 0) parts.push(`${supportCount} config/SEO file${supportCount === 1 ? "" : "s"} kept for the SEO Agent and left unstyled`);
-  if (skipped > 0) parts.push(`skipped ${skipped} (images, binaries, lockfiles, build output or secrets)`);
+  const parts = [
+    `${archive.name}: ${toInsert.length} new file${toInsert.length === 1 ? "" : "s"} added`,
+  ];
+  if (toUpdate.length > 0)
+    parts.push(
+      `${toUpdate.length} existing file${toUpdate.length === 1 ? "" : "s"} replaced (no duplicates)`,
+    );
+  if (supportCount > 0)
+    parts.push(
+      `${supportCount} config/SEO file${supportCount === 1 ? "" : "s"} kept for the SEO Agent and left unstyled`,
+    );
+  if (skipped > 0)
+    parts.push(`skipped ${skipped} (images, binaries, lockfiles, build output or secrets)`);
   if (capped) parts.push(`capped at ${MAX_EXTRACTED_FILES} files`);
   return `${parts.join(" — ")}.`;
 }
@@ -265,7 +301,10 @@ export async function uploadFileList(opts: {
   let error: string | null = null;
 
   const { byPath: existing, removedDuplicates } = await loadExistingFiles(projectId);
-  if (removedDuplicates > 0) notices.push(`Removed ${removedDuplicates} duplicate file${removedDuplicates === 1 ? "" : "s"} from earlier uploads.`);
+  if (removedDuplicates > 0)
+    notices.push(
+      `Removed ${removedDuplicates} duplicate file${removedDuplicates === 1 ? "" : "s"} from earlier uploads.`,
+    );
 
   let added = 0;
   let updated = 0;
@@ -276,7 +315,9 @@ export async function uploadFileList(opts: {
         continue;
       }
       if (ZIP_EXT.test(file.name)) {
-        notices.push(await uploadArchive({ archive: file, userId, projectId, targetStyle, existing }));
+        notices.push(
+          await uploadArchive({ archive: file, userId, projectId, targetStyle, existing }),
+        );
         continue;
       }
       const outcome = await uploadPlainFile({ file, userId, projectId, targetStyle, existing });
@@ -286,7 +327,10 @@ export async function uploadFileList(opts: {
       error = err instanceof Error ? err.message : `${file.name}: upload failed`;
     }
   }
-  if (updated > 0) notices.push(`${updated} file${updated === 1 ? "" : "s"} replaced with the new version${added > 0 ? `, ${added} added` : ""}.`);
+  if (updated > 0)
+    notices.push(
+      `${updated} file${updated === 1 ? "" : "s"} replaced with the new version${added > 0 ? `, ${added} added` : ""}.`,
+    );
 
   return { archiveNotice: notices.length > 0 ? notices.join(" ") : null, error };
 }

@@ -11,7 +11,8 @@ export const Route = createFileRoute("/work")({
       { title: "Proof — before and after interface transformation | Rezyn" },
       {
         name: "description",
-        content: "See how Rezyn changes visual hierarchy, spacing, density and interface perception while keeping the product content and behavior anchored.",
+        content:
+          "See how Rezyn changes visual hierarchy, spacing, density and interface perception while keeping the product content and behavior anchored.",
       },
     ],
   }),
@@ -19,9 +20,21 @@ export const Route = createFileRoute("/work")({
 });
 
 const changes = [
-  { icon: Check, label: "Preserved", body: "Content, product meaning, routes and familiar interactions stay anchored." },
-  { icon: RefreshCcw, label: "Transformed", body: "Hierarchy, spacing, visual density, typography, surfaces and interaction rhythm are rebuilt." },
-  { icon: Minus, label: "Reduced", body: "Competing visual noise and low-value decoration lose priority so the core product reads faster." },
+  {
+    icon: Check,
+    label: "Preserved",
+    body: "Content, product meaning, routes and familiar interactions stay anchored.",
+  },
+  {
+    icon: RefreshCcw,
+    label: "Transformed",
+    body: "Hierarchy, spacing, visual density, typography, surfaces and interaction rhythm are rebuilt.",
+  },
+  {
+    icon: Minus,
+    label: "Reduced",
+    body: "Competing visual noise and low-value decoration lose priority so the core product reads faster.",
+  },
 ];
 
 function WorkPage() {
@@ -60,10 +73,14 @@ function WorkPage() {
                     <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
                       <Icon className="h-5 w-5" />
                     </span>
-                    <span className="font-mono text-[9px] tracking-[0.14em] text-muted-foreground">0{index + 1}</span>
+                    <span className="font-mono text-[9px] tracking-[0.14em] text-muted-foreground">
+                      0{index + 1}
+                    </span>
                   </div>
                   <h3 className="mt-20 text-[34px] leading-[0.95]">{item.label}</h3>
-                  <p className="mb-0 mt-4 max-w-[36ch] text-[14px] leading-7 text-ink-soft">{item.body}</p>
+                  <p className="mb-0 mt-4 max-w-[36ch] text-[14px] leading-7 text-ink-soft">
+                    {item.body}
+                  </p>
                 </article>
               </Reveal>
             );

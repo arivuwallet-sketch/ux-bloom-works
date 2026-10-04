@@ -24,7 +24,9 @@ function NotFoundComponent() {
         <span className="eyebrow">404 / missing entry</span>
         <h1>This page is outside the archive.</h1>
         <p>The route no longer exists, or the interface index changed.</p>
-        <Link to="/" className="button-primary">Return to Rezyn</Link>
+        <Link to="/" className="button-primary">
+          Return to Rezyn
+        </Link>
       </div>
     </main>
   );
@@ -53,7 +55,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void; inf
           >
             Retry view
           </button>
-          <a href="/" className="button-secondary">Go home</a>
+          <a href="/" className="button-secondary">
+            Go home
+          </a>
         </div>
       </div>
     </main>
@@ -99,7 +103,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <head><HeadContent /></head>
+      <head>
+        <HeadContent />
+      </head>
       <body>
         {children}
         <Scripts />
@@ -116,7 +122,9 @@ function RootComponent() {
       <div className="app-shell archive-app">
         <ImmersiveBackground />
         <Header />
-        <div className="route-stage"><Outlet /></div>
+        <div className="route-stage">
+          <Outlet />
+        </div>
         <Footer />
       </div>
     </QueryClientProvider>

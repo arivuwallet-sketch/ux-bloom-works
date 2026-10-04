@@ -39,15 +39,17 @@ function StylesPage() {
             </div>
             <h1>
               Pick a <em>world</em>,
-              <br />not a theme.
+              <br />
+              not a theme.
             </h1>
           </Reveal>
 
           <Reveal className="direction-intro__manifesto" delay={0.08}>
             <Asterisk className="direction-intro__asterisk" />
             <p>
-              The master direction library contains complete reconstruction systems. Each one rebuilds layout,
-              hierarchy, typography, material, motion, navigation and component character from a blank visual canvas.
+              The master direction library contains complete reconstruction systems. Each one
+              rebuilds layout, hierarchy, typography, material, motion, navigation and component
+              character from a blank visual canvas.
             </p>
             <div className="direction-intro__manifesto-meta">
               <span>{String(styleGroups.length).padStart(2, "0")} families</span>
@@ -85,8 +87,9 @@ function StylesPage() {
           </div>
           <div className="direction-outro__copy">
             <p>
-              After choosing a reconstruction direction, layer in spatial navigation, kinetic backgrounds, magnetic controls,
-              conversational AI or advanced data patterns from the Signals library.
+              After choosing a reconstruction direction, layer in spatial navigation, kinetic
+              backgrounds, magnetic controls, conversational AI or advanced data patterns from the
+              Signals library.
             </p>
             <Link to="/trends" className="direction-outro__link">
               Open Signals Library <ArrowUpRight className="h-4 w-4" />

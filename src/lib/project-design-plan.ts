@@ -71,7 +71,20 @@ const IMPORT_PATTERNS = [
 ];
 
 const SOURCE_EXTENSIONS = [
-  "", ".ts", ".tsx", ".js", ".jsx", ".css", ".scss", ".sass", ".less", ".vue", ".svelte", ".astro", ".mdx", ".json",
+  "",
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".css",
+  ".scss",
+  ".sass",
+  ".less",
+  ".vue",
+  ".svelte",
+  ".astro",
+  ".mdx",
+  ".json",
 ];
 
 function normalizePath(value: string) {
@@ -100,7 +113,8 @@ function classifyFile(name: string, content: string) {
   if (/(^|\/)(api|server|services?)\//.test(lower)) return "api/service";
   if (/\.(svg|xml)$/.test(lower)) return "visual-asset";
   if (/\.(json|md|mdx|txt)$/.test(lower)) return "content/data";
-  if (/className\s*=|<[A-Z][A-Za-z0-9]*[\s/>]|<\w+[\s>]/.test(content)) return "presentation/component";
+  if (/className\s*=|<[A-Z][A-Za-z0-9]*[\s/>]|<\w+[\s>]/.test(content))
+    return "presentation/component";
   return "logic/support";
 }
 
@@ -167,12 +181,20 @@ export function buildProjectDependencyGraph(files: PlanningFile[]): ProjectDepen
   for (const node of mutable) node.dependents.sort();
 
   const sharedRoots = mutable
-    .filter((node) => node.dependents.length >= 2 || /styles\/design-system|shared\/component|app-shell\/layout/.test(node.role))
+    .filter(
+      (node) =>
+        node.dependents.length >= 2 ||
+        /styles\/design-system|shared\/component|app-shell\/layout/.test(node.role),
+    )
     .sort((a, b) => b.dependents.length - a.dependents.length || a.file.localeCompare(b.file))
     .map((node) => node.file);
 
   const entryCandidates = mutable
-    .filter((node) => /app-shell|route\/page/.test(node.role) || /(^|\/)(main|index|app|root)\.(t|j)sx?$/.test(node.file.toLowerCase()))
+    .filter(
+      (node) =>
+        /app-shell|route\/page/.test(node.role) ||
+        /(^|\/)(main|index|app|root)\.(t|j)sx?$/.test(node.file.toLowerCase()),
+    )
     .map((node) => node.file);
 
   return { version: 1, nodes: mutable, sharedRoots, entryCandidates };
@@ -187,8 +209,14 @@ export function buildProjectPlanSignatures(opts: {
   const sourceMaterial = opts.files
     .map((file) => {
       const content = file.content;
-      const sample = content.length > 12_000 ? `${content.slice(0, 6_000)}${content.slice(-6_000)}` : content;
-      return [normalizePath(file.name), file.sizeBytes ?? content.length, file.updatedAt, stableHash(sample)].join("|");
+      const sample =
+        content.length > 12_000 ? `${content.slice(0, 6_000)}${content.slice(-6_000)}` : content;
+      return [
+        normalizePath(file.name),
+        file.sizeBytes ?? content.length,
+        file.updatedAt,
+        stableHash(sample),
+      ].join("|");
     })
     .sort()
     .join("\n");
@@ -213,11 +241,17 @@ function stringValue(value: unknown, fallback = "") {
 
 function stringArray(value: unknown, limit = 40) {
   if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0).map((item) => item.trim()).slice(0, limit);
+  return value
+    .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    .map((item) => item.trim())
+    .slice(0, limit);
 }
 
 export function parseProjectDesignPlan(rawValue: string, files: PlanningFile[]): ProjectDesignPlan {
-  const raw = rawValue.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  const raw = rawValue
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
   const parsed = JSON.parse(raw) as Record<string, unknown>;
   const architecture = (parsed["architecture"] ?? {}) as Record<string, unknown>;
   const designSystem = (parsed["designSystem"] ?? {}) as Record<string, unknown>;
@@ -229,23 +263,33 @@ export function parseProjectDesignPlan(rawValue: string, files: PlanningFile[]):
         return {
           name: stringValue(row["name"], "Shared system"),
           role: stringValue(row["role"], "Shared presentation responsibility"),
-          files: stringArray(row["files"]).filter((file) => knownFiles.has(normalizePath(file))).map(normalizePath),
+          files: stringArray(row["files"])
+            .filter((file) => knownFiles.has(normalizePath(file)))
+            .map(normalizePath),
           rules: stringArray(row["rules"], 12),
         };
       })
     : [];
 
   const filePlans = Array.isArray(parsed["filePlans"])
-    ? parsed["filePlans"].slice(0, Math.max(1, files.length * 2)).map((item) => {
-        const row = (item ?? {}) as Record<string, unknown>;
-        return {
-          file: normalizePath(stringValue(row["file"])),
-          role: stringValue(row["role"], "project file"),
-          redesignResponsibility: stringValue(row["redesignResponsibility"], "Follow the project design system and preserve behavior."),
-          preserve: stringArray(row["preserve"], 16),
-          coordinateWith: stringArray(row["coordinateWith"], 16).filter((file) => knownFiles.has(normalizePath(file))).map(normalizePath),
-        };
-      }).filter((item) => knownFiles.has(item.file))
+    ? parsed["filePlans"]
+        .slice(0, Math.max(1, files.length * 2))
+        .map((item) => {
+          const row = (item ?? {}) as Record<string, unknown>;
+          return {
+            file: normalizePath(stringValue(row["file"])),
+            role: stringValue(row["role"], "project file"),
+            redesignResponsibility: stringValue(
+              row["redesignResponsibility"],
+              "Follow the project design system and preserve behavior.",
+            ),
+            preserve: stringArray(row["preserve"], 16),
+            coordinateWith: stringArray(row["coordinateWith"], 16)
+              .filter((file) => knownFiles.has(normalizePath(file)))
+              .map(normalizePath),
+          };
+        })
+        .filter((item) => knownFiles.has(item.file))
     : [];
 
   const existingPlanned = new Set(filePlans.map((item) => item.file));
@@ -255,7 +299,8 @@ export function parseProjectDesignPlan(rawValue: string, files: PlanningFile[]):
       filePlans.push({
         file: normalized,
         role: classifyFile(normalized, file.content),
-        redesignResponsibility: "Follow the shared project design system; preserve this file's functional contract.",
+        redesignResponsibility:
+          "Follow the shared project design system; preserve this file's functional contract.",
         preserve: [],
         coordinateWith: [],
       });
@@ -266,17 +311,34 @@ export function parseProjectDesignPlan(rawValue: string, files: PlanningFile[]):
     .map(normalizePath)
     .filter((file) => knownFiles.has(file));
   const seen = new Set(requestedOrder);
-  const transformationOrder = [...requestedOrder, ...files.map((file) => normalizePath(file.name)).filter((file) => !seen.has(file))];
+  const transformationOrder = [
+    ...requestedOrder,
+    ...files.map((file) => normalizePath(file.name)).filter((file) => !seen.has(file)),
+  ];
 
   return {
     version: 2,
     summary: stringValue(parsed["summary"], "Project-wide reconstruction plan."),
     architecture: {
-      framework: stringValue(architecture["framework"], "Use the project's existing framework and runtime."),
-      appShell: stringValue(architecture["appShell"], "Preserve routing behavior while rebuilding the application shell coherently."),
-      navigation: stringValue(architecture["navigation"], "Preserve navigation destinations and rebuild their presentation consistently."),
-      stateAndDataFlow: stringValue(architecture["stateAndDataFlow"], "Preserve state, APIs, data bindings and business logic."),
-      sharedStyleEntryPoints: stringArray(architecture["sharedStyleEntryPoints"]).filter((file) => knownFiles.has(normalizePath(file))).map(normalizePath),
+      framework: stringValue(
+        architecture["framework"],
+        "Use the project's existing framework and runtime.",
+      ),
+      appShell: stringValue(
+        architecture["appShell"],
+        "Preserve routing behavior while rebuilding the application shell coherently.",
+      ),
+      navigation: stringValue(
+        architecture["navigation"],
+        "Preserve navigation destinations and rebuild their presentation consistently.",
+      ),
+      stateAndDataFlow: stringValue(
+        architecture["stateAndDataFlow"],
+        "Preserve state, APIs, data bindings and business logic.",
+      ),
+      sharedStyleEntryPoints: stringArray(architecture["sharedStyleEntryPoints"])
+        .filter((file) => knownFiles.has(normalizePath(file)))
+        .map(normalizePath),
     },
     designSystem: {
       directionStrategy: stringValue(designSystem["directionStrategy"]),
@@ -297,10 +359,18 @@ export function parseProjectDesignPlan(rawValue: string, files: PlanningFile[]):
   };
 }
 
-export function formatProjectPlanForPrompt(plan: ProjectDesignPlan, graph: ProjectDependencyGraph, currentFile: string) {
-  const filePlan = plan.filePlans.find((item) => normalizePath(item.file) === normalizePath(currentFile));
+export function formatProjectPlanForPrompt(
+  plan: ProjectDesignPlan,
+  graph: ProjectDependencyGraph,
+  currentFile: string,
+) {
+  const filePlan = plan.filePlans.find(
+    (item) => normalizePath(item.file) === normalizePath(currentFile),
+  );
   const node = graph.nodes.find((item) => normalizePath(item.file) === normalizePath(currentFile));
-  const shared = plan.sharedComponents.filter((item) => item.files.some((file) => normalizePath(file) === normalizePath(currentFile)));
+  const shared = plan.sharedComponents.filter((item) =>
+    item.files.some((file) => normalizePath(file) === normalizePath(currentFile)),
+  );
 
   return [
     "PROJECT-LEVEL DESIGN PLAN — authoritative across every transformed file:",
@@ -321,13 +391,27 @@ export function formatProjectPlanForPrompt(plan: ProjectDesignPlan, graph: Proje
     `- Motion: ${plan.designSystem.motion}`,
     `- Accessibility: ${plan.designSystem.accessibility}`,
     `- Responsive: ${plan.designSystem.responsive}`,
-    filePlan ? `Current file responsibility: ${filePlan.redesignResponsibility}` : "Current file responsibility: follow the shared plan.",
-    filePlan?.preserve.length ? `Current file preserve contracts: ${filePlan.preserve.join("; ")}` : "Current file preserve contracts: preserve all real behavior.",
-    filePlan?.coordinateWith.length ? `Coordinate with: ${filePlan.coordinateWith.join(", ")}` : "Coordinate with: use shared project decisions.",
-    node?.internalDependencies.length ? `Static internal dependencies: ${node.internalDependencies.join(", ")}` : "Static internal dependencies: none resolved.",
-    node?.dependents.length ? `Static dependents: ${node.dependents.join(", ")}` : "Static dependents: none resolved.",
-    shared.length ? `Shared systems touching this file: ${shared.map((item) => `${item.name} — ${item.rules.join("; ")}`).join(" | ")}` : "Shared systems touching this file: follow global design-system rules.",
-    plan.risks.length ? `Project risks to avoid: ${plan.risks.join(" | ")}` : "Project risks: preserve cross-file contracts and avoid local one-off styling.",
+    filePlan
+      ? `Current file responsibility: ${filePlan.redesignResponsibility}`
+      : "Current file responsibility: follow the shared plan.",
+    filePlan?.preserve.length
+      ? `Current file preserve contracts: ${filePlan.preserve.join("; ")}`
+      : "Current file preserve contracts: preserve all real behavior.",
+    filePlan?.coordinateWith.length
+      ? `Coordinate with: ${filePlan.coordinateWith.join(", ")}`
+      : "Coordinate with: use shared project decisions.",
+    node?.internalDependencies.length
+      ? `Static internal dependencies: ${node.internalDependencies.join(", ")}`
+      : "Static internal dependencies: none resolved.",
+    node?.dependents.length
+      ? `Static dependents: ${node.dependents.join(", ")}`
+      : "Static dependents: none resolved.",
+    shared.length
+      ? `Shared systems touching this file: ${shared.map((item) => `${item.name} — ${item.rules.join("; ")}`).join(" | ")}`
+      : "Shared systems touching this file: follow global design-system rules.",
+    plan.risks.length
+      ? `Project risks to avoid: ${plan.risks.join(" | ")}`
+      : "Project risks: preserve cross-file contracts and avoid local one-off styling.",
     "Do not contradict this plan unless the source proves a functional constraint requires it. Do not create a file-local design system that diverges from the project plan.",
   ].join("\n");
 }

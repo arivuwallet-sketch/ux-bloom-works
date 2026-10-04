@@ -2,13 +2,48 @@
 
 export type PackId = "pack_1" | "pack_5" | "pack_10" | "pack_20";
 
-export type Pack = { id: PackId; websites: number; baseInr: number; label: string; note: string; bestFor: string };
+export type Pack = {
+  id: PackId;
+  websites: number;
+  baseInr: number;
+  label: string;
+  note: string;
+  bestFor: string;
+};
 
 export const PACKS: Pack[] = [
-  { id: "pack_1", websites: 1, baseInr: 299, label: "Starter", note: "Try it on one project.", bestFor: "One site you want to refresh" },
-  { id: "pack_5", websites: 5, baseInr: 1199, label: "Studio", note: "For a small portfolio.", bestFor: "Freelancers and side projects" },
-  { id: "pack_10", websites: 10, baseInr: 2099, label: "Agency", note: "For client work.", bestFor: "Agencies with a steady client list" },
-  { id: "pack_20", websites: 20, baseInr: 3599, label: "Scale", note: "For high volume.", bestFor: "Teams redesigning many products" },
+  {
+    id: "pack_1",
+    websites: 1,
+    baseInr: 299,
+    label: "Starter",
+    note: "Try it on one project.",
+    bestFor: "One site you want to refresh",
+  },
+  {
+    id: "pack_5",
+    websites: 5,
+    baseInr: 1199,
+    label: "Studio",
+    note: "For a small portfolio.",
+    bestFor: "Freelancers and side projects",
+  },
+  {
+    id: "pack_10",
+    websites: 10,
+    baseInr: 2099,
+    label: "Agency",
+    note: "For client work.",
+    bestFor: "Agencies with a steady client list",
+  },
+  {
+    id: "pack_20",
+    websites: 20,
+    baseInr: 3599,
+    label: "Scale",
+    note: "For high volume.",
+    bestFor: "Teams redesigning many products",
+  },
 ];
 
 export type CurrencyCode = "INR" | "USD" | "EUR" | "GBP" | "AED" | "SGD" | "AUD" | "CAD";
@@ -26,7 +61,26 @@ export const RATES: Record<CurrencyCode, number> = {
 };
 
 const EURO_COUNTRIES = new Set([
-  "AT", "BE", "CY", "DE", "EE", "ES", "FI", "FR", "GR", "HR", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PT", "SI", "SK",
+  "AT",
+  "BE",
+  "CY",
+  "DE",
+  "EE",
+  "ES",
+  "FI",
+  "FR",
+  "GR",
+  "HR",
+  "IE",
+  "IT",
+  "LT",
+  "LU",
+  "LV",
+  "MT",
+  "NL",
+  "PT",
+  "SI",
+  "SK",
 ]);
 
 export function currencyForCountry(country: string | null | undefined): CurrencyCode {

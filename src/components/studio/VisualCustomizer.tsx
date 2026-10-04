@@ -48,9 +48,10 @@ export function VisualCustomizer() {
 
   const palettes = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return THEMES.filter(
-      (t) => (q ? t.name.toLowerCase().includes(q) : t.family === family),
-    ).slice(0, 120);
+    return THEMES.filter((t) => (q ? t.name.toLowerCase().includes(q) : t.family === family)).slice(
+      0,
+      120,
+    );
   }, [family, query]);
 
   return (
@@ -138,13 +139,28 @@ export function VisualCustomizer() {
           </Row>
 
           <Row label={`Glass blur — ${config.glassBlur}px`}>
-            <Range value={config.glassBlur} min={0} max={40} onChange={(v) => set("glassBlur", v)} />
+            <Range
+              value={config.glassBlur}
+              min={0}
+              max={40}
+              onChange={(v) => set("glassBlur", v)}
+            />
           </Row>
           <Row label={`Glass tint — ${config.glassOpacity}%`}>
-            <Range value={config.glassOpacity} min={0} max={30} onChange={(v) => set("glassOpacity", v)} />
+            <Range
+              value={config.glassOpacity}
+              min={0}
+              max={30}
+              onChange={(v) => set("glassOpacity", v)}
+            />
           </Row>
           <Row label={`Border strength — ${config.borderOpacity}%`}>
-            <Range value={config.borderOpacity} min={0} max={60} onChange={(v) => set("borderOpacity", v)} />
+            <Range
+              value={config.borderOpacity}
+              min={0}
+              max={60}
+              onChange={(v) => set("borderOpacity", v)}
+            />
           </Row>
           <Row label={`Corner radius — ${config.radius}px`}>
             <Range value={config.radius} min={0} max={28} onChange={(v) => set("radius", v)} />

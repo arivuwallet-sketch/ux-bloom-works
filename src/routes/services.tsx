@@ -11,7 +11,8 @@ export const Route = createFileRoute("/services")({
       { title: "Capabilities — AI redesign + SEO intelligence | Rezyn" },
       {
         name: "description",
-        content: "Rezyn transforms websites, web apps, mobile products, SaaS systems and e-commerce interfaces, and adds project-wide SEO/GEO/AEO/AAO intelligence for public web surfaces.",
+        content:
+          "Rezyn transforms websites, web apps, mobile products, SaaS systems and e-commerce interfaces, and adds project-wide SEO/GEO/AEO/AAO intelligence for public web surfaces.",
       },
     ],
   }),
@@ -54,7 +55,9 @@ function ServicesPage() {
                 <article className="glass flex min-h-[230px] flex-col p-5">
                   <div className="flex items-center justify-between">
                     <Icon className="h-5 w-5 text-revision" />
-                    <span className="font-mono text-[8px] tracking-[0.14em] text-muted-foreground">0{index + 1}</span>
+                    <span className="font-mono text-[8px] tracking-[0.14em] text-muted-foreground">
+                      0{index + 1}
+                    </span>
                   </div>
                   <h3 className="mt-auto text-[27px] leading-[0.95]">{service.name}</h3>
                   <p className="mb-0 mt-3 text-[13px] leading-6 text-ink-soft">{service.desc}</p>

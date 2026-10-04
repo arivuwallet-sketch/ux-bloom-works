@@ -1,6 +1,20 @@
 export type SeoTemplateId =
-  | "T1" | "T2" | "T3" | "T4" | "T5" | "T6" | "T7" | "T8"
-  | "T9" | "T10" | "T11" | "T12" | "T13" | "T14" | "T15" | "T16";
+  | "T1"
+  | "T2"
+  | "T3"
+  | "T4"
+  | "T5"
+  | "T6"
+  | "T7"
+  | "T8"
+  | "T9"
+  | "T10"
+  | "T11"
+  | "T12"
+  | "T13"
+  | "T14"
+  | "T15"
+  | "T16";
 
 export type SeoTemplateApplicability = "required" | "conditional" | "optional" | "volatile";
 
@@ -49,7 +63,8 @@ export const SEO_T1_T16_CATALOG: readonly SeoTemplateDefinition[] = [
     id: "T2",
     name: "Keyword record + page-keyword map",
     applicability: "required",
-    purpose: "Normalize query candidates and map intent to one defensible target page without cannibalization.",
+    purpose:
+      "Normalize query candidates and map intent to one defensible target page without cannibalization.",
     structure: [
       "keyword,type,intent,funnel_stage,cluster,entity,target_url,role,serp_features",
       "volume,difficulty,source,verified,priority_score,notes",
@@ -137,7 +152,8 @@ export const SEO_T1_T16_CATALOG: readonly SeoTemplateDefinition[] = [
     id: "T7",
     name: "llms.txt",
     applicability: "optional",
-    purpose: "Publish a concise curated site index for machine readers without claiming ranking benefits.",
+    purpose:
+      "Publish a concise curated site index for machine readers without claiming ranking benefits.",
     structure: [
       "H1 site/brand name, factual summary blockquote, optional organization/update notes",
       "Key pages, Guides, Documentation/API, Policies and optional lower-priority groups",
@@ -153,7 +169,8 @@ export const SEO_T1_T16_CATALOG: readonly SeoTemplateDefinition[] = [
     id: "T8",
     name: "JSON-LD graphs",
     applicability: "conditional",
-    purpose: "Model site/page entities using one coherent source-grounded graph with stable identifiers.",
+    purpose:
+      "Model site/page entities using one coherent source-grounded graph with stable identifiers.",
     structure: [
       "Site-wide: Organization + WebSite with reusable stable @ids.",
       "Article: WebPage + BreadcrumbList + ImageObject + Article + Person when facts exist.",
@@ -206,7 +223,8 @@ export const SEO_T1_T16_CATALOG: readonly SeoTemplateDefinition[] = [
     id: "T11",
     name: "OpenAPI 3.1 description",
     applicability: "conditional",
-    purpose: "Describe only real public API operations so agents/tools can select and call them safely.",
+    purpose:
+      "Describe only real public API operations so agents/tools can select and call them safely.",
     structure: [
       "openapi: 3.1.0; info{title,version,description,contact}; servers[]; security[]",
       "paths with real methods, operationId, summary, tool-selection description, parameters, responses",
@@ -286,7 +304,8 @@ export const SEO_T1_T16_CATALOG: readonly SeoTemplateDefinition[] = [
     id: "T16",
     name: "Final report + 30/60/90 roadmap",
     applicability: "required",
-    purpose: "Summarize evidence, shipped artifacts, unresolved gaps and a prioritized follow-up roadmap.",
+    purpose:
+      "Summarize evidence, shipped artifacts, unresolved gaps and a prioritized follow-up roadmap.",
     structure: [
       "Summary: top finding, biggest opportunity, biggest risk, what shipped, what is next.",
       "Assumptions/data gaps with [ASSUMED] and [UNKNOWN].",
@@ -304,14 +323,16 @@ export const SEO_T1_T16_CATALOG: readonly SeoTemplateDefinition[] = [
 ] as const;
 
 function catalogText() {
-  return SEO_T1_T16_CATALOG.map((template) => [
-    `${template.id}. ${template.name} [${template.applicability}]`,
-    `Purpose: ${template.purpose}`,
-    "Required structure:",
-    ...template.structure.map((item) => `- ${item}`),
-    "Guardrails:",
-    ...template.guardrails.map((item) => `- ${item}`),
-  ].join("\n")).join("\n\n");
+  return SEO_T1_T16_CATALOG.map((template) =>
+    [
+      `${template.id}. ${template.name} [${template.applicability}]`,
+      `Purpose: ${template.purpose}`,
+      "Required structure:",
+      ...template.structure.map((item) => `- ${item}`),
+      "Guardrails:",
+      ...template.guardrails.map((item) => `- ${item}`),
+    ].join("\n"),
+  ).join("\n\n");
 }
 
 export function buildSeoT1T16Context() {
@@ -335,7 +356,8 @@ ${catalogText()}`;
 }
 
 export function validateSeoTemplateArtifact(name: string, source: string) {
-  if (source.includes("<<")) throw new Error(`${name} still contains unresolved SEO template placeholders`);
+  if (source.includes("<<"))
+    throw new Error(`${name} still contains unresolved SEO template placeholders`);
   const lower = name.toLowerCase();
 
   if (/\.json$/i.test(lower)) {
@@ -348,45 +370,53 @@ export function validateSeoTemplateArtifact(name: string, source: string) {
     if (/(^|\/)(?:openapi|swagger)\.json$/i.test(lower)) {
       const root = parsed as Record<string, unknown>;
       if (root["openapi"] !== "3.1.0") throw new Error(`${name} must use OpenAPI 3.1.0`);
-      if (!root["paths"] || typeof root["paths"] !== "object") throw new Error(`${name} must contain a real paths object`);
+      if (!root["paths"] || typeof root["paths"] !== "object")
+        throw new Error(`${name} must contain a real paths object`);
     }
   }
 
   if (/(^|\/)robots\.txt$/i.test(lower)) {
-    if (/^\s*noindex\s*:/im.test(source)) throw new Error("robots.txt must not contain a noindex directive");
+    if (/^\s*noindex\s*:/im.test(source))
+      throw new Error("robots.txt must not contain a noindex directive");
     const policies = (source.match(/^User-agent:\s*\*/gim) ?? []).length;
-    if (policies > 1) throw new Error("robots.txt appears to combine multiple wildcard policy variants");
+    if (policies > 1)
+      throw new Error("robots.txt appears to combine multiple wildcard policy variants");
   }
 
   if (/sitemap[^/]*\.xml$/i.test(lower)) {
-    if (!/<(?:urlset|sitemapindex)\b[^>]*xmlns=["']http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9["']/i.test(source)) {
+    if (
+      !/<(?:urlset|sitemapindex)\b[^>]*xmlns=["']http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9["']/i.test(
+        source,
+      )
+    ) {
       throw new Error(`${name} is missing the standard sitemap namespace`);
     }
-    if (/<(?:priority|changefreq)>/i.test(source)) throw new Error(`${name} must not emit priority/changefreq`);
+    if (/<(?:priority|changefreq)>/i.test(source))
+      throw new Error(`${name} must not emit priority/changefreq`);
     for (const match of source.matchAll(/<loc>([^<]+)<\/loc>/gi)) {
-      if (!/^https?:\/\//i.test((match[1] ?? "").trim())) throw new Error(`${name} contains a non-absolute sitemap URL`);
+      if (!/^https?:\/\//i.test((match[1] ?? "").trim()))
+        throw new Error(`${name} contains a non-absolute sitemap URL`);
     }
   }
 
   if (/\.ssml$|ssml\.xml$/i.test(lower)) {
-    if (!/<speak\b/i.test(source) || !/<\/speak>/i.test(source)) throw new Error(`${name} is missing a valid SSML speak root`);
+    if (!/<speak\b/i.test(source) || !/<\/speak>/i.test(source))
+      throw new Error(`${name} is missing a valid SSML speak root`);
   }
 
   return source;
 }
 
-
 export type SeoT1T16CoverageStatus =
-  | "required"
-  | "applicable"
-  | "optional"
-  | "not-applicable"
-  | "verify-current-spec";
+  "required" | "applicable" | "optional" | "not-applicable" | "verify-current-spec";
 
-export type SeoT1T16Coverage = Record<SeoTemplateId, {
-  status: SeoT1T16CoverageStatus;
-  note: string;
-}>;
+export type SeoT1T16Coverage = Record<
+  SeoTemplateId,
+  {
+    status: SeoT1T16CoverageStatus;
+    note: string;
+  }
+>;
 
 export function buildSeoT1T16Coverage(input: {
   pageCount: number;
@@ -406,20 +436,94 @@ export function buildSeoT1T16Coverage(input: {
   const publicSite = input.hasPublicWebsite || pages;
   return {
     T1: { status: "required", note: "Site profile is the grounding object for every project." },
-    T2: { status: "required", note: "Keyword/page mapping is required; metrics stay null without real data." },
-    T3: { status: pages ? "required" : "not-applicable", note: pages ? "Create/update per-URL briefs for public target pages." : "No public page templates were detected." },
-    T4: { status: pages ? "applicable" : "not-applicable", note: pages ? "Apply framework-native head/metadata baseline to public pages." : "No page head surface detected." },
-    T5: { status: publicSite ? "applicable" : "not-applicable", note: input.hasRobots ? "Existing robots policy should be audited/updated rather than duplicated." : "Public website has no detected robots policy." },
-    T6: { status: publicSite && input.canonicalHost ? "applicable" : publicSite ? "optional" : "not-applicable", note: input.hasSitemap ? "Existing sitemap should be audited/updated." : input.canonicalHost ? "A real canonical host is available for safe sitemap generation." : "Do not fabricate absolute sitemap URLs until canonical host is verified." },
-    T7: { status: publicSite ? "optional" : "not-applicable", note: input.hasLlmsTxt ? "Existing llms.txt should be curated, not duplicated." : "Optional curated machine-readable index; no ranking/citation claims." },
-    T8: { status: pages ? "applicable" : "not-applicable", note: input.hasStructuredData ? "Existing structured data should be validated and normalized." : "Generate schema only where verified page/entity facts support it." },
-    T9: { status: input.hasQuestionAnswerContent ? "applicable" : pages ? "optional" : "not-applicable", note: input.hasQuestionAnswerContent ? "Existing question/answer content can use answer-first structures." : "Use only when real question intent is supported." },
-    T10: { status: input.hasVoiceSurface ? "applicable" : "not-applicable", note: input.hasVoiceSurface ? "Voice surface detected; target speech engine still must be known." : "No voice/SSML surface detected." },
-    T11: { status: input.apiRouteCount > 0 ? "applicable" : "not-applicable", note: input.hasOpenApi ? "Existing API description should be validated against real routes." : input.apiRouteCount > 0 ? "Real API routes detected; document only verified operations." : "No real API routes detected." },
-    T12: { status: input.apiRouteCount > 0 || input.hasOpenApi ? "verify-current-spec" : "optional", note: "A2A/MCP/WebMCP/UCP/ACP formats are volatile; verify current official specs before code." },
-    T13: { status: "optional", note: "Digital PR requires a real newsworthy asset, recipient and evidence; never fabricate outreach facts." },
-    T14: { status: input.hasConversionSurface ? "applicable" : "optional", note: input.hasConversionSurface ? "Conversion surfaces detected; map intent to real CTAs/offers/forms." : "Use only when real funnel/conversion surfaces exist." },
-    T15: { status: "required", note: "Every release records deterministic/external checks as pass, fail or not-run." },
-    T16: { status: "required", note: "Every completed SEO project needs an evidence-based final report and 30/60/90 roadmap." },
+    T2: {
+      status: "required",
+      note: "Keyword/page mapping is required; metrics stay null without real data.",
+    },
+    T3: {
+      status: pages ? "required" : "not-applicable",
+      note: pages
+        ? "Create/update per-URL briefs for public target pages."
+        : "No public page templates were detected.",
+    },
+    T4: {
+      status: pages ? "applicable" : "not-applicable",
+      note: pages
+        ? "Apply framework-native head/metadata baseline to public pages."
+        : "No page head surface detected.",
+    },
+    T5: {
+      status: publicSite ? "applicable" : "not-applicable",
+      note: input.hasRobots
+        ? "Existing robots policy should be audited/updated rather than duplicated."
+        : "Public website has no detected robots policy.",
+    },
+    T6: {
+      status:
+        publicSite && input.canonicalHost
+          ? "applicable"
+          : publicSite
+            ? "optional"
+            : "not-applicable",
+      note: input.hasSitemap
+        ? "Existing sitemap should be audited/updated."
+        : input.canonicalHost
+          ? "A real canonical host is available for safe sitemap generation."
+          : "Do not fabricate absolute sitemap URLs until canonical host is verified.",
+    },
+    T7: {
+      status: publicSite ? "optional" : "not-applicable",
+      note: input.hasLlmsTxt
+        ? "Existing llms.txt should be curated, not duplicated."
+        : "Optional curated machine-readable index; no ranking/citation claims.",
+    },
+    T8: {
+      status: pages ? "applicable" : "not-applicable",
+      note: input.hasStructuredData
+        ? "Existing structured data should be validated and normalized."
+        : "Generate schema only where verified page/entity facts support it.",
+    },
+    T9: {
+      status: input.hasQuestionAnswerContent ? "applicable" : pages ? "optional" : "not-applicable",
+      note: input.hasQuestionAnswerContent
+        ? "Existing question/answer content can use answer-first structures."
+        : "Use only when real question intent is supported.",
+    },
+    T10: {
+      status: input.hasVoiceSurface ? "applicable" : "not-applicable",
+      note: input.hasVoiceSurface
+        ? "Voice surface detected; target speech engine still must be known."
+        : "No voice/SSML surface detected.",
+    },
+    T11: {
+      status: input.apiRouteCount > 0 ? "applicable" : "not-applicable",
+      note: input.hasOpenApi
+        ? "Existing API description should be validated against real routes."
+        : input.apiRouteCount > 0
+          ? "Real API routes detected; document only verified operations."
+          : "No real API routes detected.",
+    },
+    T12: {
+      status: input.apiRouteCount > 0 || input.hasOpenApi ? "verify-current-spec" : "optional",
+      note: "A2A/MCP/WebMCP/UCP/ACP formats are volatile; verify current official specs before code.",
+    },
+    T13: {
+      status: "optional",
+      note: "Digital PR requires a real newsworthy asset, recipient and evidence; never fabricate outreach facts.",
+    },
+    T14: {
+      status: input.hasConversionSurface ? "applicable" : "optional",
+      note: input.hasConversionSurface
+        ? "Conversion surfaces detected; map intent to real CTAs/offers/forms."
+        : "Use only when real funnel/conversion surfaces exist.",
+    },
+    T15: {
+      status: "required",
+      note: "Every release records deterministic/external checks as pass, fail or not-run.",
+    },
+    T16: {
+      status: "required",
+      note: "Every completed SEO project needs an evidence-based final report and 30/60/90 roadmap.",
+    },
   };
 }

@@ -1,7 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { auditSeoProject, buildSeoIntelligenceContext, type SeoAuditFile } from "@/lib/seo-intelligence";
+import {
+  auditSeoProject,
+  buildSeoIntelligenceContext,
+  type SeoAuditFile,
+} from "@/lib/seo-intelligence";
 import {
   validateSeoBlogWriterResponse,
   type SeoBlogSiteContext,
@@ -11,7 +15,8 @@ import {
 
 const BLOG_MODELS = ["openai/gpt-6-astra", "google/gemini-2.5-flash"] as const;
 const TRANSIENT_STATUS = new Set([408, 429, 500, 502, 503, 504]);
-const TEXT_EXT = /\.(?:html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|yaml|yml)$/i;
+const TEXT_EXT =
+  /\.(?:html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|yaml|yml)$/i;
 const MAX_PROJECT_CONTEXT = 135_000;
 
 type GatewayMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -26,13 +31,19 @@ type FileRow = {
 };
 
 function stripFence(value: string) {
-  return value.replace(/^\`\`\`[a-zA-Z0-9_-]*\n?/, "").replace(/\n?\`\`\`$/, "").trim();
+  return value
+    .replace(/^```[a-zA-Z0-9_-]*\n?/, "")
+    .replace(/\n?```$/, "")
+    .trim();
 }
 
 function redact(value: string) {
   return value
-    .replace(/((?:api[_-]?key|secret|token|password|private[_-]?key|service[_-]?role)[\w-]*\s*[:=]\s*["'\`])([^"'\`\n]+)(["'\`])/gi, "$1[REDACTED]$3")
-    .replace(/(Authorization\s*:\s*["'\`]Bearer\s+)([^"'\`\n]+)(["'\`])/gi, "$1[REDACTED]$3");
+    .replace(
+      /((?:api[_-]?key|secret|token|password|private[_-]?key|service[_-]?role)[\w-]*\s*[:=]\s*["'`])([^"'`\n]+)(["'`])/gi,
+      "$1[REDACTED]$3",
+    )
+    .replace(/(Authorization\s*:\s*["'`]Bearer\s+)([^"'`\n]+)(["'`])/gi, "$1[REDACTED]$3");
 }
 
 function clip(value: string, max = 6_000) {
@@ -73,12 +84,15 @@ async function callGateway(messages: GatewayMessage[]) {
           }
           break;
         }
-        const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+        const json = (await response.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
         const value = json.choices?.[0]?.message?.content?.trim() ?? "";
         if (!value) throw new Error("SEO blog writer returned an empty response");
         return { value, model };
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") lastError = "SEO blog writer request timed out";
+        if (error instanceof Error && error.name === "AbortError")
+          lastError = "SEO blog writer request timed out";
         else if (error instanceof Error) lastError = error.message;
         if (lastError === "AI credits exhausted.") throw new Error(lastError);
         if (attempt === 0) {
@@ -133,7 +147,9 @@ function byteLength(value: string) {
 function routeTitle(route: string) {
   if (route === "/") return "Home";
   const parts = route.split("/").filter(Boolean);
-  return parts.map((part) => part.replace(/[-_]+/g, " ").replace(/\b\w/g, (m) => m.toUpperCase())).join(" / ");
+  return parts
+    .map((part) => part.replace(/[-_]+/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()))
+    .join(" / ");
 }
 
 function inferSiteContext(
@@ -162,7 +178,9 @@ function inferSiteContext(
     brandVoice: [],
     markets: [],
     complianceConstraints: audit.summary.siteModel.verticalSignals.length
-      ? ["Potential YMYL signals detected in source; verify author/reviewer/disclaimer requirements."]
+      ? [
+          "Potential YMYL signals detected in source; verify author/reviewer/disclaimer requirements.",
+        ]
       : [],
     internalLinks: links,
     publishedContent: links,
@@ -270,7 +288,11 @@ function renderMarkdown(result: Extract<SeoBlogWriterResponse, { mode: "write" |
 function inferBlogPath(files: Array<{ name: string }>, slug: string) {
   const candidates = files
     .map((file) => normalizePath(file.name))
-    .filter((name) => /\.(?:md|mdx)$/i.test(name) && /(^|\/)(?:blog|posts|articles|guides|resources|content)(?:\/|$)/i.test(name));
+    .filter(
+      (name) =>
+        /\.(?:md|mdx)$/i.test(name) &&
+        /(^|\/)(?:blog|posts|articles|guides|resources|content)(?:\/|$)/i.test(name),
+    );
   if (candidates.length > 0) {
     const sample = candidates[0]!;
     const dir = sample.slice(0, sample.lastIndexOf("/"));
@@ -280,6 +302,7 @@ function inferBlogPath(files: Array<{ name: string }>, slug: string) {
   return `content/blog/${slug}.md`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
 async function hydrateFiles(supabase: any, rows: FileRow[], sourceMode: SourceMode) {
   const result: Array<{ name: string; content: string }> = [];
   for (const row of rows) {
@@ -302,7 +325,9 @@ const taskSchema = z.object({
   primaryKeyword: z.string().trim().min(1).max(180),
   secondaryKeywords: z.array(z.string().trim().min(1).max(180)).max(30).default([]),
   questions: z.array(z.string().trim().min(1).max(300)).max(30).default([]),
-  searchIntent: z.enum(["informational", "commercial", "transactional", "navigational"]).default("informational"),
+  searchIntent: z
+    .enum(["informational", "commercial", "transactional", "navigational"])
+    .default("informational"),
   funnelStage: z.enum(["awareness", "consideration", "decision", "retention"]).default("awareness"),
   audience: z.string().trim().min(1).max(500),
   uniqueAngle: z.string().trim().max(1000).nullable().optional().default(null),
@@ -323,13 +348,15 @@ const taskSchema = z.object({
 export const writeSeoBlogContent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({
-      projectId: z.string().uuid(),
-      sourceMode: z.enum(["original", "redesigned"]).default("original"),
-      saveToProject: z.boolean().default(false),
-      targetPath: z.string().trim().max(400).nullable().optional().default(null),
-      task: taskSchema,
-    }).parse(data),
+    z
+      .object({
+        projectId: z.string().uuid(),
+        sourceMode: z.enum(["original", "redesigned"]).default("original"),
+        saveToProject: z.boolean().default(false),
+        targetPath: z.string().trim().max(400).nullable().optional().default(null),
+        task: taskSchema,
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const supabase = context.supabase;
@@ -350,7 +377,10 @@ export const writeSeoBlogContent = createServerFn({ method: "POST" })
     if (filesError) throw new Error(filesError.message);
 
     const files = await hydrateFiles(supabase, (fileRows ?? []) as FileRow[], data.sourceMode);
-    const auditFiles: SeoAuditFile[] = files.map((file) => ({ name: file.name, content: file.content }));
+    const auditFiles: SeoAuditFile[] = files.map((file) => ({
+      name: file.name,
+      content: file.content,
+    }));
     const audit = auditSeoProject(auditFiles);
     const siteContext = inferSiteContext(project, audit);
     const task = data.task as SeoBlogTask;
@@ -377,7 +407,11 @@ export const writeSeoBlogContent = createServerFn({ method: "POST" })
       JSON.stringify(siteContext, null, 2),
       "",
       "PROJECT METADATA:",
-      JSON.stringify({ name: project.name, productType: project.product_type, notes: project.notes }, null, 2),
+      JSON.stringify(
+        { name: project.name, productType: project.product_type, notes: project.notes },
+        null,
+        2,
+      ),
       "",
       "ARTICLE TASK:",
       JSON.stringify(task, null, 2),
@@ -397,7 +431,10 @@ export const writeSeoBlogContent = createServerFn({ method: "POST" })
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
-        const messages: GatewayMessage[] = [{ role: "system", content: system }, { role: "user", content: user }];
+        const messages: GatewayMessage[] = [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ];
         if (attempt > 0) {
           messages.push({
             role: "system",
@@ -425,8 +462,14 @@ export const writeSeoBlogContent = createServerFn({ method: "POST" })
       if (!target) throw new Error("Unsafe or unsupported blog target path");
 
       const normalizedTarget = normalizePath(target);
-      if ((fileRows ?? []).some((row) => normalizePath(row.name).toLowerCase() === normalizedTarget.toLowerCase())) {
-        throw new Error(`A project file already exists at ${normalizedTarget}. Use refresh mode instead of creating a duplicate.`);
+      if (
+        (fileRows ?? []).some(
+          (row) => normalizePath(row.name).toLowerCase() === normalizedTarget.toLowerCase(),
+        )
+      ) {
+        throw new Error(
+          `A project file already exists at ${normalizedTarget}. Use refresh mode instead of creating a duplicate.`,
+        );
       }
 
       const content = renderMarkdown(parsed);

@@ -12,7 +12,10 @@ export function Section({
   tone?: "default" | "quiet" | "signal";
 }) {
   return (
-    <section id={id} className={`archive-section archive-section--${tone}${last ? " is-last" : ""}`}>
+    <section
+      id={id}
+      className={`archive-section archive-section--${tone}${last ? " is-last" : ""}`}
+    >
       <div className="wrap">
         <div className="archive-section__rule">
           <span>REZYN / SECTION</span>

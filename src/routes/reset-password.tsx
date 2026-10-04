@@ -61,23 +61,48 @@ function ResetPasswordPage() {
           </div>
           <div className="archive-auth__panel">
             {done ? (
-              <p className="archive-auth__notice">Password updated. Taking you to your workspace…</p>
+              <p className="archive-auth__notice">
+                Password updated. Taking you to your workspace…
+              </p>
             ) : !ready ? (
               <p className="archive-auth__notice">
-                Open this page from the reset link in your email. Link expired? <Link to="/auth">Request a new one</Link>.
+                Open this page from the reset link in your email. Link expired?{" "}
+                <Link to="/auth">Request a new one</Link>.
               </p>
             ) : (
               <form onSubmit={submit} className="archive-auth__form">
                 <div>
                   <label htmlFor="np">New password</label>
-                  <input id="np" type="password" required minLength={8} autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <input
+                    id="np"
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    className="field"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
                 <div>
                   <label htmlFor="cp">Confirm password</label>
-                  <input id="cp" type="password" required minLength={8} autoComplete="new-password" className="field" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                  <input
+                    id="cp"
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    className="field"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                  />
                 </div>
                 {error ? <p className="archive-auth__error">{error}</p> : null}
-                <button type="submit" disabled={busy} className="button-primary archive-auth__submit">
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="button-primary archive-auth__submit"
+                >
                   {busy ? "Saving…" : "Save password"}
                 </button>
               </form>

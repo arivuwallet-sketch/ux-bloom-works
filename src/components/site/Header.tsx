@@ -52,15 +52,24 @@ export function Header() {
         {user ? (
           <span className="archive-header__account">
             {user.email}
-            <button type="button" onClick={() => void signOut()}>Sign out</button>
+            <button type="button" onClick={() => void signOut()}>
+              Sign out
+            </button>
           </span>
         ) : (
-          <Link to="/auth" className="archive-header__account">Sign in / Sign up</Link>
+          <Link to="/auth" className="archive-header__account">
+            Sign in / Sign up
+          </Link>
         )}
       </div>
 
       <div className="archive-header__main">
-        <Link to="/" onClick={() => setOpen(false)} className="archive-brand" aria-label="Rezyn home">
+        <Link
+          to="/"
+          onClick={() => setOpen(false)}
+          className="archive-brand"
+          aria-label="Rezyn home"
+        >
           <span className="archive-brand__mark">RZ</span>
           <span className="archive-brand__word">REZYN</span>
         </Link>
@@ -130,7 +139,10 @@ export function Footer() {
           <div className="archive-footer__brand">
             <span>RZ / 26</span>
             <Link to="/">REZYN</Link>
-            <p>Existing product. New visual language. AI-generated output — always review and test before shipping.</p>
+            <p>
+              Existing product. New visual language. AI-generated output — always review and test
+              before shipping.
+            </p>
           </div>
 
           <div className="archive-footer__directory">
@@ -145,19 +157,37 @@ export function Footer() {
 
           <div className="archive-footer__directory">
             <span className="archive-footer__label">System</span>
-            <Link to="/projects"><span>08</span>Workspace</Link>
-            <Link to="/auth"><span>09</span>Account</Link>
-            <a href="mailto:hello@rezyn.co"><span>10</span>Contact</a>
+            <Link to="/projects">
+              <span>08</span>Workspace
+            </Link>
+            <Link to="/auth">
+              <span>09</span>Account
+            </Link>
+            <a href="mailto:hello@rezyn.co">
+              <span>10</span>Contact
+            </a>
           </div>
 
           <div className="archive-footer__directory">
             <span className="archive-footer__label">Legal</span>
-            <Link to="/legal/terms"><span>L1</span>Terms</Link>
-            <Link to="/legal/privacy"><span>L2</span>Privacy</Link>
-            <Link to="/legal/ai-disclosure"><span>L3</span>AI Disclosure</Link>
-            <Link to="/legal/acceptable-use"><span>L4</span>Acceptable Use</Link>
-            <Link to="/legal/cookies"><span>L5</span>Cookies</Link>
-            <Link to="/legal/refunds"><span>L6</span>Refunds</Link>
+            <Link to="/legal/terms">
+              <span>L1</span>Terms
+            </Link>
+            <Link to="/legal/privacy">
+              <span>L2</span>Privacy
+            </Link>
+            <Link to="/legal/ai-disclosure">
+              <span>L3</span>AI Disclosure
+            </Link>
+            <Link to="/legal/acceptable-use">
+              <span>L4</span>Acceptable Use
+            </Link>
+            <Link to="/legal/cookies">
+              <span>L5</span>Cookies
+            </Link>
+            <Link to="/legal/refunds">
+              <span>L6</span>Refunds
+            </Link>
           </div>
         </div>
 

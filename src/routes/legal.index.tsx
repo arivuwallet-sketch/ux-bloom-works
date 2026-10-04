@@ -6,9 +6,16 @@ export const Route = createFileRoute("/legal/")({
   head: () => ({
     meta: [
       { title: "Legal & trust centre | Rezyn" },
-      { name: "description", content: "Rezyn's terms, privacy policy, AI disclosure, acceptable use rules and cookie notice in plain language." },
+      {
+        name: "description",
+        content:
+          "Rezyn's terms, privacy policy, AI disclosure, acceptable use rules and cookie notice in plain language.",
+      },
       { property: "og:title", content: "Legal & trust centre | Rezyn" },
-      { property: "og:description", content: "Plain-language terms, privacy, AI disclosure and acceptable use for Rezyn." },
+      {
+        property: "og:description",
+        content: "Plain-language terms, privacy, AI disclosure and acceptable use for Rezyn.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -33,8 +40,9 @@ function LegalIndex() {
           <span className="legal-page__label">Legal / 00 · Last updated {LEGAL_UPDATED}</span>
           <h1>Trust, in writing.</h1>
           <p className="legal-page__summary">
-            No fine-print tricks. These documents describe how Rezyn actually works today — including its limits. If something
-            here doesn't match what you see in the product, tell us and we'll fix whichever one is wrong.
+            No fine-print tricks. These documents describe how Rezyn actually works today —
+            including its limits. If something here doesn't match what you see in the product, tell
+            us and we'll fix whichever one is wrong.
           </p>
           <div className="legal-index">
             {legalLinks.map((link, i) => (

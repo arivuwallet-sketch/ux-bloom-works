@@ -1,6 +1,7 @@
 const CSS_EXT = /\.(?:css|scss|sass|less)$/i;
 
-const SEMANTIC_TOKEN = /^(?:background|foreground|card|card-foreground|popover|popover-foreground|primary|primary-foreground|secondary|secondary-foreground|muted|muted-foreground|accent|accent-foreground|destructive|destructive-foreground|border|input|ring|radius|chart-[\w-]+)$/;
+const SEMANTIC_TOKEN =
+  /^(?:background|foreground|card|card-foreground|popover|popover-foreground|primary|primary-foreground|secondary|secondary-foreground|muted|muted-foreground|accent|accent-foreground|destructive|destructive-foreground|border|input|ring|radius|chart-[\w-]+)$/;
 
 function customPropertyNames(source: string) {
   const names = new Set<string>();
@@ -42,7 +43,7 @@ function findBalancedBlock(source: string, openBrace: number) {
       else if (char === quote) quote = null;
       continue;
     }
-    if (char === "\"" || char === "'") {
+    if (char === '"' || char === "'") {
       quote = char;
       continue;
     }
@@ -98,7 +99,7 @@ function hasTopLevelCustomProperty(body: string) {
       else if (char === quote) quote = null;
       continue;
     }
-    if (char === "\"" || char === "'") {
+    if (char === '"' || char === "'") {
       quote = char;
       continue;
     }
@@ -113,7 +114,10 @@ function hasTopLevelCustomProperty(body: string) {
       continue;
     }
     if (char === ";" && depth === 0) {
-      const segment = body.slice(segmentStart, index).replace(/\/\*[\s\S]*?\*\//g, "").trim();
+      const segment = body
+        .slice(segmentStart, index)
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .trim();
       if (/^--[\w-]+\s*:/.test(segment)) return true;
       segmentStart = index + 1;
     }
@@ -135,7 +139,11 @@ function mergeVars(base: Map<string, string>, overrides: Map<string, string>) {
   return merged;
 }
 
-function resolveVar(name: string, vars: Map<string, string>, seen = new Set<string>()): string | null {
+function resolveVar(
+  name: string,
+  vars: Map<string, string>,
+  seen = new Set<string>(),
+): string | null {
   if (seen.has(name)) return null;
   seen.add(name);
   const raw = vars.get(name)?.trim();
@@ -152,7 +160,13 @@ function srgbChannel(value: number) {
 
 function luminanceFromHex(value: string) {
   const clean = value.trim().replace(/^#/, "");
-  const hex = clean.length === 3 ? clean.split("").map((char) => char + char).join("") : clean;
+  const hex =
+    clean.length === 3
+      ? clean
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : clean;
   if (!/^[0-9a-f]{6}$/i.test(hex)) return null;
   const r = srgbChannel(parseInt(hex.slice(0, 2), 16));
   const g = srgbChannel(parseInt(hex.slice(2, 4), 16));
@@ -163,9 +177,11 @@ function luminanceFromHex(value: string) {
 function luminanceFromOklch(value: string) {
   const match = value.trim().match(/^oklch\(\s*([\d.]+%?)\s+([\d.]+)\s+([\d.-]+)/i);
   if (!match?.[1] || !match[2] || !match[3]) return null;
-  const L = match[1].endsWith("%") ? Number.parseFloat(match[1]) / 100 : Number.parseFloat(match[1]);
+  const L = match[1].endsWith("%")
+    ? Number.parseFloat(match[1]) / 100
+    : Number.parseFloat(match[1]);
   const C = Number.parseFloat(match[2]);
-  const h = Number.parseFloat(match[3]) * Math.PI / 180;
+  const h = (Number.parseFloat(match[3]) * Math.PI) / 180;
   if (![L, C, h].every(Number.isFinite)) return null;
 
   const a = C * Math.cos(h);
@@ -230,7 +246,18 @@ function checkSemanticContrast(vars: Map<string, string>, mode: string) {
     if (!vars.has(surface) || !vars.has(foreground)) continue;
     const ratio = contrastRatio(resolveVar(surface, vars), resolveVar(foreground, vars));
     if (ratio !== null && ratio + 0.01 < minimum) {
-      errors.push(mode + " --" + foreground + " vs --" + surface + " contrast is " + ratio.toFixed(2) + ":1; require at least " + minimum + ":1");
+      errors.push(
+        mode +
+          " --" +
+          foreground +
+          " vs --" +
+          surface +
+          " contrast is " +
+          ratio.toFixed(2) +
+          ":1; require at least " +
+          minimum +
+          ":1",
+      );
     }
   }
   return errors;
@@ -240,17 +267,20 @@ function normalizedResolved(name: string, vars: Map<string, string>) {
   return resolveVar(name, vars)?.replace(/\s+/g, " ").trim().toLowerCase() ?? null;
 }
 
-
 function hasInputSurfaceConflict(vars: Map<string, string>) {
   const input = normalizedResolved("input", vars);
   if (!input) return false;
-  return ["background", "card"].some((surface) => vars.has(surface) && input === normalizedResolved(surface, vars));
+  return ["background", "card"].some(
+    (surface) => vars.has(surface) && input === normalizedResolved(surface, vars),
+  );
 }
 
 function hasUsableBorderToken(vars: Map<string, string>) {
   const border = normalizedResolved("border", vars);
   if (!border) return false;
-  return ["background", "card"].every((surface) => !vars.has(surface) || border !== normalizedResolved(surface, vars));
+  return ["background", "card"].every(
+    (surface) => !vars.has(surface) || border !== normalizedResolved(surface, vars),
+  );
 }
 
 function insertAfterImports(source: string, block: string) {
@@ -302,13 +332,16 @@ function moveSimpleThemeDarkOverrides(source: string) {
       break;
     }
     const closeBrace = openBrace + body.length + 1;
-    const cleanedBody = body.replace(/\bdark\s*:\s*\{([^{}]*)\}/gi, (_full, declarations: string) => {
-      if (/^[\s\n\r;:\w().,%#/+*-]*--[\w-]+\s*:/m.test(declarations)) {
-        extracted.push(declarations.trim());
-        return "";
-      }
-      return _full;
-    });
+    const cleanedBody = body.replace(
+      /\bdark\s*:\s*\{([^{}]*)\}/gi,
+      (_full, declarations: string) => {
+        if (/^[\s\n\r;:\w().,%#/+*-]*--[\w-]+\s*:/m.test(declarations)) {
+          extracted.push(declarations.trim());
+          return "";
+        }
+        return _full;
+      },
+    );
 
     output += source.slice(cursor, openBrace + 1) + cleanedBody + "}";
     cursor = closeBrace + 1;
@@ -328,7 +361,11 @@ function repairNeoBorderUtility(source: string) {
   return source.replace(
     /(\.border-neo\s*\{|@utility\s+border-neo\s*\{)([^{}]*)(\})/gi,
     (full, start: string, body: string, end: string) => {
-      if (/\bborder-style\s*:/i.test(body) || /\bborder\s*:[^;]*(?:solid|dashed|dotted|double)\b/i.test(body)) return full;
+      if (
+        /\bborder-style\s*:/i.test(body) ||
+        /\bborder\s*:[^;]*(?:solid|dashed|dotted|double)\b/i.test(body)
+      )
+        return full;
       return start + body.trimEnd() + "\n  border-style: solid;\n" + end;
     },
   );
@@ -342,10 +379,15 @@ function repairInvisibleNeoInsetShadow(source: string) {
 }
 
 function ensureReducedMotion(source: string) {
-  const usesMotion = /scroll-behavior\s*:\s*smooth|\btransition(?:-[\w-]+)?\s*:|\banimation(?:-[\w-]+)?\s*:|\btransform\s*:/i.test(source);
+  const usesMotion =
+    /scroll-behavior\s*:\s*smooth|\btransition(?:-[\w-]+)?\s*:|\banimation(?:-[\w-]+)?\s*:|\btransform\s*:/i.test(
+      source,
+    );
   const hasReduced = /@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(source);
   if (!usesMotion || hasReduced) return source;
-  return source.trimEnd() + `
+  return (
+    source.trimEnd() +
+    `
 
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
@@ -359,7 +401,8 @@ function ensureReducedMotion(source: string) {
     animation-iteration-count: 1 !important;
   }
 }
-`;
+`
+  );
 }
 
 export function repairRedesignCssCompatibility(opts: {
@@ -369,7 +412,10 @@ export function repairRedesignCssCompatibility(opts: {
   style?: string | null | undefined;
 }) {
   if (!CSS_EXT.test(opts.name)) return opts.output;
-  const tailwindV4 = /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/.test(opts.source + "\n" + opts.output);
+  const tailwindV4 =
+    /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/.test(
+      opts.source + "\n" + opts.output,
+    );
   if (!tailwindV4) return opts.output;
 
   let repaired = opts.output.replace(
@@ -391,13 +437,16 @@ export function repairRedesignCssCompatibility(opts: {
   const rootBlocks = findBlocks(repaired, /:root\s*/i);
   const rootVars = parseVars(rootBlocks.join("\n"));
   const darkBlocks = findBlocks(repaired, /\.dark\s*/i);
-  const darkOverrides = darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
+  const darkOverrides =
+    darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
   const darkVars = mergeVars(rootVars, darkOverrides);
 
   const rootConflict = hasInputSurfaceConflict(rootVars);
   const darkConflict = darkOverrides.size > 0 && hasInputSurfaceConflict(darkVars);
   if (rootConflict || darkConflict) {
-    const canUseBorder = hasUsableBorderToken(rootVars) && (darkOverrides.size === 0 || hasUsableBorderToken(darkVars));
+    const canUseBorder =
+      hasUsableBorderToken(rootVars) &&
+      (darkOverrides.size === 0 || hasUsableBorderToken(darkVars));
     const boundary = canUseBorder ? "var(--border)" : "var(--foreground)";
     repaired = repaired.replace(/--input\s*:\s*[^;{}]+;/gi, "--input: " + boundary + ";");
     if (/--color-input\s*:/i.test(repaired)) {
@@ -410,22 +459,31 @@ export function repairRedesignCssCompatibility(opts: {
 
 function validateTailwindCss(source: string, output: string, style: string | null | undefined) {
   const errors: string[] = [];
-  const tailwindV4 = /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/.test(source + "\n" + output);
+  const tailwindV4 =
+    /@import\s+["']tailwindcss(?:\/[^"']*)?["']|@theme\b|@utility\b|@custom-variant\b|@source\b/.test(
+      source + "\n" + output,
+    );
   if (!tailwindV4) return errors;
 
   if (/@import\s+["']tailwindcss(?:\/[^"']*)?["'][^;]*\blayer\(\s*[^)]*,[^)]*\)/i.test(output)) {
-    errors.push("Tailwind v4 layer() imports accept one layer name only; use @import \"tailwindcss\" or separate theme/base/utilities imports");
+    errors.push(
+      'Tailwind v4 layer() imports accept one layer name only; use @import "tailwindcss" or separate theme/base/utilities imports',
+    );
   }
 
   for (const block of findBlocks(output, /@layer\s+base\s*/i)) {
     if (hasTopLevelCustomProperty(block)) {
-      errors.push("Custom-property declarations cannot sit directly inside @layer base; move runtime tokens into :root/.dark selectors");
+      errors.push(
+        "Custom-property declarations cannot sit directly inside @layer base; move runtime tokens into :root/.dark selectors",
+      );
       break;
     }
   }
   for (const block of findBlocks(output, /@theme(?:\s+inline)?\s*/i)) {
     if (/\bdark\s*:\s*\{/i.test(block)) {
-      errors.push("Tailwind v4 @theme cannot contain nested dark: blocks; keep top-level theme mappings and place runtime overrides in a separate .dark selector");
+      errors.push(
+        "Tailwind v4 @theme cannot contain nested dark: blocks; keep top-level theme mappings and place runtime overrides in a separate .dark selector",
+      );
       break;
     }
     if (/@custom-variant\b/i.test(block)) {
@@ -441,39 +499,63 @@ function validateTailwindCss(source: string, output: string, style: string | nul
     }
   }
 
-
-  const sourceSemantic = [...customPropertyNames(source)].filter((name) => SEMANTIC_TOKEN.test(name));
+  const sourceSemantic = [...customPropertyNames(source)].filter((name) =>
+    SEMANTIC_TOKEN.test(name),
+  );
   if (sourceSemantic.length >= 3) {
     const missing = sourceSemantic.filter((name) => !hasCustomPropertyDeclaration(output, name));
     if (missing.length > 0) {
-      errors.push("Preserve the original semantic CSS-variable API; missing declarations: " + missing.slice(0, 16).map((name) => "--" + name).join(", "));
+      errors.push(
+        "Preserve the original semantic CSS-variable API; missing declarations: " +
+          missing
+            .slice(0, 16)
+            .map((name) => "--" + name)
+            .join(", "),
+      );
     }
   }
 
   const rootBlocks = findBlocks(output, /:root\s*/i);
   const rootVars = parseVars(rootBlocks.join("\n"));
   const darkBlocks = findBlocks(output, /\.dark\s*/i);
-  const darkOverrides = darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
+  const darkOverrides =
+    darkBlocks.length > 0 ? parseVars(darkBlocks.join("\n")) : new Map<string, string>();
   const darkVars = mergeVars(rootVars, darkOverrides);
 
   errors.push(...checkSemanticContrast(rootVars, "Light/base mode"));
   if (darkOverrides.size > 0) errors.push(...checkSemanticContrast(darkVars, "Dark mode"));
-  const primaryOnBackground = contrastRatio(resolveVar("primary", rootVars), resolveVar("background", rootVars));
+  const primaryOnBackground = contrastRatio(
+    resolveVar("primary", rootVars),
+    resolveVar("background", rootVars),
+  );
   const primaryUsedAsLink =
-    /(?:^|[}\s])a(?:\s|:|\{|,)[^{]*\{[^}]*\bcolor\s*:\s*var\(\s*--(?:color-)?primary\s*\)/ims.test(output) ||
-    /<a\b[^>]*class[^>]*\btext-primary\b/i.test(output);
+    /(?:^|[}\s])a(?:\s|:|\{|,)[^{]*\{[^}]*\bcolor\s*:\s*var\(\s*--(?:color-)?primary\s*\)/ims.test(
+      output,
+    ) || /<a\b[^>]*class[^>]*\btext-primary\b/i.test(output);
   if (primaryUsedAsLink && primaryOnBackground !== null && primaryOnBackground + 0.01 < 4.5) {
-    errors.push("Primary is used for link text but has only " + primaryOnBackground.toFixed(2) + ":1 contrast against the background; links require at least 4.5:1 or a separate accessible link token");
+    errors.push(
+      "Primary is used for link text but has only " +
+        primaryOnBackground.toFixed(2) +
+        ":1 contrast against the background; links require at least 4.5:1 or a separate accessible link token",
+    );
   }
 
-
   for (const [name, value] of darkOverrides) {
-    if (!/^(?:foreground|sidebar-foreground|neo-color-text-light|neo-color-text-primary|body-text|heading-text)$/i.test(name)) continue;
+    if (
+      !/^(?:foreground|sidebar-foreground|neo-color-text-light|neo-color-text-primary|body-text|heading-text)$/i.test(
+        name,
+      )
+    )
+      continue;
     const varMatch = value.match(/^var\(\s*--([\w-]+)\s*\)$/);
     const resolved = varMatch?.[1] ? resolveVar(varMatch[1], darkVars) : value;
     const lum = colorLuminance(resolved);
     if (lum !== null && lum < 0.2) {
-      errors.push("Dark-mode text token --" + name + " resolves near-black; text/heading/sidebar foreground tokens need a light readable value on dark surfaces");
+      errors.push(
+        "Dark-mode text token --" +
+          name +
+          " resolves near-black; text/heading/sidebar foreground tokens need a light readable value on dark surfaces",
+      );
     }
   }
 
@@ -485,7 +567,13 @@ function validateTailwindCss(source: string, output: string, style: string | nul
       for (const surfaceName of ["background", "card", "color-background", "color-card"]) {
         if (!vars.has(surfaceName)) continue;
         if (input === normalizedResolved(surfaceName, vars)) {
-          errors.push("--" + inputName + " resolves to the same color as --" + surfaceName + "; control boundaries must stay visibly distinct from their surface");
+          errors.push(
+            "--" +
+              inputName +
+              " resolves to the same color as --" +
+              surfaceName +
+              "; control boundaries must stay visibly distinct from their surface",
+          );
           break;
         }
       }
@@ -494,14 +582,24 @@ function validateTailwindCss(source: string, output: string, style: string | nul
 
   const isNeo = /neo\s*[- ]?brut|neubrut/i.test(style ?? "");
   if (isNeo) {
-    const plainNeoUtility = /@layer\s+base\s*\{[\s\S]*?\.(?:neo-(?:border|shadow|font)|border-neo|shadow-neo|font-neo)(?:\b|[-_])/i.test(output);
-    const variantAwareNeo = /@utility\s+(?:neo-(?:border|shadow|font)|border-neo|shadow-neo|font-neo)|--(?:shadow|font)-neo(?:\b|[-_])/i.test(output);
+    const plainNeoUtility =
+      /@layer\s+base\s*\{[\s\S]*?\.(?:neo-(?:border|shadow|font)|border-neo|shadow-neo|font-neo)(?:\b|[-_])/i.test(
+        output,
+      );
+    const variantAwareNeo =
+      /@utility\s+(?:neo-(?:border|shadow|font)|border-neo|shadow-neo|font-neo)|--(?:shadow|font)-neo(?:\b|[-_])/i.test(
+        output,
+      );
     if (plainNeoUtility && !variantAwareNeo) {
-      errors.push("Neo border/shadow/font primitives must use Tailwind v4 @utility and/or @theme namespaces so hover/focus/responsive variants work and utility-layer precedence is correct");
+      errors.push(
+        "Neo border/shadow/font primitives must use Tailwind v4 @utility and/or @theme namespaces so hover/focus/responsive variants work and utility-layer precedence is correct",
+      );
     }
 
     if (/\.(?:hover|active|focus(?:-visible)?)\\:/i.test(output)) {
-      errors.push("Do not hard-code escaped Tailwind interaction variants for Neo effects; register the reusable effect with @utility and let Tailwind compose hover/focus/active/responsive variants");
+      errors.push(
+        "Do not hard-code escaped Tailwind interaction variants for Neo effects; register the reusable effect with @utility and let Tailwind compose hover/focus/active/responsive variants",
+      );
     }
 
     const borderNeoBodies = [
@@ -509,23 +607,37 @@ function validateTailwindCss(source: string, output: string, style: string | nul
       ...findBlocks(output, /@utility\s+border-neo\s*/i),
     ];
     for (const body of borderNeoBodies) {
-      if (!/\bborder-style\s*:\s*solid\b/i.test(body) && !/\bborder\s*:[^;]*\bsolid\b/i.test(body)) {
-        errors.push(".border-neo must set border-style: solid so width/color still work after global button border resets");
+      if (
+        !/\bborder-style\s*:\s*solid\b/i.test(body) &&
+        !/\bborder\s*:[^;]*\bsolid\b/i.test(body)
+      ) {
+        errors.push(
+          ".border-neo must set border-style: solid so width/color still work after global button border resets",
+        );
         break;
       }
     }
 
     if (/translate(?:X|Y)?\(\s*var\(\s*--[\w-]+\s*\)\s*\*\s*-?\d/i.test(output)) {
-      errors.push("CSS transform math must wrap var(...) multiplication in calc(), for example calc(var(--neo-offset) * -1)");
+      errors.push(
+        "CSS transform math must wrap var(...) multiplication in calc(), for example calc(var(--neo-offset) * -1)",
+      );
     }
 
     if (/\binset\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?(?:\s|;|,|$)/i.test(output)) {
-      errors.push("Neo pressed-state inset shadow is all zero and invisible; use a visibly distinct non-zero inset shadow");
+      errors.push(
+        "Neo pressed-state inset shadow is all zero and invisible; use a visibly distinct non-zero inset shadow",
+      );
     }
 
-    const usesMotion = /scroll-behavior\s*:\s*smooth|\btransition(?:-[\w-]+)?\s*:|\banimation(?:-[\w-]+)?\s*:|\btransform\s*:/i.test(output);
+    const usesMotion =
+      /scroll-behavior\s*:\s*smooth|\btransition(?:-[\w-]+)?\s*:|\banimation(?:-[\w-]+)?\s*:|\btransform\s*:/i.test(
+        output,
+      );
     if (usesMotion && !/@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(output)) {
-      errors.push("Neo motion requires a prefers-reduced-motion: reduce override that disables smooth scrolling and transition/animation duration while preserving immediate state feedback");
+      errors.push(
+        "Neo motion requires a prefers-reduced-motion: reduce override that disables smooth scrolling and transition/animation duration while preserving immediate state feedback",
+      );
     }
   }
 
