@@ -214,7 +214,7 @@ async function callGateway(messages: GatewayMessage[]) {
           signal: controller.signal,
         });
 
-        if (res.status === 402) throw new Error("AI credits exhausted.");
+        if (res.status === 402) throw new Error("The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.");
         if (!res.ok) {
           lastError = res.status === 429 ? "Rate limit reached — retrying." : `AI request failed (${res.status})`;
 
@@ -242,7 +242,7 @@ async function callGateway(messages: GatewayMessage[]) {
           }
           break;
         }
-        if (error instanceof Error && error.message === "AI credits exhausted.") throw error;
+        if (error instanceof Error && error.message === "The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.") throw error;
         lastError = error instanceof Error ? error.message : lastError;
         if (attempt === 0) {
           await sleep(500);
