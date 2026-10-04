@@ -14,8 +14,16 @@ import {
 } from "@/lib/project-design-plan";
 import { getStyleBlueprint } from "@/lib/style-blueprints";
 import { isSupportFile } from "@/lib/project-file-kinds";
-import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
-import { applyCompiledDirectionFoundation, buildDirectionCompilerContext, detectsTailwindV4, isCompilerStyleEntrypoint } from "@/lib/design-direction-compiler";
+import {
+  repairRedesignCssCompatibility,
+  validateRedesignCssCompatibility,
+} from "@/lib/css-redesign-validator";
+import {
+  applyCompiledDirectionFoundation,
+  buildDirectionCompilerContext,
+  detectsTailwindV4,
+  isCompilerStyleEntrypoint,
+} from "@/lib/design-direction-compiler";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -63,8 +71,10 @@ function isPresentationBearingFile(name: string, source: string) {
     return /className\s*=|styled\.|css`|createStyles\(|<[A-Z][A-Za-z0-9]*[\s/>]/.test(source);
   }
   if (/\.mdx$/i.test(lower)) return /<[A-Za-z][\w.-]*[\s/>]/.test(source);
-  if (/\.php$/i.test(lower)) return /<(?:main|section|header|nav|footer|div|form|button|input)\b/i.test(source);
-  if (/\.dart$/i.test(lower)) return /Widget\s+build\s*\(|Scaffold\s*\(|MaterialApp\s*\(/.test(source);
+  if (/\.php$/i.test(lower))
+    return /<(?:main|section|header|nav|footer|div|form|button|input)\b/i.test(source);
+  if (/\.dart$/i.test(lower))
+    return /Widget\s+build\s*\(|Scaffold\s*\(|MaterialApp\s*\(/.test(source);
   if (/\.swift$/i.test(lower)) return /:\s*View\b|var\s+body\s*:\s*some\s+View/.test(source);
   if (/\.kt$/i.test(lower)) return /@Composable\b|Modifier\./.test(source);
 
@@ -72,7 +82,10 @@ function isPresentationBearingFile(name: string, source: string) {
 }
 
 function stripOuterFence(value: string) {
-  return value.replace(/^```[a-zA-Z0-9_-]*\n?/, "").replace(/\n?```$/, "").trim();
+  return value
+    .replace(/^```[a-zA-Z0-9_-]*\n?/, "")
+    .replace(/\n?```$/, "")
+    .trim();
 }
 
 function visualFingerprint(source: string) {
@@ -169,9 +182,10 @@ function buildPlanningSnapshot(files: PlanningFile[], graph: ProjectDependencyGr
     const node = graph.nodes.find((candidate) => candidate.file === file.name);
     const remaining = MAX_PLAN_CONTEXT_CHARS - used;
     const excerptLimit = Math.min(6_000, remaining);
-    const excerpt = file.content.length <= excerptLimit
-      ? file.content
-      : `${file.content.slice(0, Math.floor(excerptLimit * 0.7))}\n/* ... clipped ... */\n${file.content.slice(-Math.floor(excerptLimit * 0.3))}`;
+    const excerpt =
+      file.content.length <= excerptLimit
+        ? file.content
+        : `${file.content.slice(0, Math.floor(excerptLimit * 0.7))}\n/* ... clipped ... */\n${file.content.slice(-Math.floor(excerptLimit * 0.3))}`;
     const section = [
       `FILE: ${file.name}`,
       `ROLE: ${node?.role ?? "unknown"}`,
@@ -214,9 +228,15 @@ async function callGateway(messages: GatewayMessage[]) {
           signal: controller.signal,
         });
 
-        if (res.status === 402) throw new Error("The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.");
+        if (res.status === 402)
+          throw new Error(
+            "The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.",
+          );
         if (!res.ok) {
-          lastError = res.status === 429 ? "Rate limit reached — retrying." : `AI request failed (${res.status})`;
+          lastError =
+            res.status === 429
+              ? "Rate limit reached — retrying."
+              : `AI request failed (${res.status})`;
 
           if (TRANSIENT_STATUS.has(res.status) && attempt === 0) {
             await sleep(700);
@@ -242,7 +262,12 @@ async function callGateway(messages: GatewayMessage[]) {
           }
           break;
         }
-        if (error instanceof Error && error.message === "The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept.") throw error;
+        if (
+          error instanceof Error &&
+          error.message ===
+            "The AI service has run out of usage credits for this workspace. Top up AI credits in Settings → Usage, then press Run again — finished files are kept."
+        )
+          throw error;
         lastError = error instanceof Error ? error.message : lastError;
         if (attempt === 0) {
           await sleep(500);
@@ -270,11 +295,20 @@ async function generateProjectDesignPlan(opts: {
   graph: ProjectDependencyGraph;
 }) {
   const styleAssignments = opts.files
-    .map((file) => `${file.name}: ${opts.project.styleMode === "file" ? (file.targetStyle ?? "unset") : (opts.project.targetStyle ?? "unset")}`)
+    .map(
+      (file) =>
+        `${file.name}: ${opts.project.styleMode === "file" ? (file.targetStyle ?? "unset") : (opts.project.targetStyle ?? "unset")}`,
+    )
     .join("\n");
-  const uniqueStyles = Array.from(new Set(opts.files.map((file) =>
-    opts.project.styleMode === "file" ? file.targetStyle : opts.project.targetStyle,
-  ).filter((style): style is string => Boolean(style))));
+  const uniqueStyles = Array.from(
+    new Set(
+      opts.files
+        .map((file) =>
+          opts.project.styleMode === "file" ? file.targetStyle : opts.project.targetStyle,
+        )
+        .filter((style): style is string => Boolean(style)),
+    ),
+  );
   const styleBlueprints = uniqueStyles
     .map((style) => `${style}: ${getStyleBlueprint(style)}`)
     .join("\n\n");
@@ -352,7 +386,10 @@ async function generateProjectDesignPlan(opts: {
         { role: "user", content: userPrompt },
       ];
       if (attempt > 0) {
-        messages.push({ role: "system", content: `The previous plan was invalid: ${lastError}. Return complete JSON in the required schema using only known file paths.` });
+        messages.push({
+          role: "system",
+          content: `The previous plan was invalid: ${lastError}. Return complete JSON in the required schema using only known file paths.`,
+        });
       }
       const raw = await callGateway(messages);
       return parseProjectDesignPlan(raw, opts.files);
@@ -370,12 +407,12 @@ async function auditReconstruction(opts: {
   candidate: string;
   qaContext: string;
   projectPlan: string;
-}) : Promise<DesignAuditResult> {
+}): Promise<DesignAuditResult> {
   const raw = await callGateway([
     {
       role: "system",
       content:
-        "You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, the file follows the authoritative project-level design plan, and the applicable design-intelligence quality gates are satisfied. Treat cross-file consistency, accessibility, responsive behavior, interaction states, hierarchy, spacing, typography, contrast, forms, ethical UX, motion/reduced-motion, performance and relevant 2D/3D constraints as release blockers when materially wrong. Do not invent requirements that are absent from the file or project plan. Return ONLY JSON shaped exactly as {\"pass\":true|false,\"issues\":[\"concise actionable issue\"]}. Use at most 8 issues.",
+        'You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, the file follows the authoritative project-level design plan, and the applicable design-intelligence quality gates are satisfied. Treat cross-file consistency, accessibility, responsive behavior, interaction states, hierarchy, spacing, typography, contrast, forms, ethical UX, motion/reduced-motion, performance and relevant 2D/3D constraints as release blockers when materially wrong. Do not invent requirements that are absent from the file or project plan. Return ONLY JSON shaped exactly as {"pass":true|false,"issues":["concise actionable issue"]}. Use at most 8 issues.',
     },
     {
       role: "user",
@@ -410,7 +447,9 @@ async function redesignSource(opts: {
   project: ProjectVisualContext;
 }): Promise<string> {
   if (opts.source.length > MAX_SOURCE_CHARS) {
-    throw new Error("This file is too large to reconstruct safely. Split it into smaller source files first.");
+    throw new Error(
+      "This file is too large to reconstruct safely. Split it into smaller source files first.",
+    );
   }
 
   const styleBlueprint = getStyleBlueprint(opts.style);
@@ -431,7 +470,11 @@ async function redesignSource(opts: {
     source: opts.source,
     style: opts.style,
   });
-  const projectPlan = formatProjectPlanForPrompt(opts.project.designPlan, opts.project.dependencyGraph, opts.name);
+  const projectPlan = formatProjectPlanForPrompt(
+    opts.project.designPlan,
+    opts.project.dependencyGraph,
+    opts.name,
+  );
 
   const reconstructionContract =
     "You are Rezyn's full-reconstruction design engine: an elite product designer, UX architect, interaction designer, accessibility specialist, motion/visual designer, 2D/3D art director, and senior front-end engineer. " +
@@ -476,8 +519,7 @@ async function redesignSource(opts: {
             ...baseMessages,
             {
               role: "system" as const,
-              content:
-                `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}. Reconstruct the presentation from a blank canvas while preserving behavior and following the shared project plan exactly. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
+              content: `The previous result was rejected. Correct these release-blocking problems before regenerating: ${lastError}. Reconstruct the presentation from a blank canvas while preserving behavior and following the shared project plan exactly. Re-run the full Design Intelligence quality review and correct every issue before output. Do not patch the previous design; replace it.`,
             },
           ];
 
@@ -496,7 +538,11 @@ async function redesignSource(opts: {
         projectPlan,
       });
       if (!audit.pass) {
-        throw new Error(audit.issues.length > 0 ? audit.issues.join(" | ") : "Design QA rejected the reconstruction.");
+        throw new Error(
+          audit.issues.length > 0
+            ? audit.issues.join(" | ")
+            : "Design QA rejected the reconstruction.",
+        );
       }
       return candidate;
     } catch (error) {
@@ -522,13 +568,20 @@ export const redesignNextFile = createServerFn({ method: "POST" })
     if (projectError) throw new Error(projectError.message);
     if (!project) throw new Error("Project not found");
 
-    const { data: unlocked, error: unlockError } = await supabase.rpc("unlock_project", { _project_id: data.projectId });
+    const { data: unlocked, error: unlockError } = await supabase.rpc("unlock_project", {
+      _project_id: data.projectId,
+    });
     if (unlockError) throw new Error(unlockError.message);
-    if (!unlocked) throw new Error("NO_CREDITS: You need a website credit to redesign this project. Buy a pack on the Pricing page.");
+    if (!unlocked)
+      throw new Error(
+        "NO_CREDITS: You need a website credit to redesign this project. Buy a pack on the Pricing page.",
+      );
 
     const { data: files, error: filesError } = await supabase
       .from("project_files")
-      .select("id, name, source, content, storage_path, target_style, status, size_bytes, updated_at")
+      .select(
+        "id, name, source, content, storage_path, target_style, status, size_bytes, updated_at",
+      )
       .eq("project_id", data.projectId)
       .order("created_at", { ascending: true });
     if (filesError) throw new Error(filesError.message);
@@ -572,7 +625,9 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       .eq("project_id", data.projectId)
       .maybeSingle();
     if (storedPlanError) {
-      throw new Error(`Project planning schema is unavailable: ${storedPlanError.message}. Apply migration 0007_create_project_design_plans.sql.`);
+      throw new Error(
+        `Project planning schema is unavailable: ${storedPlanError.message}. Apply migration 0007_create_project_design_plans.sql.`,
+      );
     }
 
     let designPlan: ProjectDesignPlan;
@@ -587,7 +642,11 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       try {
         designPlan = storedPlan.plan as unknown as ProjectDesignPlan;
         activeGraph = storedPlan.dependency_graph as unknown as ProjectDependencyGraph;
-        if ((designPlan as { version: number }).version !== 2 || (activeGraph as { version: number }).version !== 1) throw new Error("stale plan version");
+        if (
+          (designPlan as { version: number }).version !== 2 ||
+          (activeGraph as { version: number }).version !== 1
+        )
+          throw new Error("stale plan version");
       } catch {
         planCreated = true;
         designPlan = await generateProjectDesignPlan({
@@ -616,7 +675,8 @@ export const redesignNextFile = createServerFn({ method: "POST" })
         error: null,
         updated_at: new Date().toISOString(),
       });
-      if (planningWriteError) throw new Error(`Could not start project planning: ${planningWriteError.message}`);
+      if (planningWriteError)
+        throw new Error(`Could not start project planning: ${planningWriteError.message}`);
 
       try {
         designPlan = await generateProjectDesignPlan({
@@ -632,11 +692,14 @@ export const redesignNextFile = createServerFn({ method: "POST" })
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : "Project planning failed";
-        await supabase.from("project_design_plans").update({
-          status: "failed",
-          error: message,
-          updated_at: new Date().toISOString(),
-        }).eq("project_id", data.projectId);
+        await supabase
+          .from("project_design_plans")
+          .update({
+            status: "failed",
+            error: message,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("project_id", data.projectId);
         await supabase.from("projects").update({ status: "failed" }).eq("id", data.projectId);
         throw new Error(`PROJECT_PLAN_FAILED: ${message}`);
       }
@@ -680,7 +743,10 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       if (isSupportFile(candidate.name)) {
         await supabase
           .from("project_files")
-          .update({ status: "skipped", redesign_error: "Config/SEO support file — kept unchanged, not restyled" })
+          .update({
+            status: "skipped",
+            redesign_error: "Config/SEO support file — kept unchanged, not restyled",
+          })
           .eq("id", candidate.id);
         fastForwarded += 1;
         file = undefined;
@@ -705,7 +771,13 @@ export const redesignNextFile = createServerFn({ method: "POST" })
       const remainingAfterFastForward = Math.max(0, orderedQueue.length - fastForwarded);
       if (remainingAfterFastForward === 0) {
         await supabase.from("projects").update({ status: "done" }).eq("id", data.projectId);
-        return { done: true as const, remaining: 0, total: files.length, current: null, planCreated };
+        return {
+          done: true as const,
+          remaining: 0,
+          total: files.length,
+          current: null,
+          planCreated,
+        };
       }
       return {
         done: false as const,
@@ -799,10 +871,12 @@ export const redesignNextFile = createServerFn({ method: "POST" })
 export const requeueFailedRedesign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({
-      projectId: z.string().uuid(),
-      legacyCompilerOnly: z.boolean().optional().default(false),
-    }).parse(data),
+    z
+      .object({
+        projectId: z.string().uuid(),
+        legacyCompilerOnly: z.boolean().optional().default(false),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const { data: failedFiles, error: readError } = await context.supabase
@@ -813,9 +887,12 @@ export const requeueFailedRedesign = createServerFn({ method: "POST" })
     if (readError) throw new Error(readError.message);
     if (!failedFiles || failedFiles.length === 0) return { ok: true, requeued: 0 };
 
-    const legacyCompilerError = /(Fix Tailwind v4 syntax|nested dark: block inside @theme|Register reusable Neo effects|--input resolves to the same color|prefers-reduced-motion override)/i;
+    const legacyCompilerError =
+      /(Fix Tailwind v4 syntax|nested dark: block inside @theme|Register reusable Neo effects|--input resolves to the same color|prefers-reduced-motion override)/i;
     const ids = failedFiles
-      .filter((file) => !data.legacyCompilerOnly || legacyCompilerError.test(file.redesign_error ?? ""))
+      .filter(
+        (file) => !data.legacyCompilerOnly || legacyCompilerError.test(file.redesign_error ?? ""),
+      )
       .map((file) => file.id);
     if (ids.length === 0) return { ok: true, requeued: 0 };
     const { error } = await context.supabase
@@ -824,10 +901,7 @@ export const requeueFailedRedesign = createServerFn({ method: "POST" })
       .in("id", ids);
     if (error) throw new Error(error.message);
 
-    await context.supabase
-      .from("projects")
-      .update({ status: "queued" })
-      .eq("id", data.projectId);
+    await context.supabase.from("projects").update({ status: "queued" }).eq("id", data.projectId);
 
     return { ok: true, requeued: ids.length };
   });
@@ -842,9 +916,6 @@ export const resetRedesign = createServerFn({ method: "POST" })
       .update({ status: "queued", redesigned_content: null, redesign_error: null })
       .eq("project_id", data.projectId);
     if (error) throw new Error(error.message);
-    await context.supabase
-      .from("projects")
-      .update({ status: "queued" })
-      .eq("id", data.projectId);
+    await context.supabase.from("projects").update({ status: "queued" }).eq("id", data.projectId);
     return { ok: true };
   });

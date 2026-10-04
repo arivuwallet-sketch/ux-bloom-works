@@ -12,7 +12,8 @@ export const Route = createFileRoute("/trends")({
       { title: "Signals — advanced interface patterns | Rezyn" },
       {
         name: "description",
-        content: "Explore advanced interface patterns across navigation, heroes, inputs, data display, feedback, media and AI product experiences.",
+        content:
+          "Explore advanced interface patterns across navigation, heroes, inputs, data display, feedback, media and AI product experiences.",
       },
     ],
   }),
@@ -53,7 +54,9 @@ function TrendsPage() {
           </div>
           <div>
             <span className="eyebrow">Proof over novelty</span>
-            <h2 className="mb-0 mt-4 max-w-[14ch] text-[clamp(38px,5vw,68px)] leading-[0.92]">A pattern matters when it improves the product.</h2>
+            <h2 className="mb-0 mt-4 max-w-[14ch] text-[clamp(38px,5vw,68px)] leading-[0.92]">
+              A pattern matters when it improves the product.
+            </h2>
           </div>
           <Link to="/work" className="button-secondary">
             View transformation proof <ArrowUpRight className="h-4 w-4" />

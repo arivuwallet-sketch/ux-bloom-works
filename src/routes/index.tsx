@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDownRight, ArrowUpRight, Boxes, Braces, Layers3, ScanLine, Search, Sparkles, WandSparkles } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Boxes,
+  Braces,
+  Layers3,
+  ScanLine,
+  Search,
+  Sparkles,
+  WandSparkles,
+} from "lucide-react";
 import { Reveal, Ticker } from "@/components/studio/motion";
 import { PageHero } from "@/components/site/PageHero";
 import { Section, SectionHeading, ServiceRows } from "@/components/site/Section";
@@ -16,10 +26,14 @@ export const Route = createFileRoute("/")({
         content:
           "Upload an existing website or product, reconstruct its UI/UX, improve technical and on-page SEO, strengthen content and structured data, optimize for answer engines and AI visibility, or run everything together while preserving functionality.",
       },
-      { property: "og:title", content: "Rezyn — Redesign the interface. Rebuild search intelligence." },
+      {
+        property: "og:title",
+        content: "Rezyn — Redesign the interface. Rebuild search intelligence.",
+      },
       {
         property: "og:description",
-        content: "A full-project AI reconstruction and SEO intelligence system for websites, apps, SaaS products and storefronts.",
+        content:
+          "A full-project AI reconstruction and SEO intelligence system for websites, apps, SaaS products and storefronts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -93,14 +107,19 @@ function Index() {
           <div className="relative z-10 flex h-full flex-col justify-end">
             <div className="mb-auto grid grid-cols-2 gap-2 pt-10">
               {["UI", "UX", "SEO", "AI"].map((item) => (
-                <span key={item} className="rounded-xl border border-white/8 bg-white/[0.025] px-3 py-3 font-mono text-[9px] tracking-[0.12em] text-muted-foreground">
+                <span
+                  key={item}
+                  className="rounded-xl border border-white/8 bg-white/[0.025] px-3 py-3 font-mono text-[9px] tracking-[0.12em] text-muted-foreground"
+                >
                   {item} / ACTIVE
                 </span>
               ))}
             </div>
             <div className="mb-3 flex items-center gap-2 text-revision">
               <WandSparkles className="h-4 w-4" />
-              <span className="font-mono text-[9px] tracking-[0.14em] uppercase">Project intelligence core</span>
+              <span className="font-mono text-[9px] tracking-[0.14em] uppercase">
+                Project intelligence core
+              </span>
             </div>
             <strong>R4</strong>
             <span>redesign + SEO/GEO/AEO/AAO</span>
@@ -144,10 +163,16 @@ function Index() {
                 <article className="glass group min-h-[220px] p-6 transition-transform duration-300 hover:-translate-y-1">
                   <div className="flex items-start justify-between">
                     <Icon className="h-5 w-5 text-revision" />
-                    <span className="font-mono text-[9px] tracking-[0.14em] text-muted-foreground">SYS / 0{index + 1}</span>
+                    <span className="font-mono text-[9px] tracking-[0.14em] text-muted-foreground">
+                      SYS / 0{index + 1}
+                    </span>
                   </div>
-                  <div className="mt-16 font-serif text-[48px] leading-none tracking-[-0.06em]">{signal.value}</div>
-                  <div className="mt-3 text-[12px] uppercase tracking-[0.12em] text-ink-soft">{signal.label}</div>
+                  <div className="mt-16 font-serif text-[48px] leading-none tracking-[-0.06em]">
+                    {signal.value}
+                  </div>
+                  <div className="mt-3 text-[12px] uppercase tracking-[0.12em] text-ink-soft">
+                    {signal.label}
+                  </div>
                 </article>
               </Reveal>
             );
@@ -165,7 +190,9 @@ function Index() {
           {seoCapabilities.map((capability, index) => (
             <Reveal key={capability.number} delay={index * 0.04}>
               <article className="glass min-h-[260px] p-6">
-                <div className="font-mono text-[9px] tracking-[0.14em] text-revision">SEO / {capability.number}</div>
+                <div className="font-mono text-[9px] tracking-[0.14em] text-revision">
+                  SEO / {capability.number}
+                </div>
                 <h3 className="mb-4 mt-12 text-[30px] leading-[0.98]">{capability.title}</h3>
                 <p className="m-0 text-[13px] leading-6 text-ink-soft">{capability.body}</p>
               </article>
@@ -195,9 +222,19 @@ function Index() {
           {processSteps.map((step, index) => (
             <Reveal key={step.version} delay={index * 0.08}>
               <article className="glass relative min-h-[320px] p-7">
-                <div className="absolute right-6 top-6 font-mono text-[9px] tracking-[0.16em] text-muted-foreground">{step.version}</div>
+                <div className="absolute right-6 top-6 font-mono text-[9px] tracking-[0.16em] text-muted-foreground">
+                  {step.version}
+                </div>
                 <div className="mb-16 flex h-11 w-11 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
-                  {index === 0 ? <Boxes className="h-5 w-5" /> : index === 1 ? <Sparkles className="h-5 w-5" /> : index === 2 ? <Search className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
+                  {index === 0 ? (
+                    <Boxes className="h-5 w-5" />
+                  ) : index === 1 ? (
+                    <Sparkles className="h-5 w-5" />
+                  ) : index === 2 ? (
+                    <Search className="h-5 w-5" />
+                  ) : (
+                    <ArrowDownRight className="h-5 w-5" />
+                  )}
                 </div>
                 <h3 className="mb-4 text-[34px] leading-[0.95]">{step.title}</h3>
                 <p className="m-0 max-w-[40ch] text-[14px] leading-7 text-ink-soft">{step.body}</p>
@@ -233,8 +270,14 @@ function Index() {
         <Reveal delay={0.1}>
           <div className="mt-12 flex flex-wrap items-center justify-between gap-6 border-t border-border pt-8">
             <p className="m-0 max-w-[680px] text-[18px] leading-8 text-ink-soft">
-              Your uploaded UI is not the template, and SEO is not reduced to a generic prompt. Rezyn works from the real project, applies project-wide plans, preserves the original files for comparison, and keeps unknown search metrics unknown. Wondering why not just ask a chatbot?{" "}
-              <Link to="/why-rezyn" className="underline underline-offset-4">Read the honest comparison</Link>.
+              Your uploaded UI is not the template, and SEO is not reduced to a generic prompt.
+              Rezyn works from the real project, applies project-wide plans, preserves the original
+              files for comparison, and keeps unknown search metrics unknown. Wondering why not just
+              ask a chatbot?{" "}
+              <Link to="/why-rezyn" className="underline underline-offset-4">
+                Read the honest comparison
+              </Link>
+              .
             </p>
             <Link to="/projects" className="button-primary">
               Start transformation <ArrowUpRight className="h-4 w-4" />

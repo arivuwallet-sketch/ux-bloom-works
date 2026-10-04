@@ -281,10 +281,7 @@ export const TWO_D_THREE_D_SKILLS = [
   "Y2K Aesthetic",
 ] as const;
 
-export const DESIGN_INTELLIGENCE_SKILLS = [
-  ...UI_UX_SKILLS,
-  ...TWO_D_THREE_D_SKILLS,
-] as const;
+export const DESIGN_INTELLIGENCE_SKILLS = [...UI_UX_SKILLS, ...TWO_D_THREE_D_SKILLS] as const;
 
 const UNIVERSAL_QUALITY_GATES = [
   "Start from user tasks and information architecture, not decorative styling. Preserve real product behavior while rebuilding presentation around the target direction.",
@@ -296,7 +293,7 @@ const UNIVERSAL_QUALITY_GATES = [
   "Treat forms as task flows: persistent labels, useful defaults, input modes, autocomplete, field grouping, inline validation, explicit required/optional status, recoverable errors, and efficient keyboard/mobile entry.",
   "Design mobile-first, then tablet and desktop. Verify small-phone, large-phone, tablet, laptop, desktop, wide-desktop and high-density data cases; use fluid typography and liquid/adaptive layouts without horizontal overflow.",
   "Use design tokens and component architecture consistently. Avoid one-off magic values when a token or reusable component/state can express the decision. Preserve compatibility with the project's existing component framework when it is functional.",
-  "When Tailwind CSS v4 is present, use valid CSS-first architecture: keep @import statements before normal rules; use @import \"tailwindcss\" or decomposed Tailwind imports where each layer(...) contains exactly one layer name; define regular runtime variables in :root/.dark; keep @theme/@theme inline top-level for variables that should generate utilities; and define custom utility classes with @utility when variant support is required. Never place naked declarations directly inside @layer base.",
+  'When Tailwind CSS v4 is present, use valid CSS-first architecture: keep @import statements before normal rules; use @import "tailwindcss" or decomposed Tailwind imports where each layer(...) contains exactly one layer name; define regular runtime variables in :root/.dark; keep @theme/@theme inline top-level for variables that should generate utilities; and define custom utility classes with @utility when variant support is required. Never place naked declarations directly inside @layer base.',
   "Preserve an existing semantic CSS-variable API even while replacing its visual values. If the project already exposes tokens such as --background, --foreground, --card, --primary, --secondary, --muted, --accent, --destructive, --border, --input, --ring, --chart-* or --radius, keep those names resolved for direct consumers and map new art-direction tokens behind them instead of deleting the API.",
   "Token aliases must stay semantically correct in every theme. In dark mode, body/heading/sidebar foreground tokens must remain light enough against dark surfaces; bright secondary/accent fills need dark readable foregrounds; muted foregrounds must remain readable on muted surfaces; and focus indicators must reach at least 3:1 against adjacent colors. Target WCAG AA 4.5:1 for ordinary text pairs, including primary/destructive button labels and default links.",
   "Keep input/control boundary tokens visually distinct from surface/fill tokens. Do not map --input/--color-input to the same resolved color as --background, --card or a generic surface fill when that token is used by border-input or control outlines.",
@@ -331,23 +328,49 @@ function detectSpecialisms(fileName: string, source: string, instruction = "") {
   const haystack = `${fileName}\n${source.slice(0, 120_000)}\n${instruction}`.toLowerCase();
   const matches: string[] = [];
 
-  if (/three|@react-three|webgl|canvas|glsl|shader|fragment|vertex|r3f|babylon|aframe|model-viewer|gltf|glb|obj\b|fbx|usdz/.test(haystack)) {
-    matches.push("real-time 3D, spatial composition, shader/material, camera/lighting and rendering optimization");
+  if (
+    /three|@react-three|webgl|canvas|glsl|shader|fragment|vertex|r3f|babylon|aframe|model-viewer|gltf|glb|obj\b|fbx|usdz/.test(
+      haystack,
+    )
+  ) {
+    matches.push(
+      "real-time 3D, spatial composition, shader/material, camera/lighting and rendering optimization",
+    );
   }
-  if (/svg|lottie|canvas|animation|keyframe|framer-motion|motion\.|gsap|timeline|parallax|scrolltrigger/.test(haystack)) {
-    matches.push("2D/motion design, vector animation, easing, keyframes, timeline management and reduced-motion behavior");
+  if (
+    /svg|lottie|canvas|animation|keyframe|framer-motion|motion\.|gsap|timeline|parallax|scrolltrigger/.test(
+      haystack,
+    )
+  ) {
+    matches.push(
+      "2D/motion design, vector animation, easing, keyframes, timeline management and reduced-motion behavior",
+    );
   }
-  if (/chart|graph|table|dashboard|analytics|metric|sparkline|plot|d3\b|recharts|echarts/.test(haystack)) {
-    matches.push("data visualization ergonomics, information density management, comparison and scan-path optimization");
+  if (
+    /chart|graph|table|dashboard|analytics|metric|sparkline|plot|d3\b|recharts|echarts/.test(
+      haystack,
+    )
+  ) {
+    matches.push(
+      "data visualization ergonomics, information density management, comparison and scan-path optimization",
+    );
   }
-  if (/form|input|select|textarea|checkbox|radio|validation|signup|checkout|login|register/.test(haystack)) {
-    matches.push("form ergonomics, validation, error recovery, conversion clarity and accessible component states");
+  if (
+    /form|input|select|textarea|checkbox|radio|validation|signup|checkout|login|register/.test(
+      haystack,
+    )
+  ) {
+    matches.push(
+      "form ergonomics, validation, error recovery, conversion clarity and accessible component states",
+    );
   }
   if (/chat|assistant|agent|generative|ai-|llm|copilot|prompt|conversation/.test(haystack)) {
     matches.push("AI-native, conversational, agentic, algorithmic-transparency and multimodal UX");
   }
   if (/tailwindcss|@theme\b|@utility\b|@custom-variant|@source\b/.test(haystack)) {
-    matches.push("Tailwind v4 CSS-first architecture, theme-variable namespaces, custom utilities, variants, semantic token compatibility and cascade/layer correctness");
+    matches.push(
+      "Tailwind v4 CSS-first architecture, theme-variable namespaces, custom utilities, variants, semantic token compatibility and cascade/layer correctness",
+    );
   }
   if (/aria-|role=|tabindex|focus|keyboard|screenreader|sr-only/.test(haystack)) {
     matches.push("accessibility auditing, keyboard/focus systems and semantic interaction design");
@@ -356,7 +379,11 @@ function detectSpecialisms(fileName: string, source: string, instruction = "") {
     matches.push("multimodal, VUI, gesture, spatial, haptic and privacy-aware interaction design");
   }
 
-  return matches.length > 0 ? matches : ["general product UI/UX architecture, accessibility, responsive systems and visual hierarchy"];
+  return matches.length > 0
+    ? matches
+    : [
+        "general product UI/UX architecture, accessibility, responsive systems and visual hierarchy",
+      ];
 }
 
 export function buildDesignIntelligenceContext(opts: {
@@ -372,7 +399,9 @@ export function buildDesignIntelligenceContext(opts: {
   return [
     "DESIGN INTELLIGENCE OPERATING SYSTEM",
     "Use the following capabilities as an expert knowledge base. Apply every capability when relevant; do not force irrelevant techniques into the interface. Never fabricate research evidence, test results, analytics, biometric findings, eye-tracking, user interviews, A/B outcomes or tool execution that did not actually occur.",
-    opts.style ? `Target design direction: ${opts.style}. The direction controls art direction; the quality gates below control correctness.` : "No fixed art direction was supplied; infer the requested visual direction from the user's instruction while preserving product coherence.",
+    opts.style
+      ? `Target design direction: ${opts.style}. The direction controls art direction; the quality gates below control correctness.`
+      : "No fixed art direction was supplied; infer the requested visual direction from the user's instruction while preserving product coherence.",
     `Detected priority disciplines for this file: ${specialisms.join("; ")}.`,
     "UNIVERSAL PRODUCT QUALITY GATES:\n- " + UNIVERSAL_QUALITY_GATES.join("\n- "),
     "2D / 3D / MOTION QUALITY GATES WHEN RELEVANT:\n- " + VISUAL_2D_3D_GATES.join("\n- "),
@@ -381,7 +410,6 @@ export function buildDesignIntelligenceContext(opts: {
     "FINAL INTERNAL REVIEW BEFORE OUTPUT: verify task flow, IA, visual hierarchy, responsive behavior, typography, spacing rhythm, color/contrast, component/state completeness, affordances, forms, keyboard/focus behavior, motion/reduced-motion, performance, content clarity, ethical UX, design-system consistency, and any relevant 2D/3D rendering constraints. Fix defects before returning code.",
   ].join("\n\n");
 }
-
 
 export function buildDesignQaContext(opts: {
   fileName: string;

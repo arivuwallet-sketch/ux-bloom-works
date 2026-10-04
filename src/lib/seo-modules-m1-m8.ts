@@ -99,17 +99,99 @@ export const SEO_M1_M8_CAPABILITIES = {
     ],
   },
   m5KeywordResearch: {
-    hardConstraint: "The model can generate candidates, classify/cluster/map them, but search volume and difficulty must be null unless supplied by a real keyword/Search Console/rank data source.",
+    hardConstraint:
+      "The model can generate candidates, classify/cluster/map them, but search volume and difficulty must be null unless supplied by a real keyword/Search Console/rank data source.",
     sourcesInPriorityOrder: [
-      "Search Console queries", "site-search logs/support tickets/sales calls/reviews", "Google autocomplete/related searches", "People Also Ask", "competitor ranking pages/headings", "forums/Reddit/Quora/niche communities/YouTube suggestions", "keyword tools/APIs", "real conversational AI prompts from customers",
+      "Search Console queries",
+      "site-search logs/support tickets/sales calls/reviews",
+      "Google autocomplete/related searches",
+      "People Also Ask",
+      "competitor ranking pages/headings",
+      "forums/Reddit/Quora/niche communities/YouTube suggestions",
+      "keyword tools/APIs",
+      "real conversational AI prompts from customers",
     ],
     taxonomy: [
-      "short-tail/head", "mid-tail", "long-tail", "question", "conversational prompt", "branded", "competitor-branded", "local", "comparison", "transactional", "navigational",
+      "short-tail/head",
+      "mid-tail",
+      "long-tail",
+      "question",
+      "conversational prompt",
+      "branded",
+      "competitor-branded",
+      "local",
+      "comparison",
+      "transactional",
+      "navigational",
     ],
     expansion: {
-      seeds: ["product/service", "problem", "outcome", "audience", "entity", "tool", "standard", "location"],
-      intentModifiers: ["what is", "meaning", "definition", "examples", "how to", "steps", "guide", "tutorial", "tips", "checklist", "template", "calculator", "formula", "cost", "price", "free", "best", "top", "vs", "alternative", "review", "comparison", "pros and cons", "worth it", "for beginners", "for persona", "for industry", "near me", "online", "app", "software", "tool", "course", "jobs", "salary", "mistakes", "problems", "not working", "why", "when", "who", "can I", "should I", "is it legal"],
-      time: ["today", "this week", "latest", "news", "2026", "update", "forecast", "schedule", "calendar"],
+      seeds: [
+        "product/service",
+        "problem",
+        "outcome",
+        "audience",
+        "entity",
+        "tool",
+        "standard",
+        "location",
+      ],
+      intentModifiers: [
+        "what is",
+        "meaning",
+        "definition",
+        "examples",
+        "how to",
+        "steps",
+        "guide",
+        "tutorial",
+        "tips",
+        "checklist",
+        "template",
+        "calculator",
+        "formula",
+        "cost",
+        "price",
+        "free",
+        "best",
+        "top",
+        "vs",
+        "alternative",
+        "review",
+        "comparison",
+        "pros and cons",
+        "worth it",
+        "for beginners",
+        "for persona",
+        "for industry",
+        "near me",
+        "online",
+        "app",
+        "software",
+        "tool",
+        "course",
+        "jobs",
+        "salary",
+        "mistakes",
+        "problems",
+        "not working",
+        "why",
+        "when",
+        "who",
+        "can I",
+        "should I",
+        "is it legal",
+      ],
+      time: [
+        "today",
+        "this week",
+        "latest",
+        "news",
+        "2026",
+        "update",
+        "forecast",
+        "schedule",
+        "calendar",
+      ],
       geo: ["country", "state", "city", "neighborhood", "native language variants", "currency"],
       funnel: ["awareness", "consideration", "decision", "retention"],
     },
@@ -119,8 +201,22 @@ export const SEO_M1_M8_CAPABILITIES = {
       "Prioritization without real data uses business value, intent match, winnability estimate only when evidence exists, and effort. Never fabricate volume/KD/rank.",
       "Quick-win logic using positions 8-20 or high-impression/low-CTR requires actual Search Console data.",
     ],
-    outputFields: ["keyword", "type", "intent", "funnelStage", "cluster", "targetUrl", "role", "serpFeatures", "volume", "difficulty", "source", "priority"],
-    multilingual: "Research natively per language/locale; do not merely translate keywords. Use separate locale pages and real hreflang only when equivalents exist.",
+    outputFields: [
+      "keyword",
+      "type",
+      "intent",
+      "funnelStage",
+      "cluster",
+      "targetUrl",
+      "role",
+      "serpFeatures",
+      "volume",
+      "difficulty",
+      "source",
+      "priority",
+    ],
+    multilingual:
+      "Research natively per language/locale; do not merely translate keywords. Use separate locale pages and real hreflang only when equivalents exist.",
   },
   m6StructuredData: {
     principles: [
@@ -129,13 +225,31 @@ export const SEO_M1_M8_CAPABILITIES = {
       "Google-supported rich-result types and broader schema.org entity modeling are different concerns; never claim a rich result merely because schema exists.",
     ],
     typeSelection: {
-      everyPage: ["WebPage or subtype", "BreadcrumbList where breadcrumbs exist", "WebSite", "Organization reference"],
-      home: ["Organization", "WebSite", "LocalBusiness subtype only if the business is genuinely local and facts exist"],
+      everyPage: [
+        "WebPage or subtype",
+        "BreadcrumbList where breadcrumbs exist",
+        "WebSite",
+        "Organization reference",
+      ],
+      home: [
+        "Organization",
+        "WebSite",
+        "LocalBusiness subtype only if the business is genuinely local and facts exist",
+      ],
       blogNews: ["Article", "BlogPosting", "NewsArticle", "Person author"],
       aboutAuthor: ["AboutPage", "ProfilePage", "Person"],
       product: ["Product", "Offer", "Brand", "AggregateRating only for real visible reviews"],
-      local: ["LocalBusiness subtype", "PostalAddress", "GeoCoordinates", "openingHoursSpecification"],
-      software: ["SoftwareApplication", "WebApplication", "Offer only when a real offer is visible"],
+      local: [
+        "LocalBusiness subtype",
+        "PostalAddress",
+        "GeoCoordinates",
+        "openingHoursSpecification",
+      ],
+      software: [
+        "SoftwareApplication",
+        "WebApplication",
+        "Offer only when a real offer is visible",
+      ],
       data: ["Dataset", "DataDownload"],
       video: ["VideoObject"],
       event: ["Event"],
@@ -145,17 +259,29 @@ export const SEO_M1_M8_CAPABILITIES = {
       review: ["Review only when genuine and not self-serving prohibited markup"],
     },
     avoid: [
-      "aggregateRating without real visible reviews", "self-serving Review markup", "hidden/invented prices", "duplicate/conflicting Organization entities", "JSON-LD/microdata describing conflicting facts",
+      "aggregateRating without real visible reviews",
+      "self-serving Review markup",
+      "hidden/invented prices",
+      "duplicate/conflicting Organization entities",
+      "JSON-LD/microdata describing conflicting facts",
     ],
-    validation: ["Google Rich Results Test for currently supported features", "Schema Markup Validator for schema.org", "Search Console enhancement reports where available", "crawl-wide consistency extraction"],
+    validation: [
+      "Google Rich Results Test for currently supported features",
+      "Schema Markup Validator for schema.org",
+      "Search Console enhancement reports where available",
+      "crawl-wide consistency extraction",
+    ],
   },
   m7Aeo: {
     goal: "Make correct source-grounded definitions, lists, steps, comparisons, numbers and yes/no answers easy to extract without degrading human readability.",
     patterns: {
-      definition: "H2 question -> 1-2 sentence definition starting with the term, then context/examples/related terms.",
-      howTo: "H2 how-to -> one-sentence summary, numbered verb-led steps, tools/time/warnings only when verified.",
+      definition:
+        "H2 question -> 1-2 sentence definition starting with the term, then context/examples/related terms.",
+      howTo:
+        "H2 how-to -> one-sentence summary, numbered verb-led steps, tools/time/warnings only when verified.",
       list: "H2 list -> short intro, concise labeled items with explanations; do not invent 'best' rankings without evidence.",
-      comparison: "H2 A vs B -> source-grounded summary/verdict only when evidence supports it, then a consistent-attribute table and use-case guidance.",
+      comparison:
+        "H2 A vs B -> source-grounded summary/verdict only when evidence supports it, then a consistent-attribute table and use-case guidance.",
       numberFact: "State verified value + unit + date/version + source in the first sentence.",
       yesNo: "Answer Yes/No only when source evidence supports it, then conditions/nuance.",
     },
@@ -165,10 +291,16 @@ export const SEO_M1_M8_CAPABILITIES = {
       "Mine questions from real PAA/autocomplete/Search Console/support/community/customer-prompt evidence; if that evidence is absent, generated questions are candidates, not claimed demand.",
       "Voice copy should be short and factual when voice applies; SSML only when the product actually serves audio.",
     ],
-    measurement: ["featured snippet/PAA ownership when measured", "question-query impressions", "AI citation prompt panel", "branded-search lift"],
+    measurement: [
+      "featured snippet/PAA ownership when measured",
+      "question-query impressions",
+      "AI citation prompt panel",
+      "branded-search lift",
+    ],
   },
   m8Geo: {
-    principle: "GEO = SEO fundamentals + entity authority + corroboration + citable original information. There is no secret markup and no permission to spam.",
+    principle:
+      "GEO = SEO fundamentals + entity authority + corroboration + citable original information. There is no secret markup and no permission to spam.",
     tactics: [
       "Eligibility: crawlable/indexable public facts for Googlebot/Bingbot/owner-approved AI search bots, server-render critical content, good page experience, no public-fact login walls.",
       "Topical completeness: answer main question plus subquestions, constraints, comparisons, pricing when verified, pros/cons and persona fit; interlink the cluster.",
@@ -179,19 +311,37 @@ export const SEO_M1_M8_CAPABILITIES = {
       "Format helps retrieval but does not replace substance: descriptive headings, short summaries, clean tables/lists and descriptive anchors.",
       "Access control: owner policy should distinguish training, search and user-triggered bots in robots/CDN/WAF where necessary.",
     ],
-    volatilePlatformRule: "Google AI surfaces, ChatGPT search, Perplexity, Copilot and Gemini differ in source/citation behavior. Treat platform notes as volatile and verify externally before asserting current mechanics.",
+    volatilePlatformRule:
+      "Google AI surfaces, ChatGPT search, Perplexity, Copilot and Gemini differ in source/citation behavior. Treat platform notes as volatile and verify externally before asserting current mechanics.",
     measurement: [
       "Prompt panel: 50-200 real customer prompts across funnel stages when supplied/collected; run consistently by engine and record mention/citation URL/position/sentiment/accuracy/competitors as noisy samples, not exact rankings.",
       "Referral analytics for known AI referrers when GA4/log data exists; some traffic will be unattributed.",
       "Search Console AI reports where available, normal query/page trends, server-log AI bot fetches and branded-demand/direct-traffic trends.",
     ],
-    hardBlocks: ["hidden LLM text/prompts", "fabricated mentions/reviews", "different substantive content for bots", "mass AI listicles", "paid citations"],
+    hardBlocks: [
+      "hidden LLM text/prompts",
+      "fabricated mentions/reviews",
+      "different substantive content for bots",
+      "mass AI listicles",
+      "paid citations",
+    ],
   },
 } as const;
 
 export type SeoKeywordCandidate = {
   keyword: string;
-  type: "short-tail" | "mid-tail" | "long-tail" | "question" | "conversational" | "branded" | "competitor-branded" | "local" | "comparison" | "transactional" | "navigational";
+  type:
+    | "short-tail"
+    | "mid-tail"
+    | "long-tail"
+    | "question"
+    | "conversational"
+    | "branded"
+    | "competitor-branded"
+    | "local"
+    | "comparison"
+    | "transactional"
+    | "navigational";
   intent: "informational" | "commercial" | "transactional" | "navigational";
   funnelStage: "awareness" | "consideration" | "decision" | "retention";
   cluster: string;
@@ -204,7 +354,8 @@ export type SeoKeywordCandidate = {
   priority: number | null;
 };
 
-export type SeoAeoPattern = "definition" | "how-to" | "list" | "comparison" | "number-fact" | "yes-no";
+export type SeoAeoPattern =
+  "definition" | "how-to" | "list" | "comparison" | "number-fact" | "yes-no";
 
 export function buildSeoM1M8Context() {
   const m = SEO_M1_M8_CAPABILITIES;

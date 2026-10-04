@@ -27,7 +27,8 @@ export const Route = createFileRoute("/projects/$projectId_/chat")({
       { title: "Rezyn Chat — conversational interface transformation" },
       {
         name: "description",
-        content: "Discuss, plan and redesign project interfaces through a conversation-first AI design copilot.",
+        content:
+          "Discuss, plan and redesign project interfaces through a conversation-first AI design copilot.",
       },
     ],
   }),
@@ -470,7 +471,9 @@ function ChatRedesignPage() {
                     </div>
                   </div>
                 </div>
-                <span className={sending ? "signal-dot" : "h-[7px] w-[7px] rounded-full bg-revision/50"} />
+                <span
+                  className={sending ? "signal-dot" : "h-[7px] w-[7px] rounded-full bg-revision/50"}
+                />
               </div>
 
               {sending ? (
@@ -508,9 +511,12 @@ function ChatRedesignPage() {
                       <span className="mx-auto mb-5 flex h-12 w-12 items-center justify-center border border-foreground bg-[var(--revision-bg)] text-foreground">
                         <Sparkles className="h-5 w-5" />
                       </span>
-                      <h2 className="text-[30px] leading-none">Chat first. Redesign when you say so.</h2>
+                      <h2 className="text-[30px] leading-none">
+                        Chat first. Redesign when you say so.
+                      </h2>
                       <p className="mt-4 text-[14px] leading-7 text-ink-soft">
-                        Say hello, ask questions, brainstorm, compare design directions, or request feedback. Rezyn only edits files when you clearly ask it to make a change.
+                        Say hello, ask questions, brainstorm, compare design directions, or request
+                        feedback. Rezyn only edits files when you clearly ask it to make a change.
                       </p>
                     </div>
                   </div>
@@ -528,7 +534,9 @@ function ChatRedesignPage() {
                             {isDone ? (
                               <CheckCircle2 className="h-3.5 w-3.5" />
                             ) : (
-                              <CircleDashed className={`h-3.5 w-3.5 ${sending ? "animate-spin" : ""}`} />
+                              <CircleDashed
+                                className={`h-3.5 w-3.5 ${sending ? "animate-spin" : ""}`}
+                              />
                             )}
                           </span>
                           <span className="agent-event__copy">{message.content}</span>
@@ -539,7 +547,10 @@ function ChatRedesignPage() {
 
                     const isUser = message.role === "user";
                     return (
-                      <div key={message.id} className={isUser ? "flex justify-end" : "flex justify-start"}>
+                      <div
+                        key={message.id}
+                        className={isUser ? "flex justify-end" : "flex justify-start"}
+                      >
                         <div
                           className={`max-w-[82%] border px-4 py-3 text-[14px] leading-6 sm:max-w-[72%] ${
                             isUser

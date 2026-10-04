@@ -6,7 +6,8 @@ import { reconcileOrder } from "@/lib/cashfree.server";
 import { currencyForCountry, PACKS, priceFor } from "@/lib/pricing";
 
 function visitorCurrency() {
-  const country = getRequestHeader("cf-ipcountry") ?? getRequestHeader("x-vercel-ip-country") ?? null;
+  const country =
+    getRequestHeader("cf-ipcountry") ?? getRequestHeader("x-vercel-ip-country") ?? null;
   return { country, currency: currencyForCountry(country) };
 }
 
@@ -32,7 +33,11 @@ export const getBilling = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const [{ data: credits }, { data: purchases }] = await Promise.all([
-      context.supabase.from("user_credits").select("balance").eq("user_id", context.userId).maybeSingle(),
+      context.supabase
+        .from("user_credits")
+        .select("balance")
+        .eq("user_id", context.userId)
+        .maybeSingle(),
       context.supabase
         .from("credit_purchases")
         .select("order_id, pack_id, credits, amount, currency, status, created_at, paid_at")
@@ -64,7 +69,9 @@ export const createCheckout = createServerFn({ method: "POST" })
 /** Existing orders can still be reconciled safely if a user returns from an older checkout. */
 export const verifyOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ orderId: z.string().regex(/^rz_[0-9]+_[a-f0-9]{8}$/) }).parse(data))
+  .inputValidator((data) =>
+    z.object({ orderId: z.string().regex(/^rz_[0-9]+_[a-f0-9]{8}$/) }).parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { data: own } = await context.supabase
       .from("credit_purchases")

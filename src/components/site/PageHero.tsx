@@ -21,7 +21,10 @@ export function PageHero({
   description: string;
   stat?: string;
   statLabel?: string;
-  action?: { to: "/projects" | "/process" | "/styles" | "/trends" | "/work" | "/why-rezyn" | "/pricing"; label: string };
+  action?: {
+    to: "/projects" | "/process" | "/styles" | "/trends" | "/work" | "/why-rezyn" | "/pricing";
+    label: string;
+  };
   aside?: ReactNode;
 }) {
   return (

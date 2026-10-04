@@ -11,7 +11,11 @@ export const Route = createFileRoute("/projects/")({
   head: () => ({
     meta: [
       { title: "Workspace — Rezyn AI redesign + SEO intelligence" },
-      { name: "description", content: "Create Rezyn projects, upload complete source, then run UI/UX reconstruction, the M1–M8 SEO Agent, or both from one project-aware transformation console." },
+      {
+        name: "description",
+        content:
+          "Create Rezyn projects, upload complete source, then run UI/UX reconstruction, the M1–M8 SEO Agent, or both from one project-aware transformation console.",
+      },
     ],
   }),
   component: ProjectsPage,
@@ -100,7 +104,10 @@ function ProjectsPage() {
             <aside>
               <span>ENGINE STATUS</span>
               <strong>READY</strong>
-              <p>Create a project, attach the real source, then choose Redesign, SEO Agent, or Redesign + SEO inside the transformation console.</p>
+              <p>
+                Create a project, attach the real source, then choose Redesign, SEO Agent, or
+                Redesign + SEO inside the transformation console.
+              </p>
             </aside>
           </header>
         </Reveal>
@@ -126,20 +133,40 @@ function ProjectsPage() {
               >
                 <div className="archive-form-field archive-form-field--full">
                   <label htmlFor="pname">Project name</label>
-                  <input id="pname" value={name} onChange={(event) => setName(event.target.value)} className="field" placeholder="Acme website transformation" />
+                  <input
+                    id="pname"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="field"
+                    placeholder="Acme website transformation"
+                  />
                 </div>
 
                 <div className="archive-project-form__columns">
                   <div className="archive-form-field">
                     <label htmlFor="ptype">Product surface</label>
-                    <select id="ptype" value={productType} onChange={(event) => setProductType(event.target.value)} className="field">
-                      {productTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+                    <select
+                      id="ptype"
+                      value={productType}
+                      onChange={(event) => setProductType(event.target.value)}
+                      className="field"
+                    >
+                      {productTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
                   <div className="archive-form-field">
                     <label htmlFor="smode">Redesign direction control</label>
-                    <select id="smode" value={styleMode} onChange={(event) => setStyleMode(event.target.value as "project" | "file")} className="field">
+                    <select
+                      id="smode"
+                      value={styleMode}
+                      onChange={(event) => setStyleMode(event.target.value as "project" | "file")}
+                      className="field"
+                    >
                       <option value="project">One direction for project</option>
                       <option value="file">Direction per file</option>
                     </select>
@@ -149,20 +176,40 @@ function ProjectsPage() {
                 {styleMode === "project" ? (
                   <div className="archive-form-field archive-form-field--full">
                     <label htmlFor="pstyle">Target redesign direction</label>
-                    <select id="pstyle" value={targetStyle} onChange={(event) => setTargetStyle(event.target.value)} className="field">
-                      {allStyleNames.map((style) => <option key={style} value={style}>{style}</option>)}
+                    <select
+                      id="pstyle"
+                      value={targetStyle}
+                      onChange={(event) => setTargetStyle(event.target.value)}
+                      className="field"
+                    >
+                      {allStyleNames.map((style) => (
+                        <option key={style} value={style}>
+                          {style}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 ) : null}
 
                 <div className="archive-form-field archive-form-field--full">
                   <label htmlFor="pnotes">Project brief / optional</label>
-                  <textarea id="pnotes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} className="field resize-y" placeholder="Describe the product, audience, redesign goals, SEO constraints, markets, languages or anything Rezyn should preserve." />
+                  <textarea
+                    id="pnotes"
+                    rows={5}
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    className="field resize-y"
+                    placeholder="Describe the product, audience, redesign goals, SEO constraints, markets, languages or anything Rezyn should preserve."
+                  />
                 </div>
 
                 {error ? <p className="archive-project-form__error">{error}</p> : null}
 
-                <button type="submit" disabled={createProject.isPending} className="button-primary archive-project-form__submit">
+                <button
+                  type="submit"
+                  disabled={createProject.isPending}
+                  className="button-primary archive-project-form__submit"
+                >
                   <Sparkles className="h-4 w-4" />
                   {createProject.isPending ? "Creating…" : "Create transformation"}
                 </button>
@@ -188,16 +235,28 @@ function ProjectsPage() {
               ) : (
                 <div className="archive-project-list__rows">
                   <div className="archive-project-list__columns">
-                    <span>No.</span><span>Project</span><span>Direction</span><span>Open</span>
+                    <span>No.</span>
+                    <span>Project</span>
+                    <span>Direction</span>
+                    <span>Open</span>
                   </div>
                   {projects.data?.map((project, index) => (
-                    <Link key={project.id} to="/projects/$projectId" params={{ projectId: project.id }} className="archive-project-row">
+                    <Link
+                      key={project.id}
+                      to="/projects/$projectId"
+                      params={{ projectId: project.id }}
+                      className="archive-project-row"
+                    >
                       <span>{String(index + 1).padStart(2, "0")}</span>
                       <div>
                         <strong>{project.name}</strong>
                         <small>{project.product_type}</small>
                       </div>
-                      <em>{project.style_mode === "project" ? (project.target_style ?? "No direction") : "Per-file directions"}</em>
+                      <em>
+                        {project.style_mode === "project"
+                          ? (project.target_style ?? "No direction")
+                          : "Per-file directions"}
+                      </em>
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   ))}

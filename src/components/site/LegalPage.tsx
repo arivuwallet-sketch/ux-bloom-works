@@ -33,7 +33,11 @@ export function LegalPage({
           <aside className="legal-page__aside" aria-label="Legal documents">
             <span className="legal-page__label">Legal / {index}</span>
             <nav>
-              <Link to="/legal" activeOptions={{ exact: true }} activeProps={{ className: "is-active" }}>
+              <Link
+                to="/legal"
+                activeOptions={{ exact: true }}
+                activeProps={{ className: "is-active" }}
+              >
                 Overview
               </Link>
               {legalLinks.map((link) => (
@@ -60,7 +64,8 @@ export function LegalPage({
               ))}
             </ol>
             <p className="legal-page__contact">
-              Questions about this document? Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+              Questions about this document? Email{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
             </p>
           </article>
         </div>

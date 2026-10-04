@@ -11,7 +11,8 @@ export const Route = createFileRoute("/process")({
       { title: "Process — AI redesign + SEO intelligence workflow | Rezyn" },
       {
         name: "description",
-        content: "Upload a real project, choose Redesign, SEO Agent, or both, let Rezyn build project-level plans and M1–M8 analysis, then export the validated result.",
+        content:
+          "Upload a real project, choose Redesign, SEO Agent, or both, let Rezyn build project-level plans and M1–M8 analysis, then export the validated result.",
       },
     ],
   }),
@@ -51,11 +52,15 @@ function ProcessPage() {
                     <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-revision/20 bg-revision/5 text-revision">
                       <Icon className="h-5 w-5" />
                     </span>
-                    <span className="font-mono text-[9px] tracking-[0.16em] text-muted-foreground">PASS / {step.version}</span>
+                    <span className="font-mono text-[9px] tracking-[0.16em] text-muted-foreground">
+                      PASS / {step.version}
+                    </span>
                   </div>
                   <div className="relative z-10 mt-28">
                     <h2 className="m-0 text-[44px] leading-[0.9]">{step.title}</h2>
-                    <p className="mb-0 mt-5 max-w-[38ch] text-[14px] leading-7 text-ink-soft">{step.body}</p>
+                    <p className="mb-0 mt-5 max-w-[38ch] text-[14px] leading-7 text-ink-soft">
+                      {step.body}
+                    </p>
                   </div>
                 </article>
               </Reveal>
@@ -68,9 +73,14 @@ function ProcessPage() {
         <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_auto]">
           <div>
             <span className="eyebrow">Output principle</span>
-            <h2 className="mt-5 max-w-[13ch] text-[clamp(44px,6vw,84px)] leading-[0.92]">Your product stays yours. The system around it gets stronger.</h2>
+            <h2 className="mt-5 max-w-[13ch] text-[clamp(44px,6vw,84px)] leading-[0.92]">
+              Your product stays yours. The system around it gets stronger.
+            </h2>
             <p className="mt-6 max-w-[680px] text-[16px] leading-8 text-ink-soft">
-              Redesign mode can rebuild the presentation while preserving behavior. SEO mode can improve search-facing structure without redesigning the UI. Combined mode coordinates both, keeps unknown metrics unknown, and exports the best validated version of each file.
+              Redesign mode can rebuild the presentation while preserving behavior. SEO mode can
+              improve search-facing structure without redesigning the UI. Combined mode coordinates
+              both, keeps unknown metrics unknown, and exports the best validated version of each
+              file.
             </p>
           </div>
           <Link to="/projects" className="button-primary">

@@ -37,7 +37,14 @@ function ParticleVolume({ seed }: { seed: number }) {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.025} color={CYAN} transparent opacity={0.58} depthWrite={false} sizeAttenuation />
+      <pointsMaterial
+        size={0.025}
+        color={CYAN}
+        transparent
+        opacity={0.58}
+        depthWrite={false}
+        sizeAttenuation
+      />
     </points>
   );
 }
@@ -56,7 +63,11 @@ function InterfaceShard({
   delay: number;
 }) {
   return (
-    <Float speed={0.65 + delay * 0.05} rotationIntensity={0.18} floatIntensity={0.45 + delay * 0.04}>
+    <Float
+      speed={0.65 + delay * 0.05}
+      rotationIntensity={0.18}
+      floatIntensity={0.45 + delay * 0.04}
+    >
       <group position={position} rotation={rotation} scale={scale}>
         <mesh>
           <boxGeometry args={[1, 0.63, 0.028]} />
@@ -153,8 +164,16 @@ function DataHelix({ seed }: { seed: number }) {
             -4.8 + index * 0.76,
             -6.5 + Math.sin(angle) * 2.6,
           ] as [number, number, number],
-          rotation: [0.04 * (index % 3), -angle + Math.PI / 2, index % 2 ? 0.08 : -0.08] as [number, number, number],
-          scale: [1.3 + (index % 4) * 0.12, 1.3 + (index % 2) * 0.18, 1] as [number, number, number],
+          rotation: [0.04 * (index % 3), -angle + Math.PI / 2, index % 2 ? 0.08 : -0.08] as [
+            number,
+            number,
+            number,
+          ],
+          scale: [1.3 + (index % 4) * 0.12, 1.3 + (index % 2) * 0.18, 1] as [
+            number,
+            number,
+            number,
+          ],
           accent: accents[index % accents.length]!,
         };
       }),
@@ -234,8 +253,20 @@ function Scene({ pathname }: { pathname: string }) {
       <Suspense fallback={null}>
         <Environment resolution={128}>
           <Lightformer intensity={2.8} position={[0, 8, 2]} scale={[12, 4, 1]} color="#dffbff" />
-          <Lightformer intensity={2} position={[-7, 0, -1]} scale={[14, 2, 1]} color={CYAN} rotation-y={Math.PI / 2} />
-          <Lightformer intensity={1.6} position={[7, -1, -2]} scale={[14, 3, 1]} color={VIOLET} rotation-y={-Math.PI / 2} />
+          <Lightformer
+            intensity={2}
+            position={[-7, 0, -1]}
+            scale={[14, 2, 1]}
+            color={CYAN}
+            rotation-y={Math.PI / 2}
+          />
+          <Lightformer
+            intensity={1.6}
+            position={[7, -1, -2]}
+            scale={[14, 3, 1]}
+            color={VIOLET}
+            rotation-y={-Math.PI / 2}
+          />
         </Environment>
 
         <PerspectiveGrid />

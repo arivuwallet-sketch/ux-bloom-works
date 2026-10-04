@@ -1,6 +1,13 @@
 import { ArrowUpRight } from "lucide-react";
 
-export function BuyPackButton({ label, featured }: { packId: string; label: string; featured?: boolean }) {
+export function BuyPackButton({
+  label,
+  featured,
+}: {
+  packId: string;
+  label: string;
+  featured?: boolean;
+}) {
   return (
     <button
       type="button"

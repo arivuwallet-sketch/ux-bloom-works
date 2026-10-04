@@ -6,7 +6,10 @@ const SUPPORT_FILE_PATTERN =
   /(^|\/)(?:package\.json|composer\.json|components\.json|manifest\.json|vercel\.json|tsconfig[\w.-]*\.json|jsconfig[\w.-]*\.json|[\w.-]+\.config\.(?:js|cjs|mjs|ts|mts|cts)|robots\.txt|llms\.txt|sitemap[\w.-]*\.xml|\.htaccess|_redirects|_headers|[\w.-]+\.webmanifest|[\w.-]+\.ya?ml|[\w.-]+\.toml)$/i;
 
 export function normalizeProjectPath(value: string) {
-  return value.replace(/\\/g, "/").replace(/^\.\/+/, "").replace(/^\/+/, "");
+  return value
+    .replace(/\\/g, "/")
+    .replace(/^\.\/+/, "")
+    .replace(/^\/+/, "");
 }
 
 export function isSupportFile(name: string) {

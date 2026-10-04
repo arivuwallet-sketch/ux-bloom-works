@@ -2,8 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildDesignIntelligenceContext } from "@/lib/design-intelligence";
-import { repairRedesignCssCompatibility, validateRedesignCssCompatibility } from "@/lib/css-redesign-validator";
-import { applyCompiledDirectionFoundation, buildDirectionCompilerContext, detectsTailwindV4, isCompilerStyleEntrypoint } from "@/lib/design-direction-compiler";
+import {
+  repairRedesignCssCompatibility,
+  validateRedesignCssCompatibility,
+} from "@/lib/css-redesign-validator";
+import {
+  applyCompiledDirectionFoundation,
+  buildDirectionCompilerContext,
+  detectsTailwindV4,
+  isCompilerStyleEntrypoint,
+} from "@/lib/design-direction-compiler";
 
 const TEXT_EXT =
   /\.(html?|css|scss|sass|less|js|jsx|ts|tsx|vue|svelte|json|md|mdx|txt|xml|svg|astro|php|hbs|ejs|twig|dart|kt|swift|py)$/i;
@@ -29,10 +37,18 @@ function extensionOf(name: string) {
 }
 
 function stripOuterFence(value: string) {
-  return value.replace(/^```[a-zA-Z0-9_-]*\n?/, "").replace(/\n?```$/, "").trim();
+  return value
+    .replace(/^```[a-zA-Z0-9_-]*\n?/, "")
+    .replace(/\n?```$/, "")
+    .trim();
 }
 
-function validateGeneratedFile(fileName: string, original: string, candidate: string, style?: string | null) {
+function validateGeneratedFile(
+  fileName: string,
+  original: string,
+  candidate: string,
+  style?: string | null,
+) {
   let output = candidate.trim();
   const tailwindV4 = detectsTailwindV4(original) || detectsTailwindV4(output);
   if (style && isCompilerStyleEntrypoint({ name: fileName, source: original })) {
@@ -67,7 +83,12 @@ function validateGeneratedFile(fileName: string, original: string, candidate: st
   return output;
 }
 
-function parseStructuredResult(rawValue: string, fileName: string, original: string, style?: string | null) {
+function parseStructuredResult(
+  rawValue: string,
+  fileName: string,
+  original: string,
+  style?: string | null,
+) {
   const raw = stripOuterFence(rawValue);
 
   const parse = (text: string) => {
@@ -130,7 +151,11 @@ function parseIntentResult(rawValue: string, model: string): IntentResult | null
 }
 
 function quickConversationReply(message: string): string | null {
-  const normalized = message.trim().toLowerCase().replace(/[!?.,]+$/g, "").trim();
+  const normalized = message
+    .trim()
+    .toLowerCase()
+    .replace(/[!?.,]+$/g, "")
+    .trim();
   if (/^(hi|hello|hey|hiya|yo|hey there|hello there)$/.test(normalized)) {
     return "Hey! I’m Rezyn Chat. We can talk through the design, explore ideas, compare directions, or you can tell me exactly what you want changed and I’ll redesign it.";
   }
@@ -248,7 +273,7 @@ async function classifyChatTurn(opts: {
     "If intent is ambiguous, choose conversation and ask a concise clarifying question instead of editing. " +
     "For conversation, answer the user's message naturally and helpfully as a senior UI/UX and front-end design expert. You may discuss the project and selected style, but do not claim you changed anything. " +
     "For redesign, reply with a very short acknowledgement; the separate editing engine will perform the actual change. " +
-    "Do not reveal chain-of-thought. Return ONLY valid JSON shaped exactly as {\"intent\":\"conversation\"|\"redesign\",\"reply\":\"...\"}.";
+    'Do not reveal chain-of-thought. Return ONLY valid JSON shaped exactly as {"intent":"conversation"|"redesign","reply":"..."}.';
 
   const context =
     `Project: ${opts.projectName}\n` +
@@ -294,7 +319,9 @@ async function chatRedesignSource(opts: {
   style?: string | null;
 }): Promise<RedesignResult> {
   if (opts.currentContent.length > MAX_SOURCE_CHARS) {
-    throw new Error("This file is too large for conversational redesign. Split it into smaller source files first.");
+    throw new Error(
+      "This file is too large for conversational redesign. Split it into smaller source files first.",
+    );
   }
 
   const designIntelligence = buildDesignIntelligenceContext({
@@ -352,7 +379,12 @@ async function chatRedesignSource(opts: {
           ];
 
     const response = await callGateway(messages);
-    const parsed = parseStructuredResult(response.content, opts.fileName, opts.currentContent, opts.style);
+    const parsed = parseStructuredResult(
+      response.content,
+      opts.fileName,
+      opts.currentContent,
+      opts.style,
+    );
     if (parsed) return { ...parsed, model: response.model };
     lastValidationError = "AI response failed source validation";
   }
@@ -385,9 +417,14 @@ export const sendChatMessage = createServerFn({ method: "POST" })
     if (projectError) throw new Error(projectError.message);
     if (!project) throw new Error("Project not found");
 
-    const { data: unlocked, error: unlockError } = await supabase.rpc("unlock_project", { _project_id: data.projectId });
+    const { data: unlocked, error: unlockError } = await supabase.rpc("unlock_project", {
+      _project_id: data.projectId,
+    });
     if (unlockError) throw new Error(unlockError.message);
-    if (!unlocked) throw new Error("NO_CREDITS: You need a website credit to redesign this project. Buy a pack on the Pricing page.");
+    if (!unlocked)
+      throw new Error(
+        "NO_CREDITS: You need a website credit to redesign this project. Buy a pack on the Pricing page.",
+      );
 
     const { data: projectFiles, error: filesError } = await supabase
       .from("project_files")
@@ -535,7 +572,11 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       await emitStatus("Applying the full UI/UX and 2D/3D design intelligence framework.");
       await emitStatus("Designing and applying the requested interface change.");
 
-      const { reply, file: updatedFile, model } = await chatRedesignSource({
+      const {
+        reply,
+        file: updatedFile,
+        model,
+      } = await chatRedesignSource({
         fileName: file.name,
         currentContent,
         instruction: data.message,
@@ -543,7 +584,9 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         style: activeStyle,
       });
 
-      await emitStatus("Auditing accessibility, responsiveness, component states, motion and visual quality.");
+      await emitStatus(
+        "Auditing accessibility, responsiveness, component states, motion and visual quality.",
+      );
       await emitStatus("Validating the complete rewritten file before saving.");
 
       const { error: doneErr } = await supabase

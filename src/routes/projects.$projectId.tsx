@@ -34,7 +34,8 @@ export const Route = createFileRoute("/projects/$projectId")({
       { title: "Transformation console — Rezyn" },
       {
         name: "description",
-        content: "Upload source files, redesign interfaces, run the AI SEO Agent and export the transformed project.",
+        content:
+          "Upload source files, redesign interfaces, run the AI SEO Agent and export the transformed project.",
       },
     ],
   }),
@@ -124,7 +125,9 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data, error: err } = await supabase
         .from("project_files")
-        .select("id, name, source, status, size_bytes, target_style, storage_path, content, redesigned_content, redesign_error")
+        .select(
+          "id, name, source, status, size_bytes, target_style, storage_path, content, redesigned_content, redesign_error",
+        )
         .eq("project_id", projectId)
         .order("created_at", { ascending: true });
       if (err) throw err;
@@ -142,7 +145,8 @@ function ProjectDetailPage() {
     if (!user || !files.isFetched || staleFailureCleanup.current) return;
     staleFailureCleanup.current = true;
 
-    const legacyCompilerError = /(Fix Tailwind v4 syntax|nested dark: block inside @theme|Register reusable Neo effects|--input resolves to the same color|prefers-reduced-motion override)/i;
+    const legacyCompilerError =
+      /(Fix Tailwind v4 syntax|nested dark: block inside @theme|Register reusable Neo effects|--input resolves to the same color|prefers-reduced-motion override)/i;
     const hasLegacyFailure = (files.data ?? []).some(
       (file) => file.status === "failed" && legacyCompilerError.test(file.redesign_error ?? ""),
     );
@@ -275,7 +279,9 @@ function ProjectDetailPage() {
       if (engineMode === "redesign") {
         const retry = await requeueFailed({ data: { projectId } });
         if (retry.requeued > 0) {
-          setProgress(`Retrying ${retry.requeued} previously failed redesign file${retry.requeued === 1 ? "" : "s"} with the current compiler.`);
+          setProgress(
+            `Retrying ${retry.requeued} previously failed redesign file${retry.requeued === 1 ? "" : "s"} with the current compiler.`,
+          );
           await invalidate();
         }
         await runRedesignPhase();
@@ -286,7 +292,9 @@ function ProjectDetailPage() {
         setProgress("Stage 1/2 — reconstructing the interface from the project design plan.");
         const retry = await requeueFailed({ data: { projectId } });
         if (retry.requeued > 0) {
-          setProgress(`Stage 1/2 — retrying ${retry.requeued} previously failed redesign file${retry.requeued === 1 ? "" : "s"} with the current compiler.`);
+          setProgress(
+            `Stage 1/2 — retrying ${retry.requeued} previously failed redesign file${retry.requeued === 1 ? "" : "s"} with the current compiler.`,
+          );
           await invalidate();
         }
         await runRedesignPhase();
@@ -315,13 +323,14 @@ function ProjectDetailPage() {
       await invalidate();
       await invalidateSeo();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not reset" );
+      setError(err instanceof Error ? err.message : "Could not reset");
     }
   };
 
   const seoPlanState = (seoState.data?.plan ?? null) as SeoPlanState | null;
   const expectedSeoSourceMode = engineMode === "combined" ? "redesigned" : "original";
-  const seoResultsAreCurrent = engineMode !== "redesign" && seoPlanState?.source_mode === expectedSeoSourceMode;
+  const seoResultsAreCurrent =
+    engineMode !== "redesign" && seoPlanState?.source_mode === expectedSeoSourceMode;
   const seoRows = seoState.data?.files ?? [];
   const seoByFile = useMemo(
     () => new Map(seoRows.map((row) => [row.project_file_id, row])),
@@ -346,7 +355,9 @@ function ProjectDetailPage() {
     }
   };
 
-  const redesignDoneCount = (files.data ?? []).filter((file) => file.status === "done" || file.status === "skipped").length;
+  const redesignDoneCount = (files.data ?? []).filter(
+    (file) => file.status === "done" || file.status === "skipped",
+  ).length;
   const totalCount = files.data?.length ?? 0;
   const seoDoneCount = seoResultsAreCurrent ? (seoState.data?.completed ?? 0) : 0;
   // Combined mode has two passes over the same project files. Keep the user-facing
@@ -366,7 +377,9 @@ function ProjectDetailPage() {
         ? Math.round((combinedWork / (totalCount * 2)) * 100)
         : Math.round((completedUnits / totalCount) * 100);
   const canExport = engineMode === "redesign" ? redesignDoneCount > 0 : seoDoneCount > 0;
-  const activeAudit = (seoPlanState?.audit_after ?? seoPlanState?.audit_before ?? null) as SeoAudit | null;
+  const activeAudit = (seoPlanState?.audit_after ??
+    seoPlanState?.audit_before ??
+    null) as SeoAudit | null;
   const scoreBefore = seoPlanState?.score_before ?? null;
   const scoreAfter = seoPlanState?.score_after ?? null;
 
@@ -387,7 +400,9 @@ function ProjectDetailPage() {
         <div className="system-state__card">
           <span className="eyebrow">Project unavailable</span>
           <h1>This transformation record is not accessible.</h1>
-          <Link to="/projects" className="button-secondary">Back to workspace</Link>
+          <Link to="/projects" className="button-secondary">
+            Back to workspace
+          </Link>
         </div>
       </main>
     );
@@ -398,32 +413,59 @@ function ProjectDetailPage() {
       <div className="wrap">
         <Reveal>
           <header className="mb-10 border-b border-border pb-10">
-            <Link to="/projects" className="mb-8 inline-flex items-center gap-2 text-[12px] text-muted-foreground no-underline transition-colors hover:text-revision">
+            <Link
+              to="/projects"
+              className="mb-8 inline-flex items-center gap-2 text-[12px] text-muted-foreground no-underline transition-colors hover:text-revision"
+            >
               <ArrowLeft className="h-4 w-4" /> Workspace
             </Link>
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <span className="eyebrow">Transformation console</span>
-                <h1 className="mb-0 mt-6 max-w-[11ch] text-[clamp(54px,7vw,104px)] leading-[0.86]">{project.data.name}</h1>
+                <h1 className="mb-0 mt-6 max-w-[11ch] text-[clamp(54px,7vw,104px)] leading-[0.86]">
+                  {project.data.name}
+                </h1>
                 <div className="mt-6 flex flex-wrap gap-2">
                   <span className="badge">{project.data.product_type}</span>
                   <span className="badge badge-active">
-                    {perFile ? "Per-file direction" : (project.data.target_style ?? "Direction unset")}
+                    {perFile
+                      ? "Per-file direction"
+                      : (project.data.target_style ?? "Direction unset")}
                   </span>
-                  <span className="badge">{engineMode === "redesign" ? "Redesign" : engineMode === "seo" ? "SEO Agent" : "Redesign + SEO"}</span>
+                  <span className="badge">
+                    {engineMode === "redesign"
+                      ? "Redesign"
+                      : engineMode === "seo"
+                        ? "SEO Agent"
+                        : "Redesign + SEO"}
+                  </span>
                 </div>
-                {project.data.notes ? <p className="mb-0 mt-6 max-w-[720px] text-[15px] leading-7 text-ink-soft">{project.data.notes}</p> : null}
+                {project.data.notes ? (
+                  <p className="mb-0 mt-6 max-w-[720px] text-[15px] leading-7 text-ink-soft">
+                    {project.data.notes}
+                  </p>
+                ) : null}
               </div>
               <div className="glass min-w-[250px] p-5">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">TRANSFORMATION</span>
-                  <span className={running ? "signal-dot" : "h-[7px] w-[7px] rounded-full bg-white/20"} />
+                  <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">
+                    TRANSFORMATION
+                  </span>
+                  <span
+                    className={running ? "signal-dot" : "h-[7px] w-[7px] rounded-full bg-white/20"}
+                  />
                 </div>
                 <div className="mt-9 flex items-end gap-3">
-                  <strong className="font-serif text-[52px] leading-none tracking-[-0.07em]">{progressPct}%</strong>
-                  <span className="pb-1 text-[12px] text-ink-soft">{completedUnits}/{totalUnits} units</span>
+                  <strong className="font-serif text-[52px] leading-none tracking-[-0.07em]">
+                    {progressPct}%
+                  </strong>
+                  <span className="pb-1 text-[12px] text-ink-soft">
+                    {completedUnits}/{totalUnits} units
+                  </span>
                 </div>
-                <div className="progress-track mt-4"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
+                <div className="progress-track mt-4">
+                  <div className="progress-fill" style={{ width: `${progressPct}%` }} />
+                </div>
               </div>
             </div>
           </header>
@@ -442,21 +484,50 @@ function ProjectDetailPage() {
 
               {perFile ? (
                 <div className="mb-5">
-                  <label htmlFor="upstyle" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Direction for this upload</label>
-                  <select id="upstyle" value={newStyle} onChange={(event) => setNewStyle(event.target.value)} className="field">
-                    {allStyleNames.map((style) => <option key={style} value={style}>{style}</option>)}
+                  <label
+                    htmlFor="upstyle"
+                    className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase"
+                  >
+                    Direction for this upload
+                  </label>
+                  <select
+                    id="upstyle"
+                    value={newStyle}
+                    onChange={(event) => setNewStyle(event.target.value)}
+                    className="field"
+                  >
+                    {allStyleNames.map((style) => (
+                      <option key={style} value={style}>
+                        {style}
+                      </option>
+                    ))}
                   </select>
                 </div>
               ) : null}
 
               <div className="dropzone">
                 <UploadCloud className="h-7 w-7 text-revision" aria-hidden />
-                <p className="mb-0 text-[15px] font-medium">{uploading ? "Reading source…" : "Drop source files or a project ZIP"}</p>
-                <p className="mb-0 max-w-[52ch] text-[12px] leading-6 text-muted-foreground">Individual files or a complete project archive. Rezyn extracts project files while keeping folder structure intact.</p>
-                <input ref={fileInput} type="file" multiple onChange={(event) => void uploadFiles(event.target.files)} aria-label="Upload files or a zip archive" />
+                <p className="mb-0 text-[15px] font-medium">
+                  {uploading ? "Reading source…" : "Drop source files or a project ZIP"}
+                </p>
+                <p className="mb-0 max-w-[52ch] text-[12px] leading-6 text-muted-foreground">
+                  Individual files or a complete project archive. Rezyn extracts project files while
+                  keeping folder structure intact.
+                </p>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  multiple
+                  onChange={(event) => void uploadFiles(event.target.files)}
+                  aria-label="Upload files or a zip archive"
+                />
               </div>
-              {archiveNotice ? <p className="mb-0 mt-3 text-[13px] text-revision">{archiveNotice}</p> : null}
-              {uploadError ? <p className="mb-0 mt-3 text-[13px] text-destructive">{uploadError}</p> : null}
+              {archiveNotice ? (
+                <p className="mb-0 mt-3 text-[13px] text-revision">{archiveNotice}</p>
+              ) : null}
+              {uploadError ? (
+                <p className="mb-0 mt-3 text-[13px] text-destructive">{uploadError}</p>
+              ) : null}
             </section>
           </Reveal>
 
@@ -467,12 +538,27 @@ function ProjectDetailPage() {
                   <span className="eyebrow">02 / transform</span>
                   <h2 className="mb-0 mt-4 text-[38px] leading-none">AI engine</h2>
                 </div>
-                {engineMode === "seo" ? <Search className="h-5 w-5 text-revision" /> : <Sparkles className="h-5 w-5 text-revision" />}
+                {engineMode === "seo" ? (
+                  <Search className="h-5 w-5 text-revision" />
+                ) : (
+                  <Sparkles className="h-5 w-5 text-revision" />
+                )}
               </div>
 
               <div className="mb-6">
-                <label htmlFor="engine-mode" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Engine mode</label>
-                <select id="engine-mode" value={engineMode} disabled={running} onChange={(event) => setEngineMode(event.target.value as EngineMode)} className="field">
+                <label
+                  htmlFor="engine-mode"
+                  className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase"
+                >
+                  Engine mode
+                </label>
+                <select
+                  id="engine-mode"
+                  value={engineMode}
+                  disabled={running}
+                  onChange={(event) => setEngineMode(event.target.value as EngineMode)}
+                  className="field"
+                >
                   <option value="redesign">Redesign — UI/UX reconstruction only</option>
                   <option value="seo">SEO Agent — preserve design, optimize SEO</option>
                   <option value="combined">Redesign + SEO — reconstruct, then optimize</option>
@@ -488,36 +574,87 @@ function ProjectDetailPage() {
                       ? `${seoDoneCount} of ${totalCount} files processed by the SEO Agent.`
                       : `${redesignDoneCount}/${totalCount} redesign + ${seoDoneCount}/${totalCount} SEO.`}
               </p>
-              <div className="progress-track"><div className="progress-fill" style={{ width: `${progressPct}%` }} /></div>
-              {progress ? <p className="mb-0 mt-3 font-mono text-[10px] tracking-[0.06em] text-revision">{progress}</p> : null}
-              {error ? <p className="mb-0 mt-3 text-[13px] text-destructive">{error.replace(/^NO_CREDITS:\s*/, "")}</p> : null}
+              <div className="progress-track">
+                <div className="progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
+              {progress ? (
+                <p className="mb-0 mt-3 font-mono text-[10px] tracking-[0.06em] text-revision">
+                  {progress}
+                </p>
+              ) : null}
+              {error ? (
+                <p className="mb-0 mt-3 text-[13px] text-destructive">
+                  {error.replace(/^NO_CREDITS:\s*/, "")}
+                </p>
+              ) : null}
               {engineMode !== "redesign" && seoState.data?.schemaReady === false ? (
-                <p className="mb-0 mt-3 text-[12px] leading-6 text-destructive">SEO Agent database schema is not installed. Apply <code>0008_create_seo_agent.sql</code> to the connected Supabase project.</p>
+                <p className="mb-0 mt-3 text-[12px] leading-6 text-destructive">
+                  SEO Agent database schema is not installed. Apply{" "}
+                  <code>0008_create_seo_agent.sql</code> to the connected Supabase project.
+                </p>
               ) : null}
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <button type="button" onClick={() => void startTransformation()} disabled={running || totalCount === 0 || (engineMode !== "redesign" && seoState.data?.schemaReady === false)} className="button-primary disabled:opacity-50">
-                  {running ? <Loader2 className="h-4 w-4 animate-spin" /> : engineMode === "seo" ? <Search className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
-                  {running ? "Running…" : engineMode === "redesign" ? "Run redesign" : engineMode === "seo" ? "Run SEO Agent" : "Run redesign + SEO"}
+                <button
+                  type="button"
+                  onClick={() => void startTransformation()}
+                  disabled={
+                    running ||
+                    totalCount === 0 ||
+                    (engineMode !== "redesign" && seoState.data?.schemaReady === false)
+                  }
+                  className="button-primary disabled:opacity-50"
+                >
+                  {running ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : engineMode === "seo" ? (
+                    <Search className="h-4 w-4" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  {running
+                    ? "Running…"
+                    : engineMode === "redesign"
+                      ? "Run redesign"
+                      : engineMode === "seo"
+                        ? "Run SEO Agent"
+                        : "Run redesign + SEO"}
                 </button>
-                <button type="button" onClick={() => void downloadZip()} disabled={zipping || !canExport} className="button-secondary disabled:opacity-50">
+                <button
+                  type="button"
+                  onClick={() => void downloadZip()}
+                  disabled={zipping || !canExport}
+                  className="button-secondary disabled:opacity-50"
+                >
                   <Download className="h-4 w-4" /> {zipping ? "Packing…" : "Export ZIP"}
                 </button>
               </div>
 
               <div className="mt-auto pt-8">
-                <Link to="/projects/$projectId/chat" params={{ projectId }} className="group flex items-center justify-between gap-4 border-t border-border pt-5 text-inherit no-underline">
+                <Link
+                  to="/projects/$projectId/chat"
+                  params={{ projectId }}
+                  className="group flex items-center justify-between gap-4 border-t border-border pt-5 text-inherit no-underline"
+                >
                   <span className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-violet/25 bg-violet/5 text-violet"><Sparkles className="h-4 w-4" /></span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-violet/25 bg-violet/5 text-violet">
+                      <Sparkles className="h-4 w-4" />
+                    </span>
                     <span>
                       <strong className="block text-[14px]">Open conversational redesign</strong>
-                      <span className="text-[11px] text-muted-foreground">Describe visual changes instead of choosing a direction.</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Describe visual changes instead of choosing a direction.
+                      </span>
                     </span>
                   </span>
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-revision" />
                 </Link>
                 {completedUnits > 0 ? (
-                  <button type="button" onClick={() => void restart()} className="mt-5 inline-flex items-center gap-2 border-0 bg-transparent p-0 text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+                  <button
+                    type="button"
+                    onClick={() => void restart()}
+                    className="mt-5 inline-flex items-center gap-2 border-0 bg-transparent p-0 text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  >
                     <RotateCcw className="h-3.5 w-3.5" /> Reset current engine queue
                   </button>
                 ) : null}
@@ -535,27 +672,41 @@ function ProjectDetailPage() {
                   <div className="mt-4 flex items-end gap-4">
                     <h2 className="mb-0 text-[42px] leading-none">Measured project audit</h2>
                     {scoreBefore !== null ? (
-                      <span className="badge badge-active">{scoreBefore}{scoreAfter !== null ? ` → ${scoreAfter}` : ""} / 100</span>
+                      <span className="badge badge-active">
+                        {scoreBefore}
+                        {scoreAfter !== null ? ` → ${scoreAfter}` : ""} / 100
+                      </span>
                     ) : null}
                   </div>
                   <p className="mb-0 mt-5 text-[13px] leading-6 text-ink-soft">
-                    Deterministic checks first, AI planning second. Rezyn does not invent rankings, search volume, reviews, ratings, traffic or unsupported schema facts.
+                    Deterministic checks first, AI planning second. Rezyn does not invent rankings,
+                    search volume, reviews, ratings, traffic or unsupported schema facts.
                   </p>
-                  {seoPlanState?.error ? <p className="mb-0 mt-4 text-[12px] text-destructive">{seoPlanState.error}</p> : null}
+                  {seoPlanState?.error ? (
+                    <p className="mb-0 mt-4 text-[12px] text-destructive">{seoPlanState.error}</p>
+                  ) : null}
                 </div>
 
                 {activeAudit ? (
                   <div className="grid w-full max-w-[620px] grid-cols-2 gap-2 sm:grid-cols-3">
                     {(Object.keys(seoCategoryLabels) as SeoCategory[]).map((category) => (
-                      <div key={category} className="rounded-xl border border-border bg-white/[0.02] p-3">
-                        <span className="block font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">{seoCategoryLabels[category]}</span>
-                        <strong className="mt-2 block text-[24px] leading-none">{activeAudit.categories[category]}</strong>
+                      <div
+                        key={category}
+                        className="rounded-xl border border-border bg-white/[0.02] p-3"
+                      >
+                        <span className="block font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">
+                          {seoCategoryLabels[category]}
+                        </span>
+                        <strong className="mt-2 block text-[24px] leading-none">
+                          {activeAudit.categories[category]}
+                        </strong>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="max-w-[520px] text-[12px] leading-6 text-muted-foreground">
-                    Run the SEO Agent to create the project-wide SEO constitution, baseline audit, file plan and post-update validation report.
+                    Run the SEO Agent to create the project-wide SEO constitution, baseline audit,
+                    file plan and post-update validation report.
                   </div>
                 )}
               </div>
@@ -563,7 +714,9 @@ function ProjectDetailPage() {
               {activeAudit?.issues?.length ? (
                 <div className="mt-7 border-t border-border pt-6">
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Measured findings</span>
+                    <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">
+                      Measured findings
+                    </span>
                     <span className="badge">{activeAudit.issueCount} issues</span>
                   </div>
                   <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
@@ -571,9 +724,13 @@ function ProjectDetailPage() {
                       <div key={issue.id} className="rounded-xl border border-border p-4">
                         <div className="flex items-center justify-between gap-3">
                           <strong className="text-[12px]">{issue.file ?? "Project-wide"}</strong>
-                          <span className="font-mono text-[8px] uppercase text-muted-foreground">{issue.severity}</span>
+                          <span className="font-mono text-[8px] uppercase text-muted-foreground">
+                            {issue.severity}
+                          </span>
                         </div>
-                        <p className="mb-0 mt-2 text-[11px] leading-5 text-ink-soft">{issue.message}</p>
+                        <p className="mb-0 mt-2 text-[11px] leading-5 text-ink-soft">
+                          {issue.message}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -605,23 +762,65 @@ function ProjectDetailPage() {
               className="grid grid-cols-1 gap-5 lg:grid-cols-[260px_1fr]"
             >
               <div>
-                <label htmlFor="fname" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">File name</label>
-                <input id="fname" value={newName} onChange={(event) => setNewName(event.target.value)} className="field" placeholder="landing-page.tsx" />
+                <label
+                  htmlFor="fname"
+                  className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase"
+                >
+                  File name
+                </label>
+                <input
+                  id="fname"
+                  value={newName}
+                  onChange={(event) => setNewName(event.target.value)}
+                  className="field"
+                  placeholder="landing-page.tsx"
+                />
                 {perFile ? (
                   <div className="mt-4">
-                    <label htmlFor="newstyle" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Target direction</label>
-                    <select id="newstyle" value={newStyle} onChange={(event) => setNewStyle(event.target.value)} className="field">
-                      {allStyleNames.map((style) => <option key={style} value={style}>{style}</option>)}
+                    <label
+                      htmlFor="newstyle"
+                      className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase"
+                    >
+                      Target direction
+                    </label>
+                    <select
+                      id="newstyle"
+                      value={newStyle}
+                      onChange={(event) => setNewStyle(event.target.value)}
+                      className="field"
+                    >
+                      {allStyleNames.map((style) => (
+                        <option key={style} value={style}>
+                          {style}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 ) : null}
-                <button type="submit" disabled={createFile.isPending} className="button-secondary mt-5 w-full disabled:opacity-50">
-                  <FileCode2 className="h-4 w-4" /> {createFile.isPending ? "Saving…" : "Add source file"}
+                <button
+                  type="submit"
+                  disabled={createFile.isPending}
+                  className="button-secondary mt-5 w-full disabled:opacity-50"
+                >
+                  <FileCode2 className="h-4 w-4" />{" "}
+                  {createFile.isPending ? "Saving…" : "Add source file"}
                 </button>
               </div>
               <div>
-                <label htmlFor="fbody" className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase">Source contents</label>
-                <textarea id="fbody" rows={10} value={newContent} onChange={(event) => setNewContent(event.target.value)} className="field resize-y font-mono text-[12px]" spellCheck={false} />
+                <label
+                  htmlFor="fbody"
+                  className="mb-2 block font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase"
+                >
+                  Source contents
+                </label>
+                <textarea
+                  id="fbody"
+                  rows={10}
+                  value={newContent}
+                  onChange={(event) => setNewContent(event.target.value)}
+                  className="field resize-y font-mono text-[12px]"
+                  spellCheck={false}
+                />
               </div>
             </form>
           </section>
@@ -634,13 +833,17 @@ function ProjectDetailPage() {
                 <span className="eyebrow">Project manifest</span>
                 <h2 className="mb-0 mt-4 text-[42px] leading-none">Files / {totalCount}</h2>
               </div>
-              <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">LIVE SOURCE INDEX</span>
+              <span className="font-mono text-[9px] tracking-[0.12em] text-muted-foreground">
+                LIVE SOURCE INDEX
+              </span>
             </div>
 
             {files.isLoading ? (
               <div className="glass p-7 text-ink-soft">Reading project files…</div>
             ) : totalCount === 0 ? (
-              <div className="glass p-10 text-center text-ink-soft">No source files yet. Add files above to build the project manifest.</div>
+              <div className="glass p-10 text-center text-ink-soft">
+                No source files yet. Add files above to build the project manifest.
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 {files.data?.map((file, index) => {
@@ -648,12 +851,20 @@ function ProjectDetailPage() {
                   const StatusIcon = status.icon;
                   const seoRow = seoResultsAreCurrent ? seoByFile.get(file.id) : undefined;
                   return (
-                    <article key={file.id} className="glass grid grid-cols-1 items-center gap-4 p-4 md:grid-cols-[46px_1fr_150px_minmax(180px,240px)_40px]">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/[0.025] font-mono text-[9px] text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+                    <article
+                      key={file.id}
+                      className="glass grid grid-cols-1 items-center gap-4 p-4 md:grid-cols-[46px_1fr_150px_minmax(180px,240px)_40px]"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/[0.025] font-mono text-[9px] text-muted-foreground">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
                       <div className="min-w-0">
                         <div className="truncate text-[15px] font-medium">{file.name}</div>
                         <div className="mt-1 font-mono text-[9px] tracking-[0.06em] text-muted-foreground uppercase">
-                          {file.source === "upload" ? "Uploaded" : "Created"}{file.size_bytes ? ` / ${Math.max(1, Math.round(file.size_bytes / 1024))} KB` : ""}
+                          {file.source === "upload" ? "Uploaded" : "Created"}
+                          {file.size_bytes
+                            ? ` / ${Math.max(1, Math.round(file.size_bytes / 1024))} KB`
+                            : ""}
                         </div>
                         {file.redesign_error ? (
                           <div className="mt-1 text-[11px] text-destructive">
@@ -671,23 +882,54 @@ function ProjectDetailPage() {
                             )}
                           </div>
                         ) : null}
-                        {seoRow?.error ? <div className="mt-1 text-[11px] text-destructive">SEO: {seoRow.error}</div> : null}
-                        {seoRow ? <div className="mt-1 font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">SEO / {seoRow.status}</div> : null}
+                        {seoRow?.error ? (
+                          <div className="mt-1 text-[11px] text-destructive">
+                            SEO: {seoRow.error}
+                          </div>
+                        ) : null}
+                        {seoRow ? (
+                          <div className="mt-1 font-mono text-[8px] tracking-[0.08em] text-muted-foreground uppercase">
+                            SEO / {seoRow.status}
+                          </div>
+                        ) : null}
                       </div>
                       <span className={`badge ${status.cls}`}>
-                        <StatusIcon className={`h-3 w-3 ${file.status === "redesigning" ? "animate-spin" : ""}`} /> {status.label}
+                        <StatusIcon
+                          className={`h-3 w-3 ${file.status === "redesigning" ? "animate-spin" : ""}`}
+                        />{" "}
+                        {status.label}
                       </span>
                       <div>
                         {perFile ? (
-                          <select value={file.target_style ?? ""} onChange={(event) => setFileStyle.mutate({ id: file.id, style: event.target.value })} className="field" aria-label={`Target direction for ${file.name}`}>
+                          <select
+                            value={file.target_style ?? ""}
+                            onChange={(event) =>
+                              setFileStyle.mutate({ id: file.id, style: event.target.value })
+                            }
+                            className="field"
+                            aria-label={`Target direction for ${file.name}`}
+                          >
                             <option value="">Choose direction…</option>
-                            {allStyleNames.map((style) => <option key={style} value={style}>{style}</option>)}
+                            {allStyleNames.map((style) => (
+                              <option key={style} value={style}>
+                                {style}
+                              </option>
+                            ))}
                           </select>
                         ) : (
-                          <span className="text-[12px] text-muted-foreground">{project.data?.target_style ?? "Project direction unset"}</span>
+                          <span className="text-[12px] text-muted-foreground">
+                            {project.data?.target_style ?? "Project direction unset"}
+                          </span>
                         )}
                       </div>
-                      <button type="button" onClick={() => removeFile.mutate({ id: file.id, storagePath: file.storage_path })} aria-label={`Remove ${file.name}`} className="flex h-9 w-9 items-center justify-center rounded-xl border border-destructive/15 bg-destructive/5 text-destructive/70 transition-colors hover:text-destructive">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeFile.mutate({ id: file.id, storagePath: file.storage_path })
+                        }
+                        aria-label={`Remove ${file.name}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl border border-destructive/15 bg-destructive/5 text-destructive/70 transition-colors hover:text-destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </article>

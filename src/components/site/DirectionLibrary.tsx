@@ -98,7 +98,12 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
               aria-label="Search direction library"
             />
             {query ? (
-              <button type="button" onClick={() => setQuery("")} className="border-0 bg-transparent p-1 text-black/55 hover:text-black" aria-label="Clear search">
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="border-0 bg-transparent p-1 text-black/55 hover:text-black"
+                aria-label="Clear search"
+              >
                 <X className="h-3.5 w-3.5" />
               </button>
             ) : null}
@@ -149,7 +154,10 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
 
           <div className="direction-library__rail-note">
             <Layers3 className="h-4 w-4" />
-            <p>Each direction reconstructs hierarchy, layout, type, spacing, material, motion and component character—not just color.</p>
+            <p>
+              Each direction reconstructs hierarchy, layout, type, spacing, material, motion and
+              component character—not just color.
+            </p>
           </div>
         </aside>
 
@@ -171,19 +179,32 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
                     type="button"
                     onClick={() => setActiveIndex(entry.index)}
                     onMouseEnter={() => setActiveIndex(entry.index)}
-                    className={isActive ? "direction-library__row is-active" : "direction-library__row"}
+                    className={
+                      isActive ? "direction-library__row is-active" : "direction-library__row"
+                    }
                     aria-pressed={isActive}
                   >
-                    <span className="direction-library__row-number">{String(entry.index + 1).padStart(2, "0")}</span>
+                    <span className="direction-library__row-number">
+                      {String(entry.index + 1).padStart(2, "0")}
+                    </span>
                     <span className="direction-library__row-name">{entry.name}</span>
                     <span className="direction-library__row-family">{entry.group}</span>
-                    <span className="direction-library__row-arrow"><MoveUpRight className="h-4 w-4" /></span>
+                    <span className="direction-library__row-arrow">
+                      <MoveUpRight className="h-4 w-4" />
+                    </span>
                   </button>
                 );
               })
             ) : (
               <div className="border-b border-black p-8 text-center text-[13px] text-black/60">
-                No direction matches “{query}”. <button type="button" onClick={clearFilters} className="ml-1 border-0 bg-transparent p-0 font-semibold text-black underline underline-offset-4">Clear filters</button>
+                No direction matches “{query}”.{" "}
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="ml-1 border-0 bg-transparent p-0 font-semibold text-black underline underline-offset-4"
+                >
+                  Clear filters
+                </button>
               </div>
             )}
           </div>
@@ -193,7 +214,10 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
           <div className="direction-library__preview-card">
             <div className="direction-library__preview-meta">
               <span>Selected direction</span>
-              <span>{String(active.index + 1).padStart(2, "0")} / {String(entries.length).padStart(2, "0")}</span>
+              <span>
+                {String(active.index + 1).padStart(2, "0")} /{" "}
+                {String(entries.length).padStart(2, "0")}
+              </span>
             </div>
 
             <div className="direction-library__stage">
@@ -201,7 +225,9 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
               <div className="direction-library__stage-preview">
                 <PreviewTile preview={active.preview} />
               </div>
-              <span className="direction-library__stage-code">{active.preview.replace("sp-", "")}</span>
+              <span className="direction-library__stage-code">
+                {active.preview.replace("sp-", "")}
+              </span>
             </div>
 
             <div className="direction-library__preview-copy">
@@ -212,7 +238,9 @@ export function DirectionLibrary({ groups }: { groups: PreviewGroup[] }) {
 
             {related.length ? (
               <div className="border-t border-black/25 px-4 py-4">
-                <div className="mb-2 font-mono text-[8px] uppercase tracking-[.12em] text-black/55">Related directions</div>
+                <div className="mb-2 font-mono text-[8px] uppercase tracking-[.12em] text-black/55">
+                  Related directions
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {related.map((entry) => (
                     <button

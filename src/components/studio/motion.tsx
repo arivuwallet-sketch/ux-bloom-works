@@ -128,7 +128,10 @@ export function Magnetic({
   }, [strength]);
 
   return (
-    <span ref={ref} className={`inline-block will-change-transform transition-transform duration-300 ${className}`}>
+    <span
+      ref={ref}
+      className={`inline-block will-change-transform transition-transform duration-300 ${className}`}
+    >
       {children}
     </span>
   );

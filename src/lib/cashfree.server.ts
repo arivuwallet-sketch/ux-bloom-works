@@ -25,7 +25,10 @@ async function cfFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const text = await res.text();
   const body = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   if (!res.ok) {
-    const message = typeof body["message"] === "string" ? body["message"] : `Payment provider error (${res.status})`;
+    const message =
+      typeof body["message"] === "string"
+        ? body["message"]
+        : `Payment provider error (${res.status})`;
     console.error("Cashfree error", res.status, body);
     throw new Error(message);
   }
@@ -79,9 +82,9 @@ export function getCfOrder(orderId: string) {
 
 async function getSuccessfulPaymentId(orderId: string): Promise<string | null> {
   try {
-    const payments = await cfFetch<Array<{ cf_payment_id?: string | number; payment_status?: string }>>(
-      `/orders/${encodeURIComponent(orderId)}/payments`,
-    );
+    const payments = await cfFetch<
+      Array<{ cf_payment_id?: string | number; payment_status?: string }>
+    >(`/orders/${encodeURIComponent(orderId)}/payments`);
     const ok = payments.find((p) => p.payment_status === "SUCCESS");
     return ok?.cf_payment_id != null ? String(ok.cf_payment_id) : null;
   } catch {
@@ -105,15 +108,23 @@ export async function reconcileOrder(orderId: string): Promise<"paid" | "pending
 
   const order = await getCfOrder(orderId);
   const amountMatches =
-    Math.abs(Number(order.order_amount) - Number(purchase.amount)) < 0.01 && order.order_currency === purchase.currency;
+    Math.abs(Number(order.order_amount) - Number(purchase.amount)) < 0.01 &&
+    order.order_currency === purchase.currency;
 
   if (order.order_status === "PAID" && amountMatches) {
     const paymentId = await getSuccessfulPaymentId(orderId);
-    await supabaseAdmin.rpc("fulfill_credit_purchase", { _order_id: orderId, _cf_payment_id: paymentId ?? "" });
+    await supabaseAdmin.rpc("fulfill_credit_purchase", {
+      _order_id: orderId,
+      _cf_payment_id: paymentId ?? "",
+    });
     return "paid";
   }
   if (order.order_status === "EXPIRED" || order.order_status === "TERMINATED") {
-    await supabaseAdmin.from("credit_purchases").update({ status: "failed" }).eq("order_id", orderId).neq("status", "paid");
+    await supabaseAdmin
+      .from("credit_purchases")
+      .update({ status: "failed" })
+      .eq("order_id", orderId)
+      .neq("status", "paid");
     return "failed";
   }
   return "pending";

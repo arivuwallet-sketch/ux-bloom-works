@@ -215,11 +215,7 @@ function buildTheme(seed: Seed, accentHue: number, v: (typeof VARIANTS)[number])
       "--background": bg,
       "--foreground": fg,
       "--paper-dim": surface,
-      "--ink-soft": ok(
-        light ? seed.fg[0] + 0.18 : seed.fg[0] - 0.14,
-        seed.fg[1],
-        seed.hue,
-      ),
+      "--ink-soft": ok(light ? seed.fg[0] + 0.18 : seed.fg[0] - 0.14, seed.fg[1], seed.hue),
       "--card": surface,
       "--card-foreground": fg,
       "--popover": surface,
@@ -236,7 +232,7 @@ function buildTheme(seed: Seed, accentHue: number, v: (typeof VARIANTS)[number])
       "--violet": accent,
       "--revision": accent2,
       "--revision-bg": ok(light ? 0.94 : surfaceL + 0.03, v.ac * 0.3, accent2Hue),
-      "--redline": ok(0.7 , 0.18, 15),
+      "--redline": ok(0.7, 0.18, 15),
       "--destructive": ok(0.68, 0.19, 22),
       "--destructive-foreground": onAccent,
       "--border": border,
@@ -264,12 +260,42 @@ export function findTheme(id: string | null | undefined): Theme | undefined {
 export type FontPreset = { id: string; name: string; display: string; body: string };
 
 export const FONT_PRESETS: FontPreset[] = [
-  { id: "bebas", name: "Bebas / Barlow", display: '"Bebas Neue", sans-serif', body: '"Barlow", sans-serif' },
-  { id: "syne", name: "Syne / Jakarta", display: '"Syne", sans-serif', body: '"Plus Jakarta Sans", sans-serif' },
-  { id: "grotesk", name: "Space Grotesk / Inter", display: '"Space Grotesk", sans-serif', body: '"Inter", sans-serif' },
-  { id: "outfit", name: "Outfit / Inter", display: '"Outfit", sans-serif', body: '"Inter", sans-serif' },
-  { id: "mono", name: "Technical Mono", display: '"JetBrains Mono", monospace', body: '"JetBrains Mono", monospace' },
-  { id: "serif", name: "Cormorant / Jakarta", display: '"Cormorant Garamond", serif', body: '"Plus Jakarta Sans", sans-serif' },
+  {
+    id: "bebas",
+    name: "Bebas / Barlow",
+    display: '"Bebas Neue", sans-serif',
+    body: '"Barlow", sans-serif',
+  },
+  {
+    id: "syne",
+    name: "Syne / Jakarta",
+    display: '"Syne", sans-serif',
+    body: '"Plus Jakarta Sans", sans-serif',
+  },
+  {
+    id: "grotesk",
+    name: "Space Grotesk / Inter",
+    display: '"Space Grotesk", sans-serif',
+    body: '"Inter", sans-serif',
+  },
+  {
+    id: "outfit",
+    name: "Outfit / Inter",
+    display: '"Outfit", sans-serif',
+    body: '"Inter", sans-serif',
+  },
+  {
+    id: "mono",
+    name: "Technical Mono",
+    display: '"JetBrains Mono", monospace',
+    body: '"JetBrains Mono", monospace',
+  },
+  {
+    id: "serif",
+    name: "Cormorant / Jakarta",
+    display: '"Cormorant Garamond", serif',
+    body: '"Plus Jakarta Sans", sans-serif',
+  },
 ];
 
 /* ---------- full customizer config ---------- */

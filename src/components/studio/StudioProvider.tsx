@@ -95,7 +95,10 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     URL.revokeObjectURL(url);
   }, [config]);
 
-  const value = useMemo(() => ({ config, set, reset, exportConfig }), [config, set, reset, exportConfig]);
+  const value = useMemo(
+    () => ({ config, set, reset, exportConfig }),
+    [config, set, reset, exportConfig],
+  );
 
   return <StudioContext.Provider value={value}>{children}</StudioContext.Provider>;
 }

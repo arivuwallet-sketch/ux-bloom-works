@@ -13,7 +13,9 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
         const timestamp = request.headers.get("x-webhook-timestamp") ?? "";
         const raw = await request.text();
 
-        const expected = createHmac("sha256", secret).update(timestamp + raw).digest("base64");
+        const expected = createHmac("sha256", secret)
+          .update(timestamp + raw)
+          .digest("base64");
         const a = Buffer.from(signature);
         const b = Buffer.from(expected);
         if (!signature || a.length !== b.length || !timingSafeEqual(a, b)) {

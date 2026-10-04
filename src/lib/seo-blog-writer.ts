@@ -19,14 +19,29 @@ export type SeoBlogSiteContext = {
   factualSummary: string | null;
   niche: string | null;
   competitors: string[];
-  audiences: Array<{ persona: string; goal: string | null; pain: string | null; sophistication: string | null }>;
+  audiences: Array<{
+    persona: string;
+    goal: string | null;
+    pain: string | null;
+    sophistication: string | null;
+  }>;
   businessGoal: string | null;
   primaryConversion: string | null;
   approvedFacts: string[];
-  authors: Array<{ name: string; credentials: string | null; url: string | null; bio: string | null }>;
+  authors: Array<{
+    name: string;
+    credentials: string | null;
+    url: string | null;
+    bio: string | null;
+  }>;
   reviewers: Array<{ name: string; credentials: string | null; url: string | null }>;
   brandVoice: string[];
-  markets: Array<{ country: string | null; language: string | null; currency: string | null; units: string | null }>;
+  markets: Array<{
+    country: string | null;
+    language: string | null;
+    currency: string | null;
+    units: string | null;
+  }>;
   complianceConstraints: string[];
   internalLinks: Array<{ url: string; title: string }>;
   publishedContent: Array<{ url: string; title: string }>;
@@ -342,14 +357,25 @@ export function buildSeoBlogWriterContext() {
 
 export function isArticleLikePath(name: string) {
   const normalized = name.replace(/\\/g, "/").toLowerCase();
-  return /(^|\/)(?:blog|blogs|articles|posts|news|guides|resources|learn|insights)(?:\/|$)/.test(normalized)
-    || /(?:article|blog|post|news|guide)[-_]?(?:page|template|layout)?\.(?:tsx?|jsx?|vue|svelte|astro|mdx?|html?)$/.test(normalized);
+  return (
+    /(^|\/)(?:blog|blogs|articles|posts|news|guides|resources|learn|insights)(?:\/|$)/.test(
+      normalized,
+    ) ||
+    /(?:article|blog|post|news|guide)[-_]?(?:page|template|layout)?\.(?:tsx?|jsx?|vue|svelte|astro|mdx?|html?)$/.test(
+      normalized,
+    )
+  );
 }
 
 export function validateSeoBlogWriterResult(result: SeoBlogWriterResult) {
   if (result.version !== 1) throw new Error("Blog writer result version is invalid");
-  if (!result.plan.uniqueAngle.trim()) throw new Error("Blog writer must state a unique information-gain angle");
-  if (!result.metadata.title.trim() || !result.metadata.metaDescription.trim() || !result.metadata.slug.trim()) {
+  if (!result.plan.uniqueAngle.trim())
+    throw new Error("Blog writer must state a unique information-gain angle");
+  if (
+    !result.metadata.title.trim() ||
+    !result.metadata.metaDescription.trim() ||
+    !result.metadata.slug.trim()
+  ) {
     throw new Error("Blog writer metadata is incomplete");
   }
   if (!result.articleMarkdown.trim()) throw new Error("Blog writer returned an empty article");
@@ -364,14 +390,19 @@ export function validateSeoBlogWriterResult(result: SeoBlogWriterResult) {
     }
   }
   const failed = result.qa.filter((row) => row.status === "fail");
-  if (failed.length > 0) throw new Error(`Blog writer QA has ${failed.length} unresolved failure(s)`);
+  if (failed.length > 0)
+    throw new Error(`Blog writer QA has ${failed.length} unresolved failure(s)`);
   return result;
 }
 
-
 export function validateSeoBlogClusterResult(result: SeoBlogClusterResult) {
-  if (result.version !== 1 || result.mode !== "cluster") throw new Error("Blog cluster result version/mode is invalid");
-  if (!result.pillarTopic.trim() || !result.pillar?.title?.trim() || !result.pillar?.primaryKeyword?.trim()) {
+  if (result.version !== 1 || result.mode !== "cluster")
+    throw new Error("Blog cluster result version/mode is invalid");
+  if (
+    !result.pillarTopic.trim() ||
+    !result.pillar?.title?.trim() ||
+    !result.pillar?.primaryKeyword?.trim()
+  ) {
     throw new Error("Blog cluster pillar is incomplete");
   }
   if (!Array.isArray(result.supportingArticles) || result.supportingArticles.length === 0) {
@@ -383,10 +414,12 @@ export function validateSeoBlogClusterResult(result: SeoBlogClusterResult) {
     if (!slug) throw new Error("Blog cluster contains an article without a target slug");
     if (seen.has(slug)) throw new Error(`Blog cluster contains duplicate target slug: ${slug}`);
     seen.add(slug);
-    if (!article.uniqueAngle.trim()) throw new Error(`Blog cluster article ${article.title} has no unique angle`);
+    if (!article.uniqueAngle.trim())
+      throw new Error(`Blog cluster article ${article.title} has no unique angle`);
   }
   const failed = result.qa.filter((row) => row.status === "fail");
-  if (failed.length > 0) throw new Error(`Blog cluster QA has ${failed.length} unresolved failure(s)`);
+  if (failed.length > 0)
+    throw new Error(`Blog cluster QA has ${failed.length} unresolved failure(s)`);
   return result;
 }
 
