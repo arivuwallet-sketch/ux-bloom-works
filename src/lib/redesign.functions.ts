@@ -412,7 +412,7 @@ async function auditReconstruction(opts: {
     {
       role: "system",
       content:
-        'You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, the file follows the authoritative project-level design plan, and the applicable design-intelligence quality gates are satisfied. Treat cross-file consistency, accessibility, responsive behavior, interaction states, hierarchy, spacing, typography, contrast, forms, ethical UX, motion/reduced-motion, performance and relevant 2D/3D constraints as release blockers when materially wrong. Do not invent requirements that are absent from the file or project plan. Return ONLY JSON shaped exactly as {"pass":true|false,"issues":["concise actionable issue"]}. Use at most 8 issues.',
+        'You are Rezyn Design QA. Audit a reconstructed UI source file rigorously and conservatively. Do not rewrite code and do not reveal chain-of-thought. Check that real behavior from the original is preserved, the old visual system was genuinely replaced, the chosen direction is unmistakable, the file follows the authoritative project-level design plan, and the applicable design-intelligence quality gates are satisfied. Set pass=false ONLY for release blockers: broken or removed behavior, invalid syntax that would not compile, the old visual system left unchanged, or severe accessibility failures (unreadable text, missing focus visibility). Minor contrast tuning, stylistic preferences, optional refactors and nice-to-have improvements are NOT blockers — pass the file. Do not invent requirements that are absent from the file or project plan. Return ONLY JSON shaped exactly as {"pass":true|false,"issues":["concise actionable issue"]}. Use at most 8 issues.',
     },
     {
       role: "user",
@@ -510,8 +510,10 @@ async function redesignSource(opts: {
   ];
 
   let lastError = "AI could not produce a sufficiently complete reconstruction";
+  // A structurally valid candidate is kept so a picky QA review never fails the whole file.
+  let bestValidCandidate: string | null = null;
 
-  for (let reconstructionAttempt = 0; reconstructionAttempt < 2; reconstructionAttempt += 1) {
+  for (let reconstructionAttempt = 0; reconstructionAttempt < 3; reconstructionAttempt += 1) {
     const messages =
       reconstructionAttempt === 0
         ? baseMessages
@@ -529,6 +531,7 @@ async function redesignSource(opts: {
         applyFoundation: compilerOwnsFoundation,
         tailwindV4: opts.project.tailwindV4,
       });
+      bestValidCandidate = candidate;
       const audit = await auditReconstruction({
         name: opts.name,
         style: opts.style,
@@ -547,9 +550,11 @@ async function redesignSource(opts: {
       return candidate;
     } catch (error) {
       lastError = error instanceof Error ? error.message : lastError;
+      if (lastError.startsWith("The AI service has run out")) throw error;
     }
   }
 
+  if (bestValidCandidate) return bestValidCandidate;
   throw new Error(lastError);
 }
 
