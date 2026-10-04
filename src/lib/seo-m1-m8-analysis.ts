@@ -550,7 +550,7 @@ export function analyzeM1M8(files: M1M8File[]): M1M8Analysis {
     const blocks = staticJsonLd(file.content);
     for (const block of blocks) {
       try {
-        const parsed = JSON.parse(block) as any;
+        const parsed = JSON.parse(block) as unknown;
         const root = Array.isArray(parsed) ? parsed : [parsed];
         const serialized = JSON.stringify(parsed);
         if (

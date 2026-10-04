@@ -620,6 +620,7 @@ async function optimizeSeoFile(opts: {
 }
 
 async function hydrateSeoFiles(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any,
   files: ProjectSourceFile[],
   sourceMode: SourceMode,
@@ -648,6 +649,7 @@ export const getSeoProjectState = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<SeoProjectState> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
     const db = context.supabase as any;
     const [{ data: planData, error: planError }, { data: fileData, error: filesError }] =
       await Promise.all([
@@ -708,6 +710,7 @@ export const seoNextFile = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
     const db = context.supabase as any;
     const { data: project, error: projectError } = await db
       .from("projects")
@@ -981,6 +984,7 @@ export const resetSeoAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ projectId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
     const db = context.supabase as any;
     const { error: deleteError } = await db
       .from("project_seo_files")

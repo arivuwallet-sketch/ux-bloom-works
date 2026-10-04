@@ -669,6 +669,7 @@ async function generateDesignFoundation(opts: {
 }
 
 async function hydrateSourceFiles(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any,
   rows: ProjectFileRow[],
   sourceMode: SourceMode,
@@ -786,6 +787,7 @@ async function materializeArtifact(opts: {
   project: ProjectRow;
   files: SourceFile[];
   runtime: RuntimeKind;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any;
   projectId: string;
   userId: string;
@@ -852,6 +854,7 @@ async function materializeArtifact(opts: {
 
 export async function ensureProjectArtifacts(opts: {
   engine: ArtifactEngine;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any;
   projectId: string;
   userId: string;

@@ -195,6 +195,7 @@ async function callGateway(messages: GatewayMessage[]) {
 }
 
 async function hydrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any,
   rows: FileRow[],
   sourceMode: SourceMode,
@@ -340,6 +341,7 @@ async function proposeRedesignFiles(project: ProjectRow, files: SourceFile[]) {
 }
 
 async function ensureRedesignArtifacts(opts: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any;
   projectId: string;
   userId: string;
@@ -505,6 +507,7 @@ async function ensureRedesignArtifacts(opts: {
 
 export async function ensureProjectArtifacts(opts: {
   engine: "seo" | "redesign";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
   supabase: any;
   projectId: string;
   userId: string;

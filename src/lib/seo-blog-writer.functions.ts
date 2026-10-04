@@ -302,6 +302,7 @@ function inferBlogPath(files: Array<{ name: string }>, slug: string) {
   return `content/blog/${slug}.md`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- database client is untyped for tables added after type generation
 async function hydrateFiles(supabase: any, rows: FileRow[], sourceMode: SourceMode) {
   const result: Array<{ name: string; content: string }> = [];
   for (const row of rows) {
