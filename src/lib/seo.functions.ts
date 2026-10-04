@@ -614,9 +614,11 @@ async function optimizeSeoFile(opts: {
       return candidate;
     } catch (error) {
       lastError = error instanceof Error ? error.message : lastError;
+      if (lastError.startsWith("The AI service has run out")) throw error;
     }
   }
-  throw new Error(lastError);
+  // QA kept rejecting: keep the file exactly as it was instead of failing the whole run.
+  return opts.file.content;
 }
 
 async function hydrateSeoFiles(
